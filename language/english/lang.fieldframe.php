@@ -23,13 +23,13 @@ $L = array(
 'URL to your &ldquo;fields&rdquo; folder',
 
 'fields_url_example' =>
-'<i>ex:</i>&nbsp;&nbsp;http://www.example.com/system/extensions/fields/',
+'<i>ex:</i>&nbsp;&nbsp;http://www.example.com/system/fields/',
 
 'fields_path_label' =>
 'Path to your &ldquo;fields&rdquo; folder',
 
 'fields_path_example' =>
-'/var/www/public_html/system/extensions/fields/',
+'/var/www/public_html/system/fields/',
 
 
 // LG Addon Updater setting
