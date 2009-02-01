@@ -15,6 +15,23 @@ $L = array(
 'FieldFrame couldn&rsquo;t find any Field files. Make sure your Fields Folder Path setting is correct.',
 
 
+// Fields Folder settings
+'fields_folder_title' =>
+'Fields Folder',
+
+'fields_url_label' =>
+'URL to your &ldquo;fields&rdquo; folder',
+
+'fields_url_example' =>
+'<i>ex:</i>&nbsp;&nbsp;http://www.example.com/system/extensions/fields/',
+
+'fields_path_label' =>
+'Path to your &ldquo;fields&rdquo; folder',
+
+'fields_path_example' =>
+'/var/www/public_html/system/extensions/fields/',
+
+
 // LG Addon Updater setting
 
 'check_for_updates_title' =>
@@ -28,6 +45,12 @@ $L = array(
 
 'check_for_updates_nolgau' =>
 'This setting requires <strong><a href="http://leevigraham.com/cms-customisation/expressionengine/lg-addon-updater/">LG Addon Updater</a></strong>.',
+
+
+// Field Manager
+
+'field_manager' =>
+'Field Management',
 
 
 /* END */

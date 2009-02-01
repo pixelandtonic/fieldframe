@@ -189,7 +189,7 @@ class FieldFrame
 		            . $DSP->crumb_item($this->name);
 	    $DSP->right_crumb($LANG->line('disable_extension'), BASE.AMP.'C=admin'.AMP.'M=utilities'.AMP.'P=toggle_extension_confirm'.AMP.'which=disable'.AMP.'name='.$IN->GBL('name'));
 
-		// Open form
+		// open form
 		$DSP->body .= "<h1>{$this->name} <small>{$this->version}</small></h1>"
 		            . $DSP->form_open(
 		                  array(
@@ -201,18 +201,20 @@ class FieldFrame
 		                    'name' => strtolower(get_class($this))
 		                  ));
 
-		// Initialize FFSettingsDisplay
+		// initialize FFSettingsDisplay
 		$SD = new FFSettingsDisplay();
 
+		// import lang files
+		$LANG->fetch_language_file('publish_ad');
+
 		// Fields folder
-		$DSP->body .= $SD->block('Fields Folder')
-		            . $SD->info_row('This setting is required for FieldFrame to work.')
+		$DSP->body .= $SD->block('fields_folder_title')
 		            . $SD->row(array(
-		                           $SD->label('URL to your &ldquo;fields&rdquo; folder', '<i>ex:</i>'.NBS.NBS.'http://www.example.com/system/extensions/fields/'),
+		                           $SD->label('fields_url_label', 'fields_url_example'),
 		                           $SD->text('fields_url', $this->settings['fields_url'])
 		                         ))
 		            . $SD->row(array(
-		                           $SD->label('Fields Folder Path', '<i>ex:</i>'.NBS.NBS.'/var/www/public_html/system/extensions/fields/'),
+		                           $SD->label('fields_path_label', 'fields_path_example'),
 		                           $SD->text('fields_path', $this->settings['fields_path'])
 		                         ))
 		            . $SD->block_c();
@@ -233,7 +235,7 @@ class FieldFrame
 		            . $SD->block_c();
 
 		// Field settings
-		$DSP->body .= $SD->block('Field Management', 3);
+		$DSP->body .= $SD->block('field_manager', 3);
 
 		// initialize fields
 		$this->_init_fields();
@@ -249,9 +251,9 @@ class FieldFrame
 		{
 			// add the headers
 			$DSP->body .= $SD->heading_row(array(
-			                                   'Field Name',
-			                                   'Documentation',
-			                                   'Settings'
+			                                   $LANG->line('field_name'),
+			                                   $LANG->line('documentation'),
+			                                   $LANG->line('settings')
 			                                 ));
 
 			foreach($this->fields as $field)
@@ -259,8 +261,8 @@ class FieldFrame
 				$info = &$field->info;
 				$DSP->body .= $SD->row(array(
 				                         $SD->label($info['name'].NBS.$DSP->qspan('xhtmlWrapperLight defaultSmall', $info['version']), $info['desc']),
-				                         '<a href="'.stripslashes($info['docs_url']).'">Documentation</a>',
-				                         '<a href="#">Settings</a>'
+				                         '<a href="'.stripslashes($info['docs_url']).'">'.$LANG->line('documentation').'</a>',
+				                         '<a href="#">'.$LANG->line('settings').'</a>'
 				                       ));
 			}
 		}
