@@ -140,7 +140,7 @@ class FieldFrame
 		}
 	}
 
-	function _init_fields()
+	function _init_fields($include_disabled=FALSE)
 	{
 		if ( ! $this->field_files)
 		{
@@ -158,7 +158,21 @@ class FieldFrame
 				if ( ! class_exists($class_name))
 				{
 					@include(FIELDS_PATH.$file);
-					if ( ! class_exists($class_name)) continue;
+
+					// skip if the class doesn't exist
+					if ( ! class_exists($class_name))
+					{
+						continue;
+					}
+				}
+
+				if ( ! $include_disabled)
+				{
+					// skip if not enabled
+					if ( ! (isset($this->settings['fields'][$class_name]) AND $this->settings['fields'][$class_name]['enabled'] == 'y'))
+					{
+						continue;
+					}
 				}
 
 				$OBJ = new $class_name();
@@ -271,7 +285,7 @@ class FieldFrame
 		$DSP->body .= $SD->block('field_manager', 4);
 
 		// initialize fields
-		$this->_init_fields();
+		$this->_init_fields(TRUE);
 
 		if ($this->errors)
 		{
