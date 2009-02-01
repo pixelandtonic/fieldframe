@@ -15,8 +15,8 @@ if ( ! defined('EXT'))
  * @copyright Copyright (c) 2009 Brandon Kelly
  * @license   http://creativecommons.org/licenses/by-sa/3.0/ Attribution-Share Alike 3.0 Unported
  */
-class Fieldframe
-{
+class Fieldframe {
+
 	var $class = 'Fieldframe';
 	var $name = 'FieldFrame';
 	var $version = '0.0.2';
@@ -79,7 +79,7 @@ class Fieldframe
 	/**
 	 * Get Site Settings
 	 *
-	 * @param  array  $settings   All saved settings data
+	 * @param  array  $settings  All saved settings data
 	 * @return array  Default settings merged with any site-specific settings in $settings
 	 * @access private
 	 */
@@ -254,7 +254,7 @@ class Fieldframe
 	 *
 	 * Construct the custom settings form.
 	 *
-	 * @param  array   $current   Current extension settings (not site-specific)
+	 * @param  array  $current  Current extension settings (not site-specific)
 	 * @see    http://expressionengine.com/docs/development/extensions.html#settings
 	 */
 	function settings_form($current)
@@ -462,7 +462,7 @@ class Fieldframe
 	/**
 	 * Update Extension
 	 *
-	 * @param string   $current  Previous installed version of the extension
+	 * @param string  $current  Previous installed version of the extension
 	 */
 	function update_extension($current='')
 	{
@@ -503,7 +503,7 @@ class Fieldframe
 	/**
 	 * Get Last Call
 	 *
-	 * @param  mixed  $param   Parameter sent by extension hook
+	 * @param  mixed  $param  Parameter sent by extension hook
 	 * @return mixed  Return value of last extension call if any, or $param
 	 */
 	function _get_last_call($param='')
@@ -615,9 +615,11 @@ class Fieldframe
 	function lg_addon_update_register_source($sources)
 	{
 		$sources = $this->_get_last_call($sources);
-		if ($this->settings['check_for_updates'] == 'y') {
+		if ($this->settings['check_for_updates'] == 'y')
+		{
 			$source = 'http://brandon-kelly.com/downloads/versions.xml';
-			if ( ! in_array($source, $sources)) {
+			if ( ! in_array($source, $sources))
+			{
 				$sources[] = $source;
 			}
 		}
@@ -627,17 +629,18 @@ class Fieldframe
 	/**
 	 * Register a New Addon ID
 	 *
-	 * @param  array   $addons   The existing sources
-	 * @return array             The new addon list
+	 * @param  array  $addons  The existing sources
+	 * @return array  The new addon list
 	 * @see    http://leevigraham.com/cms-customisation/expressionengine/lg-addon-updater/
 	 */
 	function lg_addon_update_register_addon($addons)
 	{
 		$addons = $this->_get_last_call($addons);
-	    if ($this->settings['check_for_updates'] == 'y') {
-	        $addons[$this->class] = $this->version;
-	    }
-	    return $addons;
+		if ($this->settings['check_for_updates'] == 'y')
+		{
+			$addons[$this->class] = $this->version;
+		}
+		return $addons;
 	}
 }
 
@@ -650,8 +653,8 @@ class Fieldframe
  * @package  FieldFrame
  * @author   Brandon Kelly <me@brandon-kelly.com>
  */
-class FFSettingsDisplay
-{
+class FFSettingsDisplay {
+
 	/**
 	 * FFSettingsDisplay Constructor
 	 */
@@ -705,10 +708,10 @@ class FFSettingsDisplay
 	 * @param  string  $row_class  CSS class to be added to each cell
 	 * @return string  The settings row
 	 */
-	function row($col_data, $row_class=null)
+	function row($col_data, $row_class=NULL)
 	{
 		// get the alternating row class
-		if ($row_class === null)
+		if ($row_class === NULL)
 		{
 			$this->row_count++;
 			$row_class = ($this->row_count % 2)
@@ -722,7 +725,7 @@ class FFSettingsDisplay
 		foreach($col_data as $i => $col)
 		{
 			$width = ($i == 0) ? 55 : floor(45/($num_cols-1));
-			$colspan = ($i == $num_cols-1) ? $this->num_cols - $i : null;
+			$colspan = ($i == $num_cols-1) ? $this->num_cols - $i : NULL;
 			$r .= $DSP->td($row_class, $width.'%', $colspan)
 			    . $col
 			    . $DSP->td_c();
@@ -816,7 +819,8 @@ class FFSettingsDisplay
 		global $DSP;
 		$vars = array_merge(array('multi'=>0, 'size'=>0, 'width'=>''), $vars);
 		$r = $DSP->input_select_header($name, $vars['multi'], $vars['size'], $vars['width']);
-		foreach($options as $option_value => $option_line) {
+		foreach($options as $option_value => $option_line)
+		{
 			$selected = is_array($value)
 			 ? in_array($option_value, $value)
 			 : ($option_value == $value);
@@ -880,4 +884,7 @@ class FFSettingsDisplay
 	}
 }
 
-?>
+
+
+/* End of file ext.fieldframe.php */
+/* Location: ./system/extensions/ext.fieldframe.php */
