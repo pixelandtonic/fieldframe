@@ -52,6 +52,9 @@ $L = array(
 'field_manager' =>
 'Field Management',
 
+'field' =>
+'Field',
+
 'field_enabled' =>
 'Enabled?',
 

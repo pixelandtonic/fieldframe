@@ -245,7 +245,7 @@ class FieldFrame
 		            . $SD->info_row('check_for_updates_info')
 		            . $SD->row(array(
 		                           $SD->label('check_for_updates_label'),
-		                           $SD->select('check_for_updates', (($lgau_enabled OR $this->settings['check_for_updates'] == 'y') ? 'y' : 'n'), array('y'=>'yes', 'n'=>'no'))
+		                           $SD->radio_group('check_for_updates', (($lgau_enabled OR $this->settings['check_for_updates'] == 'y') ? 'y' : 'n'), array('y'=>'yes', 'n'=>'no'))
 		                         ))
 		            . $SD->block_c();
 
@@ -266,10 +266,10 @@ class FieldFrame
 		{
 			// add the headers
 			$DSP->body .= $SD->heading_row(array(
-			                                   $LANG->line('field_name'),
-			                                   $LANG->line('documentation'),
+			                                   $LANG->line('field'),
+			                                   $LANG->line('field_enabled'),
 			                                   $LANG->line('settings'),
-			                                   $LANG->line('field_enabled')
+			                                   $LANG->line('documentation')
 			                                 ));
 
 			foreach($this->FIELDS as $class_name=>$FIELD)
@@ -277,9 +277,9 @@ class FieldFrame
 				$info = &$FIELD->info;
 				$DSP->body .= $SD->row(array(
 				                         $SD->label($info['name'].NBS.$DSP->qspan('xhtmlWrapperLight defaultSmall', $info['version']), $info['desc']),
-				                         ($info['docs_url'] ? '<a href="'.stripslashes($info['docs_url']).'">'.$LANG->line('documentation').'</a>' : '--'),
+				                         $SD->radio_group('enabled_fields['.$class_name.']', (in_array($class_name, $this->settings['enabled_fields']) ? 'y' : 'n'), array('y'=>'yes', 'n'=>'no')),
 				                         ((isset($FIELD->settings) AND $FIELD->settings) ? '<a href="#">'.$LANG->line('settings').'</a>' : '--'),
-				                         $SD->select('enabled_fields[]', $this->settings['enabled_fields'], array($class_name=>'yes', 'no'))
+				                         ($info['docs_url'] ? '<a href="'.stripslashes($info['docs_url']).'">'.$LANG->line('documentation').'</a>' : '--')
 				                       ));
 			}
 		}
@@ -573,6 +573,22 @@ class FFSettingsDisplay
 	{
 		$vars = array_merge($vars, array('multi'=>1));
 		return $this->select($name, $values, $options, $vars);
+	}
+
+	function radio_group($name, $value, $options, $vars=array())
+	{
+		global $DSP;
+		$vars = array_merge($vars, array('extras'=>''));
+		$r = '';
+		foreach($options as $option_value=>$option_name)
+		{
+			if ($r) $r .= NBS.NBS.' ';
+			$r .= '<label style="white-space:nowrap;">'
+			    . $DSP->input_radio($name, $option_value, ($option_value == $value) ? 1 : 0, $vars['extras'])
+			    . ' '.$this->line($option_name)
+			    . '</label>';
+		}
+		return $r;
 	}
 
 	function line($line)
