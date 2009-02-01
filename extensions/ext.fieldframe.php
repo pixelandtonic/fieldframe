@@ -18,23 +18,18 @@ if ( ! defined('EXT'))
 class FieldFrame
 {
 	var $name = 'FieldFrame';
-	var $version = '0.0.1';
+	var $version = '0.0.2';
 	var $description = 'Field Type framework';
 	var $settings_exist = 'y';
 	var $docs_url = 'http://exp.fieldframe.com';
 
 	/**
-	 * Extension Constructor
+	 * FieldFrame Constructor
 	 *
-	 * @param array   $settings
-	 * @since version 1.0.0
+	 * @param array  $settings
 	 */
 	function FieldFrame($settings=array())
 	{
-		// globalization
-		global $FF;
-		$FF = $this;
-
 		// get the site-specific settings
 		$this->settings = $this->_get_site_settings($settings);
 
@@ -51,8 +46,8 @@ class FieldFrame
 	/**
 	 * Get All Settings
 	 *
-	 * @return array   All extension settings
-	 * @since  version 1.0.0
+	 * @return array  All extension settings
+	 * @access private
 	 */
 	function _get_all_settings()
 	{
@@ -70,9 +65,9 @@ class FieldFrame
 	/**
 	 * Get Site Settings
 	 *
-	 * @param  array   $settings   Current extension settings (not site-specific)
-	 * @return array               Site-specific extension settings
-	 * @since  version 1.0.0
+	 * @param  array  $settings   All saved settings data
+	 * @return array  Default settings merged with any site-specific settings in $settings
+	 * @access private
 	 */
 	function _get_site_settings($settings=array())
 	{
@@ -89,6 +84,14 @@ class FieldFrame
 		 : $defaults;
 	}
 
+	/**
+	 * Match Field Filename
+	 *
+	 * @param  string  $file  The filename in question
+	 * @return mixed   The filename (string) without its 'field.' prefix and '.php'
+	 *                 suffix if it's a Field file, or FALSE (bool)
+	 * @access private
+	 */
 	function _match_field_filename($file)
 	{
 		return (substr($file, 0, 6) == 'field.' AND substr($file, -strlen(EXT) == EXT))
@@ -96,6 +99,11 @@ class FieldFrame
 		 : FALSE;
 	}
 
+	/**
+	 * Fetch Field Files
+	 *
+	 * @access private
+	 */
 	function _fetch_field_files()
 	{
 		if ( ! defined('FIELDS_PATH'))
@@ -140,6 +148,12 @@ class FieldFrame
 		}
 	}
 
+	/**
+	 * Initialize Fields
+	 *
+	 * @param  bool  $include_disabled  Include non-enabled fields
+	 * @access private
+	 */
 	function _init_fields($include_disabled=FALSE)
 	{
 		if ( ! $this->field_files)
@@ -217,13 +231,11 @@ class FieldFrame
 	 *
 	 * @param  array   $current   Current extension settings (not site-specific)
 	 * @see    http://expressionengine.com/docs/development/extensions.html#settings
-	 * @since  version 1.0.0
 	 */
 	function settings_form($current)
 	{
-		// EE doesn't send the settings when initializing
-		// extensions on settings forms, so we have to
-		// re-call FieldFrame() here
+		// EE doesn't send the settings when initializing extensions on
+		// settings forms, so we have to re-call FieldFrame() here
 		$this->FieldFrame($current);
 
 		global $DB, $DSP, $LANG, $IN;
@@ -324,6 +336,13 @@ class FieldFrame
 		            . $DSP->form_c();
 	}
 
+	/**
+	 * Add Slash to URL/Path
+	 *
+	 * @param  string  $path  The user-submitted path
+	 * @return string  $path with a slash at the end
+	 * @access private
+	 */
 	function _add_slash($path)
 	{
 		if (substr($path, -1) != '/')
@@ -336,7 +355,6 @@ class FieldFrame
 	/**
 	 * Save Settings
 	 *
-	 * @since version 1.0.0
 	 */
 	function save_settings()
 	{
@@ -370,9 +388,8 @@ class FieldFrame
 	/**
 	 * Activate Extension
 	 *
-	 * Resets all Editor exp_extensions rows
+	 * Resets all FieldFrame exp_extensions rows
 	 *
-	 * @since version 1.0.0
 	 */
 	function activate_extension()
 	{
@@ -386,7 +403,7 @@ class FieldFrame
 		            WHERE class = '".get_class($this)."'");
 
 		// Add new extensions
-		$ext_template = array(
+		$hook_tmpl = array(
 			'class'    => get_class($this),
 			'settings' => addslashes(serialize($settings)),
 			'priority' => 10,
@@ -394,15 +411,25 @@ class FieldFrame
 			'enabled'  => 'y'
 		);
 
-		$extensions = array(
+		$hooks = array(
+			// Publish Admin
+			'publish_admin_edit_field_type_pulldown',
+			'publish_admin_edit_field_type_cellone',
+			'publish_admin_edit_field_type_celltwo',
+			'publish_admin_edit_field_extra_row',
+			'publish_admin_edit_field_format',
+			'publish_admin_edit_field_js',
+
 			// LG Addon Updater
-			array('hook'=>'lg_addon_update_register_source',    'method'=>'register_my_addon_source'),
-			array('hook'=>'lg_addon_update_register_addon',     'method'=>'register_my_addon_id')
+			'lg_addon_update_register_source',
+			'lg_addon_update_register_addon',
 		);
 
-		foreach($extensions as $extension)
+		foreach($hooks as $hook)
 		{
-			$ext = array_merge($ext_template, $extension);
+			$ext = array_merge($hook_tmpl, is_string($hook)
+			                                ? array('hook'=>$hook, 'method'=>$hook)
+			                                : $hook);
 			$DB->query($DB->insert_string('exp_extensions', $ext));
 		}
 	}
@@ -410,27 +437,35 @@ class FieldFrame
 	/**
 	 * Update Extension
 	 *
-	 * @param string   $current   Previous installed version of the extension
-	 * @since version 1.0.0
+	 * @param string   $current  Previous installed version of the extension
 	 */
 	function update_extension($current='')
 	{
-		//global $DB;
-        //
-		//if ($current == '' OR $current == $this->version)
-		//{
-		//	return FALSE;
-		//}
-        //
-		//$DB->query("UPDATE exp_extensions
-		//            SET version = '".$DB->escape_str($this->version)."'
-		//            WHERE class = '".get_class($this)."'");
+		if ( ! $current OR $current == $this->version)
+		{
+			// why did you call me again?
+			return FALSE;
+		}
+
+		if ($current < '0.0.2')
+		{
+			// hooks have changed, so go through
+			// the whole activate_extension() process
+			$this->activate_extension();
+		}
+		else
+		{
+			// just update the version nums
+			global $DB;
+			$DB->query("UPDATE exp_extensions
+			            SET version = '".$DB->escape_str($this->version)."'
+			            WHERE class = '".get_class($this)."'");
+		}
 	}
 
 	/**
 	 * Disable Extension
 	 *
-	 * @since version 1.0.0
 	 */
 	function disable_extension()
 	{
@@ -443,9 +478,8 @@ class FieldFrame
 	/**
 	 * Get Last Call
 	 *
-	 * @param  mixed   $param   Parameter sent by extension hook
-	 * @return mixed            Return value of last extension call if any, or $param
-	 * @since  version 1.0.0
+	 * @param  mixed  $param   Parameter sent by extension hook
+	 * @return mixed  Return value of last extension call if any, or $param
 	 */
 	function _get_last_call($param='')
 	{
@@ -454,14 +488,97 @@ class FieldFrame
 	}
 
 	/**
+	 * Edit Field Type Menu
+	 *
+	 * @param  array   $data  The data about this field from the database
+	 * @param  string  $typemenu  The contents of the type menu
+	 * @return string  The modified $typemenu
+	 * @see    http://expressionengine.com/developers/extension_hooks/publish_admin_edit_field_type_pulldown/
+	 */
+	function publish_admin_edit_field_type_pulldown($data, $typemenu)
+	{
+		$typemenu = $this->_get_last_call($typemenu);
+		return $typemenu;
+	}
+
+	/**
+	 * Edit Field Type - Cell One
+	 *
+	 * @param  array   $data  The data about this field from the database
+	 * @param  string  $cell  The contents of the cell
+	 * @return string  The modified $cell
+	 * @see    http://expressionengine.com/developers/extension_hooks/publish_admin_edit_field_type_cellone/
+	 */
+	function publish_admin_edit_field_type_cellone($data, $cell)
+	{
+		$cell = $this->_get_last_call($cell);
+		return $cell;
+	}
+
+	/**
+	 * Edit Field Type - Cell Two
+	 *
+	 * @param  array   $data  The data about this field from the database
+	 * @param  string  $cell  The contents of the cell
+	 * @return string  The modified $cell
+	 * @see    http://expressionengine.com/developers/extension_hooks/publish_admin_edit_field_type_celltwo/
+	 */
+	function publish_admin_edit_field_type_celltwo($data, $cell)
+	{
+		$cell = $this->_get_last_call($cell);
+		return $cell;
+	}
+
+	/**
+	 * Edit Field - Add Extra Row
+	 *
+	 * @param  array   $data  The data about this field from the database
+	 * @param  string  $r     The current contents of the page
+	 * @return string  The modified $r
+	 * @see    http://expressionengine.com/developers/extension_hooks/publish_admin_edit_field_extra_row/
+	 */
+	function publish_admin_edit_field_extra_row($data, $r)
+	{
+		$r = $this->_get_last_call($r);
+		return $r;
+	}
+
+	/**
+	 * Edit Field Format Menu
+	 *
+	 * @param  array   $data  The data about this field from the database
+	 * @param  string  $y     The current contents of the format cell
+	 * @return string  The modified $y
+	 * @see    http://expressionengine.com/developers/extension_hooks/publish_admin_edit_field_format/
+	 */
+	function publish_admin_edit_field_format($data, $y)
+	{
+		$y = $this->_get_last_call($y);
+		return $y;
+	}
+
+	/**
+	 * Edit Field Javascript
+	 *
+	 * @param  array   $data  The data about this field from the database
+	 * @param  string  $js    Currently existing javascript
+	 * @return string  The modified $js
+	 * @see    http://expressionengine.com/developers/extension_hooks/publish_admin_edit_field_js/
+	 */
+	function publish_admin_edit_field_js($data, $js)
+	{
+		$js = $this->_get_last_call($js);
+		return $js;
+	}
+
+	/**
 	 * Register a New Addon Source
 	 *
-	 * @param  array   $sources   The existing sources
-	 * @return array              The new source list
+	 * @param  array  $sources  The existing sources
+	 * @return array  The new source list
 	 * @see    http://leevigraham.com/cms-customisation/expressionengine/lg-addon-updater/
-	 * @since  version 1.0.0
 	 */
-	function register_my_addon_source($sources)
+	function lg_addon_update_register_source($sources)
 	{
 		$sources = $this->_get_last_call($sources);
 		if ($this->settings['check_for_updates'] == 'y') {
@@ -479,9 +596,8 @@ class FieldFrame
 	 * @param  array   $addons   The existing sources
 	 * @return array             The new addon list
 	 * @see    http://leevigraham.com/cms-customisation/expressionengine/lg-addon-updater/
-	 * @since  version 1.0.0
 	 */
-	function register_my_addon_id($addons)
+	function lg_addon_update_register_addon($addons)
 	{
 		$addons = $this->_get_last_call($addons);
 	    if ($this->settings['check_for_updates'] == 'y') {
@@ -497,11 +613,14 @@ class FieldFrame
  *
  * Provides FieldFrame settings-specific display methods
  *
- * @package   FieldFrame
- * @author    Brandon Kelly <me@brandon-kelly.com>
+ * @package  FieldFrame
+ * @author   Brandon Kelly <me@brandon-kelly.com>
  */
 class FFSettingsDisplay
 {
+	/**
+	 * FFSettingsDisplay Constructor
+	 */
 	function FFSettingsDisplay()
 	{
 		// initialize Display Class
@@ -516,6 +635,12 @@ class FFSettingsDisplay
 		}
 	}
 
+	/**
+	 * Open Settings Block
+	 *
+	 * @param  string  $title_line  The block's title
+	 * @return string  The block's head
+	 */
 	function block($title_line, $num_cols=2)
 	{
 		$this->row_count = 0;
@@ -530,12 +655,22 @@ class FFSettingsDisplay
 		     . $this->row(array($this->line($title_line)), 'tableHeading');
 	}
 
+	/**
+	 * Close Settings Block
+	 */
 	function block_c()
 	{
 		global $DSP;
 		return $DSP->table_c();
 	}
 
+	/**
+	 * Settings Row
+	 *
+	 * @param  array   $col_data   Each column's contents
+	 * @param  string  $row_class  CSS class to be added to each cell
+	 * @return string  The settings row
+	 */
 	function row($col_data, $row_class=null)
 	{
 		// get the alternating row class
@@ -562,11 +697,23 @@ class FFSettingsDisplay
 		return $r;
 	}
 
+	/**
+	 * Heading Row
+	 *
+	 * @param  array   $cols  Each column's heading line
+	 * @return string  The settings heading row
+	 */
 	function heading_row($cols)
 	{
 		return $this->row($cols, 'tableHeadingAlt');
 	}
 
+	/**
+	 * Info Row
+	 *
+	 * @param  string  $info_line  Info text
+	 * @return string  The settings info row
+	 */
 	function info_row($info_line)
 	{
 		return $this->row(array(
@@ -576,6 +723,13 @@ class FFSettingsDisplay
 		                  ), '');
 	}
 
+	/**
+	 * Label
+	 *
+	 * @param  string  $label_line    The main label text
+	 * @param  string  $subtext_line  The label's subtext
+	 * @return string  The label
+	 */
 	function label($label_line, $subtext_line='')
 	{
 		global $DSP;
@@ -583,7 +737,15 @@ class FFSettingsDisplay
 		if ($subtext_line) $r .= $DSP->qdiv('subtext', $this->line($subtext_line));
 		return $r;
 	}
-   
+
+	/**
+	 * Settings Text Input
+	 *
+	 * @param  string  $name   Name of the text field
+	 * @param  string  $value  Initial value
+	 * @param  array   $vars   Input variables
+	 * @return string  The text field
+	 */
 	function text($name, $value, $vars=array())
 	{
 		global $DSP;
@@ -591,6 +753,14 @@ class FFSettingsDisplay
 		return $DSP->input_text($name, $value, $vars['size'], $vars['maxlength'], $vars['style'], $vars['width'], $vars['extras'], $vars['convert']);
 	}
 
+	/**
+	 * Textarea
+	 *
+	 * @param  string  $name   Name of the textarea
+	 * @param  string  $value  Initial value
+	 * @param  array   $vars   Input variables
+	 * @return string  The textarea
+	 */
 	function textarea($name, $value, $vars=array())
 	{
 		global $DSP;
@@ -598,6 +768,15 @@ class FFSettingsDisplay
 		return $DSP->input_textarea($name, $value, $vars['rows'], $vars['style'], $vars['width'], $vars['extras'], $vars['convert']);
 	}
 
+	/**
+	 * Select input
+	 *
+	 * @param  string  $name     Name of the select
+	 * @param  mixed   $value    Initial selected value(s)
+	 * @param  array   $options  List of the options
+	 * @param  array   $vars     Input variables
+	 * @return string  The select input
+	 */
 	function select($name, $value, $options, $vars=array())
 	{
 		global $DSP;
@@ -613,12 +792,30 @@ class FFSettingsDisplay
 		return $r;
 	}
 
+	/**
+	 * Multiselect Input
+	 *
+	 * @param  string  $name     Name of the textfield
+	 * @param  array   $values   Initial selected values
+	 * @param  array   $options  List of the options
+	 * @param  array   $vars     Input variables
+	 * @return string  The multiselect input
+	 */
 	function multiselect($name, $values, $options, $vars=array())
 	{
 		$vars = array_merge($vars, array('multi'=>1));
 		return $this->select($name, $values, $options, $vars);
 	}
 
+	/**
+	 * Radio Group
+	 *
+	 * @param  string  $name     Name of the radio inputs
+	 * @param  string  $value    Initial selected value
+	 * @param  array   $options  List of the options
+	 * @param  array   $vars     Input variables
+	 * @return string  The text input
+	 */
 	function radio_group($name, $value, $options, $vars=array())
 	{
 		global $DSP;
@@ -635,6 +832,12 @@ class FFSettingsDisplay
 		return $r;
 	}
 
+	/**
+	 * Line
+	 *
+	 * @param  string  $line  unlocalized string or the name of a $LANG line
+	 * @return string  Localized string
+	 */
 	function line($line)
 	{
 		global $LANG;
