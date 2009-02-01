@@ -15,8 +15,9 @@ if ( ! defined('EXT'))
  * @copyright Copyright (c) 2009 Brandon Kelly
  * @license   http://creativecommons.org/licenses/by-sa/3.0/ Attribution-Share Alike 3.0 Unported
  */
-class FieldFrame
+class Fieldframe
 {
+	var $class = 'Fieldframe';
 	var $name = 'FieldFrame';
 	var $version = '0.0.2';
 	var $description = 'Field Type framework';
@@ -28,19 +29,32 @@ class FieldFrame
 	 *
 	 * @param array  $settings
 	 */
-	function FieldFrame($settings=array())
+	function Fieldframe($settings=array())
 	{
+		global $SESS;
+
 		// get the site-specific settings
 		$this->settings = $this->_get_site_settings($settings);
 
-		// define constants
-		if ($this->settings['fields_url']) define('FIELDS_URL', $this->settings['fields_url']);
-		if ($this->settings['fields_path']) define('FIELDS_PATH', $this->settings['fields_path']);
+		// create a reference to the cache
+		if ( ! isset($SESS->cache[$this->class]))
+		{
+			$SESS->cache[$this->class] = array();
+		}
+		$this->cache = &$SESS->cache[$this->class];
 
-		// create fields array
-		$this->field_files = array();
-		$this->fields = array();
+		// define constants
+		if ( ! defined('FIELDS_PATH') AND $this->settings['fields_path'])
+		{
+			define('FIELDS_PATH', $this->settings['fields_path']);
+		}
+		if ( ! defined('FIELDS_URL') AND $this->settings['fields_url'])
+		{
+			define('FIELDS_URL', $this->settings['fields_url']);
+		}
+
 		$this->errors = array();
+
 	}
 
 	/**
@@ -54,7 +68,7 @@ class FieldFrame
 		global $DB;
 		$query = $DB->query("SELECT settings
 		                     FROM exp_extensions
-		                     WHERE class = '".get_class($this)."'
+		                     WHERE class = '".$this->class."'
 		                       AND settings != ''
 		                     LIMIT 1");
 		return $query->num_rows
@@ -104,48 +118,55 @@ class FieldFrame
 	 *
 	 * @access private
 	 */
-	function _fetch_field_files()
+	function _get_field_files()
 	{
-		if ( ! defined('FIELDS_PATH'))
+		if ( ! isset($this->cache['field_files']))
 		{
-			$this->errors[] = 'no_fields_path';
-		}
-		elseif ( ! $fp = @opendir(FIELDS_PATH))
-		{
-			$this->errors[] = 'bad_fields_path';
-		}
-		else
-		{
-			// iterate through the field folder contents
-			while (($file = readdir($fp)) !== FALSE)
-			{
-				// skip hidden/navigational files
-				if (substr($file, 0, 1) == '.') continue;
+			$this->cache['field_files'] = array();
 
-				// 
-				if ($fp_sd = @opendir(FIELDS_PATH.$file))
+			if ( ! defined('FIELDS_PATH'))
+			{
+				$this->errors[] = 'no_fields_path';
+			}
+			elseif ( ! $fp = @opendir(FIELDS_PATH))
+			{
+				$this->errors[] = 'bad_fields_path';
+			}
+			else
+			{
+				// iterate through the field folder contents
+				while (($file = readdir($fp)) !== FALSE)
 				{
-					while (($sd_file = readdir($fp_sd)) !== FALSE)
+					// skip hidden/navigational files
+					if (substr($file, 0, 1) == '.') continue;
+
+					// is this a subdirectory?
+					if ($fp_sd = @opendir(FIELDS_PATH.$file))
 					{
-						if (substr($sd_file, 0, 1) != '.' AND ($class_name = $this->_match_field_filename($sd_file)))
+						while (($sd_file = readdir($fp_sd)) !== FALSE)
 						{
-							$this->field_files[$class_name] = $file.'/'.$sd_file;
+							if (substr($sd_file, 0, 1) != '.' AND ($class_name = $this->_match_field_filename($sd_file)))
+							{
+								$this->cache['field_files'][$class_name] = $file.'/'.$sd_file;
+							}
 						}
+						closedir($fp_sd);
 					}
-					closedir($fp_sd);
+					elseif ($class_name = $this->_match_field_filename($file))
+					{
+						$this->cache['field_files'][$class_name] = $file;
+					}
 				}
-				elseif ($class_name = $this->_match_field_filename($file))
-				{
-					$this->field_files[$class_name] = $file;
-				}
-			}
-			closedir($fp);
+				closedir($fp);
 
-			if ( ! $this->field_files)
-			{
-				$this->errors[] = 'no_fields';
+				if ( ! $this->cache['field_files'])
+				{
+					$this->errors[] = 'no_fields';
+				}
 			}
 		}
+
+		return $this->cache['field_files'];
 	}
 
 	/**
@@ -154,74 +175,78 @@ class FieldFrame
 	 * @param  bool  $include_disabled  Include non-enabled fields
 	 * @access private
 	 */
-	function _init_fields($include_disabled=FALSE)
+	function _get_fields($include_disabled=FALSE)
 	{
-		if ( ! $this->field_files)
+		if ( ! isset($this->cache['fields']))
 		{
-			$this->_fetch_field_files();
-		}
-		if ( ! $this->errors)
-		{
-			$req_info = array('name', 'version', 'desc', 'docs_url', 'author', 'author_url', 'versions_xml_url');
+			$this->cache['fields'] = array();
+			$files = $this->_get_field_files();
 
-			foreach($this->field_files as $class_name => $file)
+			if (count($files))
 			{
-				$class_name = ucfirst($class_name);
+				$req_info = array('name', 'version', 'desc', 'docs_url', 'author', 'author_url', 'versions_xml_url');
 
-				// import the file
-				if ( ! class_exists($class_name))
+				foreach($files as $class_name => $file)
 				{
-					@include(FIELDS_PATH.$file);
+					$class_name = ucfirst($class_name);
 
-					// skip if the class doesn't exist
+					// import the file
 					if ( ! class_exists($class_name))
 					{
-						continue;
-					}
-				}
+						@include(FIELDS_PATH.$file);
 
-				if ( ! $include_disabled)
-				{
-					// skip if not enabled
-					if ( ! (isset($this->settings['fields'][$class_name]) AND $this->settings['fields'][$class_name]['enabled'] == 'y'))
+						// skip if the class doesn't exist
+						if ( ! class_exists($class_name))
+						{
+							continue;
+						}
+					}
+
+					if ( ! $include_disabled)
 					{
-						continue;
+						// skip if not enabled
+						if ( ! (isset($this->settings['fields'][$class_name]) AND $this->settings['fields'][$class_name]['enabled'] == 'y'))
+						{
+							continue;
+						}
 					}
-				}
 
-				$OBJ = new $class_name();
+					$OBJ = new $class_name();
 
-				// make sure it has all the required info
-				if ( ! (isset($OBJ->settings) AND is_array($OBJ->settings)))
-				{
-					$OBJ->settings = array();
-				}
-				if ( ! (isset($OBJ->info) AND is_array($OBJ->info)))
-				{
-					$OBJ->info = array();
-				}
-				foreach($req_info as $item)
-				{
-					if ( ! isset($OBJ->info[$item]))
+					// make sure it has all the required info
+					if ( ! (isset($OBJ->settings) AND is_array($OBJ->settings)))
 					{
-						$OBJ->info[$item] = '';
+						$OBJ->settings = array();
 					}
-				}
-				if ( ! $OBJ->info['name'])
-				{
-					$OBJ->info['name'] = ucwords(str_replace('_', ' ', $class_name));
-				}
+					if ( ! (isset($OBJ->info) AND is_array($OBJ->info)))
+					{
+						$OBJ->info = array();
+					}
+					foreach($req_info as $item)
+					{
+						if ( ! isset($OBJ->info[$item]))
+						{
+							$OBJ->info[$item] = '';
+						}
+					}
+					if ( ! $OBJ->info['name'])
+					{
+						$OBJ->info['name'] = ucwords(str_replace('_', ' ', $class_name));
+					}
 
-				// make sure it's accounted for in the settings
-				if ( ! isset($this->settings['fields'][$class_name]))
-				{
-					$this->settings['fields'][$class_name] = array('enabled'=>'n');
-				}
+					// make sure it's accounted for in the settings
+					if ( ! isset($this->settings['fields'][$class_name]))
+					{
+						$this->settings['fields'][$class_name] = array('enabled'=>'n');
+					}
 
-				// add it to fields
-				$this->fields[$class_name] = $OBJ;
+					// add it to fields
+					$this->cache['fields'][$class_name] = $OBJ;
+				}
 			}
 		}
+
+		return $this->cache['fields'];
 	}
 
 	/**
@@ -257,7 +282,7 @@ class FieldFrame
 		                    'id'     => 'settings_subtext'
 		                  ),
 		                  array(
-		                    'name' => strtolower(get_class($this))
+		                    'name' => strtolower($this->class)
 		                  ));
 
 		// initialize FFSettingsDisplay
@@ -297,7 +322,7 @@ class FieldFrame
 		$DSP->body .= $SD->block('field_manager', 4);
 
 		// initialize fields
-		$this->_init_fields(TRUE);
+		$fields = $this->_get_fields(TRUE);
 
 		if ($this->errors)
 		{
@@ -316,7 +341,7 @@ class FieldFrame
 			                                   $LANG->line('documentation')
 			                                 ));
 
-			foreach($this->fields as $class_name=>$OBJ)
+			foreach($fields as $class_name=>$OBJ)
 			{
 				$info = &$OBJ->info;
 				$enabled = ($this->settings['fields'][$class_name]['enabled'] == 'y');
@@ -382,7 +407,7 @@ class FieldFrame
 		$settings[$PREFS->ini('site_id')] = $this->settings;
 		$DB->query("UPDATE exp_extensions
 		            SET settings = '".addslashes(serialize($settings))."'
-		            WHERE class = '".get_class($this)."'");
+		            WHERE class = '".$this->class."'");
 	}
 
 	/**
@@ -400,11 +425,11 @@ class FieldFrame
 
 		// Delete old hooks
 		$DB->query("DELETE FROM exp_extensions
-		            WHERE class = '".get_class($this)."'");
+		            WHERE class = '".$this->class."'");
 
 		// Add new extensions
 		$hook_tmpl = array(
-			'class'    => get_class($this),
+			'class'    => $this->class,
 			'settings' => addslashes(serialize($settings)),
 			'priority' => 10,
 			'version'  => $this->version,
@@ -459,7 +484,7 @@ class FieldFrame
 			global $DB;
 			$DB->query("UPDATE exp_extensions
 			            SET version = '".$DB->escape_str($this->version)."'
-			            WHERE class = '".get_class($this)."'");
+			            WHERE class = '".$this->class."'");
 		}
 	}
 
@@ -472,7 +497,7 @@ class FieldFrame
 		global $DB;
 		$DB->query("UPDATE exp_extensions
 		            SET enabled = 'n'
-		            WHERE class = '".get_class($this)."'");
+		            WHERE class = '".$this->class."'");
 	}
 
 	/**
@@ -497,8 +522,17 @@ class FieldFrame
 	 */
 	function publish_admin_edit_field_type_pulldown($data, $typemenu)
 	{
-		$typemenu = $this->_get_last_call($typemenu);
-		return $typemenu;
+		$r = $this->_get_last_call($typemenu);
+
+		global $DSP;
+
+		$fields = $this->_get_fields();
+		foreach($fields as $class_name=>$OBJ)
+		{
+			$r .= $DSP->input_select_option($class_name, $OBJ->info['name']);
+		}
+
+		return $r;
 	}
 
 	/**
@@ -601,7 +635,7 @@ class FieldFrame
 	{
 		$addons = $this->_get_last_call($addons);
 	    if ($this->settings['check_for_updates'] == 'y') {
-	        $addons[get_class($this)] = $this->version;
+	        $addons[$this->class] = $this->version;
 	    }
 	    return $addons;
 	}

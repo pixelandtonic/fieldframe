@@ -9,7 +9,7 @@ $L = array(
 'You haven&rsquo;t set your Fields Folder Path setting yet.',
 
 'bad_fields_path' =>
-'Your Fields Folder Path is invalid.',
+'The directory specified by your Fields Folder Path doesn&rsquo;t exist.',
 
 'no_fields' =>
 'FieldFrame couldn&rsquo;t find any Field files. Make sure your Fields Folder Path setting is correct.',
