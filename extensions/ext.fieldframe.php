@@ -44,7 +44,7 @@ class FieldFrame
 
 		// create fields array
 		$this->field_files = array();
-		$this->FIELDS = array();
+		$this->fields = array();
 		$this->errors = array();
 	}
 
@@ -81,7 +81,7 @@ class FieldFrame
 			'fields_url' => '',
 			'fields_path' => '',
 			'check_for_updates' => 'y',
-			'enabled_fields' => array()
+			'fields' => array()
 		);
 		$site_id = $PREFS->ini('site_id');
 		return isset($settings[$site_id])
@@ -161,19 +161,37 @@ class FieldFrame
 					if ( ! class_exists($class_name)) continue;
 				}
 
-				$FIELD = new $class_name();
+				$OBJ = new $class_name();
 
 				// make sure it has all the required info
-				if ( ! isset($FIELD->info)) $FIELD->info = array();
-				$info = &$FIELD->info;
+				if ( ! (isset($OBJ->settings) AND is_array($OBJ->settings)))
+				{
+					$OBJ->settings = array();
+				}
+				if ( ! (isset($OBJ->info) AND is_array($OBJ->info)))
+				{
+					$OBJ->info = array();
+				}
 				foreach($req_info as $item)
 				{
-					if ( ! isset($info[$item])) $info[$item] = '';
+					if ( ! isset($OBJ->info[$item]))
+					{
+						$OBJ->info[$item] = '';
+					}
 				}
-				if ( ! $info['name']) $info['name'] = ucwords(str_replace('_', ' ', $class_name));
+				if ( ! $OBJ->info['name'])
+				{
+					$OBJ->info['name'] = ucwords(str_replace('_', ' ', $class_name));
+				}
 
-				// add it to this->fields
-				$this->FIELDS[$class_name] = $FIELD;
+				// make sure it's accounted for in the settings
+				if ( ! isset($this->settings['fields'][$class_name]))
+				{
+					$this->settings['fields'][$class_name] = array('enabled'=>'n');
+				}
+
+				// add it to fields
+				$this->fields[$class_name] = $OBJ;
 			}
 		}
 	}
@@ -209,8 +227,8 @@ class FieldFrame
 		            . $DSP->form_open(
 		                  array(
 		                    'action' => 'C=admin'.AMP.'M=utilities'.AMP.'P=save_extension_settings',
-		                    'name'   => 'settings_example',
-		                    'id'     => 'settings_example'
+		                    'name'   => 'settings_subtext',
+		                    'id'     => 'settings_subtext'
 		                  ),
 		                  array(
 		                    'name' => strtolower(get_class($this))
@@ -225,11 +243,11 @@ class FieldFrame
 		// Fields folder
 		$DSP->body .= $SD->block('fields_folder_title')
 		            . $SD->row(array(
-		                           $SD->label('fields_url_label', 'fields_url_example'),
+		                           $SD->label('fields_url_label', 'fields_url_subtext'),
 		                           $SD->text('fields_url', $this->settings['fields_url'])
 		                         ))
 		            . $SD->row(array(
-		                           $SD->label('fields_path_label', 'fields_path_example'),
+		                           $SD->label('fields_path_label', 'fields_path_subtext'),
 		                           $SD->text('fields_path', $this->settings['fields_path'])
 		                         ))
 		            . $SD->block_c();
@@ -244,8 +262,8 @@ class FieldFrame
 		$DSP->body .= $SD->block('check_for_updates_title')
 		            . $SD->info_row('check_for_updates_info')
 		            . $SD->row(array(
-		                           $SD->label('check_for_updates_label'),
-		                           $SD->radio_group('check_for_updates', (($lgau_enabled OR $this->settings['check_for_updates'] == 'y') ? 'y' : 'n'), array('y'=>'yes', 'n'=>'no'))
+		                           $SD->label('check_for_updates_label', 'check_for_updates_subtext'),
+		                           $SD->radio_group('check_for_updates', (($this->settings['check_for_updates'] != 'n') ? 'y' : 'n'), array('y'=>'yes', 'n'=>'no'))
 		                         ))
 		            . $SD->block_c();
 
@@ -272,13 +290,14 @@ class FieldFrame
 			                                   $LANG->line('documentation')
 			                                 ));
 
-			foreach($this->FIELDS as $class_name=>$FIELD)
+			foreach($this->fields as $class_name=>$OBJ)
 			{
-				$info = &$FIELD->info;
+				$info = &$OBJ->info;
+				$enabled = ($this->settings['fields'][$class_name]['enabled'] == 'y');
 				$DSP->body .= $SD->row(array(
 				                         $SD->label($info['name'].NBS.$DSP->qspan('xhtmlWrapperLight defaultSmall', $info['version']), $info['desc']),
-				                         $SD->radio_group('enabled_fields['.$class_name.']', (in_array($class_name, $this->settings['enabled_fields']) ? 'y' : 'n'), array('y'=>'yes', 'n'=>'no')),
-				                         ((isset($FIELD->settings) AND $FIELD->settings) ? '<a href="#">'.$LANG->line('settings').'</a>' : '--'),
+				                         $SD->radio_group('fields['.$class_name.'][enabled]', ($enabled ? 'y' : 'n'), array('y'=>'yes', 'n'=>'no')),
+				                         (count($OBJ->settings) ? '<a href="#">'.$LANG->line('settings').'</a>' : '--'),
 				                         ($info['docs_url'] ? '<a href="'.stripslashes($info['docs_url']).'">'.$LANG->line('documentation').'</a>' : '--')
 				                       ));
 			}
@@ -309,15 +328,26 @@ class FieldFrame
 	{
 		global $DB, $PREFS;
 
+		// get the default settings
+		$this->settings = $this->_get_site_settings();
+
+		$this->settings['fields_url'] = ($_POST['fields_url'] ? $this->_add_slash($_POST['fields_url']) : '');
+		$this->settings['fields_path'] = ($_POST['fields_path'] ? $this->_add_slash($_POST['fields_path']) : '');
+		$this->settings['check_for_updates'] = (($_POST['check_for_updates'] != 'n') ? 'y' : 'n');
+
+		if (isset($_POST['fields']))
+		{
+			foreach($_POST['fields'] as $class_name => $field_post)
+			{
+				$this->settings['fields'][$class_name] = array(
+					'enabled' => ($field_post['enabled'] == 'y' ? 'y' : 'n')
+				);
+			}
+		}
+
+		// save all settings
 		$settings = $this->_get_all_settings();
-
-		// Save new settings
-		$settings[$PREFS->ini('site_id')] = $this->settings = array(
-			'fields_url' => ($_POST['fields_url'] ? $this->_add_slash($_POST['fields_url']) : ''),
-			'fields_path' => ($_POST['fields_path'] ? $this->_add_slash($_POST['fields_path']) : ''),
-			'check_for_updates' => ($_POST['check_for_updates'] ? $_POST['check_for_updates'] : 'y')
-		);
-
+		$settings[$PREFS->ini('site_id')] = $this->settings;
 		$DB->query("UPDATE exp_extensions
 		            SET settings = '".addslashes(serialize($settings))."'
 		            WHERE class = '".get_class($this)."'");

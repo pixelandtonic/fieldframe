@@ -22,14 +22,14 @@ $L = array(
 'fields_url_label' =>
 'URL to your &ldquo;fields&rdquo; folder',
 
-'fields_url_example' =>
-'<i>ex:</i>&nbsp;&nbsp;http://www.example.com/system/fields/',
+'fields_url_subtext' =>
+'<i>ex:</i> &nbsp;http://www.example.com/system/fields/',
 
 'fields_path_label' =>
 'Path to your &ldquo;fields&rdquo; folder',
 
-'fields_path_example' =>
-'/var/www/public_html/system/fields/',
+'fields_path_subtext' =>
+'<i>ex:</i> /var/www/public_html/system/fields/',
 
 
 // LG Addon Updater setting
@@ -38,13 +38,13 @@ $L = array(
 'Check for updates?',
 
 'check_for_updates_info' =>
-'Powered by <a href="http://leevigraham.com/cms-customisation/expressionengine/lg-addon-updater/">LG Addon Updater</a>, FieldFrame can check to see if any updates are available.',
+'FieldFrame can periodically phone home to see if any updates are available for itself and your enabled fields.',
 
 'check_for_updates_label' =>
-'Would you like this extension to check for updates and display them on your CP homepage?',
+'Should this extension to check for updates and display them on your CP homepage?',
 
-'check_for_updates_nolgau' =>
-'This setting requires <strong><a href="http://leevigraham.com/cms-customisation/expressionengine/lg-addon-updater/">LG Addon Updater</a></strong>.',
+'check_for_updates_subtext' =>
+'<i>This setting requires <a href="http://leevigraham.com/cms-customisation/expressionengine/lg-addon-updater/">LG Addon Updater</a>.</i>',
 
 
 // Field Manager
