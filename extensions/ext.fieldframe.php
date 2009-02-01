@@ -44,7 +44,7 @@ class FieldFrame
 
 		// create fields array
 		$this->field_files = array();
-		$this->fields = array();
+		$this->FIELDS = array();
 		$this->errors = array();
 	}
 
@@ -80,7 +80,8 @@ class FieldFrame
 		$defaults = array(
 			'fields_url' => '',
 			'fields_path' => '',
-			'check_for_updates' => 'y'
+			'check_for_updates' => 'y',
+			'enabled_fields' => array()
 		);
 		$site_id = $PREFS->ini('site_id');
 		return isset($settings[$site_id])
@@ -147,6 +148,8 @@ class FieldFrame
 		}
 		if ( ! $this->errors)
 		{
+			$req_info = array('name', 'version', 'desc', 'docs_url', 'author', 'author_url', 'versions_xml_url');
+
 			foreach($this->field_files as $class_name => $file)
 			{
 				$class_name = ucfirst($class_name);
@@ -158,7 +161,19 @@ class FieldFrame
 					if ( ! class_exists($class_name)) continue;
 				}
 
-				$this->fields[] = new $class_name();
+				$FIELD = new $class_name();
+
+				// make sure it has all the required info
+				if ( ! isset($FIELD->info)) $FIELD->info = array();
+				$info = &$FIELD->info;
+				foreach($req_info as $item)
+				{
+					if ( ! isset($info[$item])) $info[$item] = '';
+				}
+				if ( ! $info['name']) $info['name'] = ucwords(str_replace('_', ' ', $class_name));
+
+				// add it to this->fields
+				$this->FIELDS[$class_name] = $FIELD;
 			}
 		}
 	}
@@ -235,7 +250,7 @@ class FieldFrame
 		            . $SD->block_c();
 
 		// Field settings
-		$DSP->body .= $SD->block('field_manager', 3);
+		$DSP->body .= $SD->block('field_manager', 4);
 
 		// initialize fields
 		$this->_init_fields();
@@ -253,16 +268,18 @@ class FieldFrame
 			$DSP->body .= $SD->heading_row(array(
 			                                   $LANG->line('field_name'),
 			                                   $LANG->line('documentation'),
-			                                   $LANG->line('settings')
+			                                   $LANG->line('settings'),
+			                                   $LANG->line('field_enabled')
 			                                 ));
 
-			foreach($this->fields as $field)
+			foreach($this->FIELDS as $class_name=>$FIELD)
 			{
-				$info = &$field->info;
+				$info = &$FIELD->info;
 				$DSP->body .= $SD->row(array(
 				                         $SD->label($info['name'].NBS.$DSP->qspan('xhtmlWrapperLight defaultSmall', $info['version']), $info['desc']),
-				                         '<a href="'.stripslashes($info['docs_url']).'">'.$LANG->line('documentation').'</a>',
-				                         '<a href="#">'.$LANG->line('settings').'</a>'
+				                         ($info['docs_url'] ? '<a href="'.stripslashes($info['docs_url']).'">'.$LANG->line('documentation').'</a>' : '--'),
+				                         ((isset($FIELD->settings) AND $FIELD->settings) ? '<a href="#">'.$LANG->line('settings').'</a>' : '--'),
+				                         $SD->select('enabled_fields[]', $this->settings['enabled_fields'], array($class_name=>'yes', 'no'))
 				                       ));
 			}
 		}
