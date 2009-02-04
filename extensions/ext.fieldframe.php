@@ -19,7 +19,7 @@ class Fieldframe {
 
 	var $class = 'Fieldframe';
 	var $name = 'FieldFrame';
-	var $version = '0.0.2';
+	var $version = '0.0.3';
 	var $description = 'Field Type framework';
 	var $settings_exist = 'y';
 	var $docs_url = 'http://exp.fieldframe.com';
@@ -34,7 +34,7 @@ class Fieldframe {
 		global $SESS;
 
 		// get the site-specific settings
-		$this->settings = $this->_get_site_settings($settings);
+		$this->settings = $this->_get_settings($settings);
 
 		// create a reference to the cache
 		if ( ! isset($SESS->cache[$this->class]))
@@ -43,6 +43,13 @@ class Fieldframe {
 		}
 		$this->cache = &$SESS->cache[$this->class];
 
+		$this->_define_constants();
+
+		$this->errors = array();
+	}
+
+	function _define_constants()
+	{
 		// define constants
 		if ( ! defined('FIELDS_PATH') AND $this->settings['fields_path'])
 		{
@@ -52,9 +59,6 @@ class Fieldframe {
 		{
 			define('FIELDS_URL', $this->settings['fields_url']);
 		}
-
-		$this->errors = array();
-
 	}
 
 	/**
@@ -67,10 +71,9 @@ class Fieldframe {
 	{
 		global $DB;
 		$query = $DB->query("SELECT settings
-		                     FROM exp_extensions
-		                     WHERE class = '".$this->class."'
-		                       AND settings != ''
-		                     LIMIT 1");
+			                   FROM exp_extensions
+		                       WHERE class = '{$this->class}' AND settings != ''
+		                       LIMIT 1");
 		return $query->num_rows
 		 ? unserialize($query->row['settings'])
 		 : array();
@@ -83,14 +86,13 @@ class Fieldframe {
 	 * @return array  Default settings merged with any site-specific settings in $settings
 	 * @access private
 	 */
-	function _get_site_settings($settings=array())
+	function _get_settings($settings=array())
 	{
 		global $PREFS;
 		$defaults = array(
 			'fields_url' => '',
 			'fields_path' => '',
-			'check_for_updates' => 'y',
-			'fields' => array()
+			'check_for_updates' => 'y'
 		);
 		$site_id = $PREFS->ini('site_id');
 		return isset($settings[$site_id])
@@ -113,140 +115,113 @@ class Fieldframe {
 		 : FALSE;
 	}
 
-	/**
-	 * Fetch Field Files
-	 *
-	 * @access private
-	 */
-	function _get_field_files()
-	{
-		if ( ! isset($this->cache['field_files']))
-		{
-			$this->cache['field_files'] = array();
-
-			if ( ! defined('FIELDS_PATH'))
-			{
-				$this->errors[] = 'no_fields_path';
-			}
-			elseif ( ! $fp = @opendir(FIELDS_PATH))
-			{
-				$this->errors[] = 'bad_fields_path';
-			}
-			else
-			{
-				// iterate through the field folder contents
-				while (($file = readdir($fp)) !== FALSE)
-				{
-					// skip hidden/navigational files
-					if (substr($file, 0, 1) == '.') continue;
-
-					// is this a subdirectory?
-					if ($fp_sd = @opendir(FIELDS_PATH.$file))
-					{
-						while (($sd_file = readdir($fp_sd)) !== FALSE)
-						{
-							if (substr($sd_file, 0, 1) != '.' AND ($class_name = $this->_match_field_filename($sd_file)))
-							{
-								$this->cache['field_files'][$class_name] = $file.'/'.$sd_file;
-							}
-						}
-						closedir($fp_sd);
-					}
-					elseif ($class_name = $this->_match_field_filename($file))
-					{
-						$this->cache['field_files'][$class_name] = $file;
-					}
-				}
-				closedir($fp);
-
-				if ( ! $this->cache['field_files'])
-				{
-					$this->errors[] = 'no_fields';
-				}
-			}
-		}
-
-		return $this->cache['field_files'];
-	}
-
-	/**
-	 * Initialize Fields
-	 *
-	 * @param  bool  $include_disabled  Include non-enabled fields
-	 * @access private
-	 */
-	function _get_fields($include_disabled=FALSE)
+	function _get_fields()
 	{
 		if ( ! isset($this->cache['fields']))
 		{
 			$this->cache['fields'] = array();
-			$files = $this->_get_field_files();
 
-			if (count($files))
+			// get enabled fields from the DB
+			global $DB;
+			$query = $DB->query("SELECT * FROM exp_ff_fields WHERE enabled = 'y'");
+
+			if ($query->num_rows)
 			{
-				$req_info = array('name', 'version', 'desc', 'docs_url', 'author', 'author_url', 'versions_xml_url');
-
-				foreach($files as $class_name => $file)
+				foreach($query->result as $field)
 				{
-					$class_name = ucfirst($class_name);
-
-					// import the file
-					if ( ! class_exists($class_name))
+					if (($OBJ = $this->_init_field($field['class'])) !== FALSE)
 					{
-						@include(FIELDS_PATH.$file);
-
-						// skip if the class doesn't exist
-						if ( ! class_exists($class_name))
-						{
-							continue;
-						}
+						$this->cache['fields'][$field['class']] = $OBJ;
 					}
-
-					if ( ! $include_disabled)
-					{
-						// skip if not enabled
-						if ( ! (isset($this->settings['fields'][$class_name]) AND $this->settings['fields'][$class_name]['enabled'] == 'y'))
-						{
-							continue;
-						}
-					}
-
-					$OBJ = new $class_name();
-
-					// make sure it has all the required info
-					if ( ! (isset($OBJ->settings) AND is_array($OBJ->settings)))
-					{
-						$OBJ->settings = array();
-					}
-					if ( ! (isset($OBJ->info) AND is_array($OBJ->info)))
-					{
-						$OBJ->info = array();
-					}
-					foreach($req_info as $item)
-					{
-						if ( ! isset($OBJ->info[$item]))
-						{
-							$OBJ->info[$item] = '';
-						}
-					}
-					if ( ! $OBJ->info['name'])
-					{
-						$OBJ->info['name'] = ucwords(str_replace('_', ' ', $class_name));
-					}
-
-					// make sure it's accounted for in the settings
-					if ( ! isset($this->settings['fields'][$class_name]))
-					{
-						$this->settings['fields'][$class_name] = array('enabled'=>'n');
-					}
-
-					// add it to fields
-					$this->cache['fields'][$class_name] = $OBJ;
 				}
 			}
 		}
 
 		return $this->cache['fields'];
+	}
+
+	function _get_installed_fields()
+	{
+		$fields = array();
+
+		if ( $fp = @opendir(FIELDS_PATH))
+		{
+			// iterate through the field folder contents
+			while (($file = readdir($fp)) !== FALSE)
+			{
+				// skip hidden/navigational files
+				if (substr($file, 0, 1) == '.') continue;
+
+				// is this a directory, and does a field file exist inside it?
+				if (is_dir(FIELDS_PATH.$file) AND is_file(FIELDS_PATH.$file.'/field.'.$file.EXT))
+				{
+					$fields[$file] = $this->_init_field($file);
+				}
+			}
+			closedir($fp);
+		}
+
+		return $fields;
+	}
+
+	/**
+	 * Initialize Field
+	 *
+	 * @param  string  $file  Field's folder name
+	 * @access private
+	 */
+	function _init_field($file)
+	{
+		$class_name = ucfirst($file);
+
+		if ( ! class_exists($class_name))
+		{
+			// import the file
+			@include(FIELDS_PATH.$file.'/field.'.$file.EXT);
+
+			// skip if the class doesn't exist
+			if ( ! class_exists($class_name))
+			{
+				exit("Couldn't fild class '{$class_name}' - file is ".FIELDS_PATH.$file.'/field.'.$file.EXT);
+				return FALSE;
+			}
+		}
+
+		// initialize object
+		$OBJ = new $class_name();
+
+		// settings
+		if ( ! isset($OBJ->settings)) $OBJ->settings = array();
+
+		// info
+		if ( ! isset($OBJ->info)) $OBJ->info = array();
+		if ( ! isset($OBJ->info['name'])) $OBJ->info['name'] = ucwords(str_replace('_', ' ', $class_name));
+		if ( ! isset($OBJ->info['version'])) $OBJ->info['version'] = '';
+		if ( ! isset($OBJ->info['desc'])) $OBJ->info['desc'] = '';
+		if ( ! isset($OBJ->info['docs_url'])) $OBJ->info['docs_url'] = '';
+		if ( ! isset($OBJ->info['author'])) $OBJ->info['author'] = '';
+		if ( ! isset($OBJ->info['author_url'])) $OBJ->info['author_url'] = '';
+		if ( ! isset($OBJ->info['versions_xml_url'])) $OBJ->info['versions_xml_url'] = '';
+
+		// do we already know about this field?
+		global $DB;
+		$query = $DB->query("SELECT * FROM exp_ff_fields WHERE class = '{$file}' LIMIT 1");
+		if ($query->row)
+		{
+			/**
+			 * @todo compare versions, maybe update
+			 * @todo store saved settings in obj
+			 */
+			$OBJ->_is_new = FALSE;
+			$OBJ->_is_enabled = $query->row['enabled'] == 'y' ? TRUE : FALSE;
+		}
+		else
+		{
+			$OBJ->_is_new = TRUE;
+			$OBJ->_is_enabled = FALSE;
+		}
+
+		return $OBJ;
 	}
 
 	/**
@@ -261,7 +236,7 @@ class Fieldframe {
 	{
 		// EE doesn't send the settings when initializing extensions on
 		// settings forms, so we have to re-call FieldFrame() here
-		$this->FieldFrame($current);
+		$this->Fieldframe($current);
 
 		global $DB, $DSP, $LANG, $IN;
 
@@ -305,10 +280,9 @@ class Fieldframe {
 
 		// Check for Updates
 		$lgau_query = $DB->query("SELECT class
-		                          FROM exp_extensions
-		                          WHERE class = 'Lg_addon_updater_ext'
-		                            AND enabled = 'y'
-		                          LIMIT 1");
+		                            FROM exp_extensions
+		                            WHERE class = 'Lg_addon_updater_ext' AND enabled = 'y'
+		                            LIMIT 1");
 		$lgau_enabled = $lgau_query->num_rows ? TRUE : FALSE;
 		$DSP->body .= $SD->block('check_for_updates_title')
 		            . $SD->info_row('check_for_updates_info')
@@ -322,7 +296,7 @@ class Fieldframe {
 		$DSP->body .= $SD->block('field_manager', 4);
 
 		// initialize fields
-		$fields = $this->_get_fields(TRUE);
+		$fields = $this->_get_installed_fields();
 
 		if ($this->errors)
 		{
@@ -341,15 +315,13 @@ class Fieldframe {
 			                                   $LANG->line('documentation')
 			                                 ));
 
-			foreach($fields as $class_name=>$OBJ)
+			foreach($fields as $class_name => $OBJ)
 			{
-				$info = &$OBJ->info;
-				$enabled = ($this->settings['fields'][$class_name]['enabled'] == 'y');
 				$DSP->body .= $SD->row(array(
-				                         $SD->label($info['name'].NBS.$DSP->qspan('xhtmlWrapperLight defaultSmall', $info['version']), $info['desc']),
-				                         $SD->radio_group('fields['.$class_name.'][enabled]', ($enabled ? 'y' : 'n'), array('y'=>'yes', 'n'=>'no')),
+				                         $SD->label($OBJ->info['name'].NBS.$DSP->qspan('xhtmlWrapperLight defaultSmall', $OBJ->info['version']), $OBJ->info['desc']),
+				                         $SD->radio_group('fields['.$class_name.'][enabled]', ($OBJ->_is_enabled ? 'y' : 'n'), array('y'=>'yes', 'n'=>'no')),
 				                         (count($OBJ->settings) ? '<a href="#">'.$LANG->line('settings').'</a>' : '--'),
-				                         ($info['docs_url'] ? '<a href="'.stripslashes($info['docs_url']).'">'.$LANG->line('documentation').'</a>' : '--')
+				                         ($OBJ->info['docs_url'] ? '<a href="'.stripslashes($OBJ->info['docs_url']).'">'.$LANG->line('documentation').'</a>' : '--')
 				                       ));
 			}
 		}
@@ -384,30 +356,64 @@ class Fieldframe {
 	function save_settings()
 	{
 		global $DB, $PREFS;
+		$sql = array();
 
-		// get the default settings
-		$this->settings = $this->_get_site_settings();
+		// get the default FF settings
+		$this->settings = $this->_get_settings();
 
-		$this->settings['fields_url'] = ($_POST['fields_url'] ? $this->_add_slash($_POST['fields_url']) : '');
-		$this->settings['fields_path'] = ($_POST['fields_path'] ? $this->_add_slash($_POST['fields_path']) : '');
-		$this->settings['check_for_updates'] = (($_POST['check_for_updates'] != 'n') ? 'y' : 'n');
+		$this->settings['fields_url'] = $_POST['fields_url'] ? $this->_add_slash($_POST['fields_url']) : '';
+		$this->settings['fields_path'] = $_POST['fields_path'] ? $this->_add_slash($_POST['fields_path']) : '';
+		$this->settings['check_for_updates'] = ($_POST['check_for_updates'] != 'n') ? 'y' : 'n';
 
+		// save all FF settings
+		$settings = $this->_get_all_settings();
+		$settings[$PREFS->ini('site_id')] = $this->settings;
+		$sql[] = "UPDATE exp_extensions
+		            SET settings = '".addslashes(serialize($settings))."'
+		            WHERE class = '{$this->class}'";
+
+
+		// Field settings
 		if (isset($_POST['fields']))
 		{
-			foreach($_POST['fields'] as $class_name => $field_post)
+			$this->_define_constants();
+
+			foreach($_POST['fields'] as $file => $field_post)
 			{
-				$this->settings['fields'][$class_name] = array(
-					'enabled' => ($field_post['enabled'] == 'y' ? 'y' : 'n')
-				);
+				$enabled = $field_post['enabled'] == 'y' ? 'y' : 'n';
+
+				// skip if it's disabled
+				if ($enabled == 'n') continue;
+
+				// Initialize
+				$OBJ = $this->_init_field($file);
+
+				// skip if we couldn't initialize
+				if ($OBJ === FALSE) continue;
+
+				$settings = '';
+
+				// insert a new row if it's new
+				if ($OBJ->_is_new)
+				{
+					$sql[] = "INSERT INTO exp_ff_fields (class, settings, version, enabled)
+					            VALUES ('{$file}', '{$settings}', '{$OBJ->info['version']}', '{$enabled}')";
+				}
+				else
+				{
+					$sql[] = "UPDATE exp_ff_fields
+					            SET settings = '{$settings}'
+					                version = '{$OBJ->info['version']}'
+					                enabled = '{$enabled}'";
+				}
 			}
 		}
 
-		// save all settings
-		$settings = $this->_get_all_settings();
-		$settings[$PREFS->ini('site_id')] = $this->settings;
-		$DB->query("UPDATE exp_extensions
-		            SET settings = '".addslashes(serialize($settings))."'
-		            WHERE class = '".$this->class."'");
+		// write to the DB
+		foreach($sql as $query)
+		{
+			$DB->query($query);
+		}
 	}
 
 	/**
@@ -425,7 +431,7 @@ class Fieldframe {
 
 		// Delete old hooks
 		$DB->query("DELETE FROM exp_extensions
-		            WHERE class = '".$this->class."'");
+		              WHERE class = '{$this->class}'");
 
 		// Add new extensions
 		$hook_tmpl = array(
@@ -437,13 +443,20 @@ class Fieldframe {
 		);
 
 		$hooks = array(
-			// Publish Admin
+			// Edit Field Form
 			'publish_admin_edit_field_type_pulldown',
 			'publish_admin_edit_field_type_cellone',
 			'publish_admin_edit_field_type_celltwo',
 			'publish_admin_edit_field_extra_row',
 			'publish_admin_edit_field_format',
 			'publish_admin_edit_field_js',
+
+			// Field Manager
+			'show_full_control_panel_end',
+
+			// Entry Form
+			'publish_form_field_unique',
+			'submit_new_entry_start',
 
 			// LG Addon Updater
 			'lg_addon_update_register_source',
@@ -453,9 +466,22 @@ class Fieldframe {
 		foreach($hooks as $hook)
 		{
 			$ext = array_merge($hook_tmpl, is_string($hook)
-			                                ? array('hook'=>$hook, 'method'=>$hook)
+			                                ? array('hook' => $hook, 'method' => $hook)
 			                                : $hook);
 			$DB->query($DB->insert_string('exp_extensions', $ext));
+		}
+
+		// exp_ff_fields
+		if ( ! $DB->table_exists('exp_ff_fields'))
+		{
+			$DB->query("CREATE TABLE exp_ff_fields (
+			              `field_id` int(10) unsigned NOT NULL auto_increment,
+			              `class` varchar(50) NOT NULL default '',
+			              `settings` text NOT NULL,
+			              `version` varchar(10) NOT NULL default '',
+			              `enabled` char(1) NOT NULL default 'n',
+			              PRIMARY KEY (`field_id`)
+			            )");
 		}
 	}
 
@@ -472,7 +498,7 @@ class Fieldframe {
 			return FALSE;
 		}
 
-		if ($current < '0.0.2')
+		if ($current < '0.0.3')
 		{
 			// hooks have changed, so go through
 			// the whole activate_extension() process
@@ -483,8 +509,8 @@ class Fieldframe {
 			// just update the version nums
 			global $DB;
 			$DB->query("UPDATE exp_extensions
-			            SET version = '".$DB->escape_str($this->version)."'
-			            WHERE class = '".$this->class."'");
+			              SET version = '".$DB->escape_str($this->version)."'
+			              WHERE class = '{$this->class}'");
 		}
 	}
 
@@ -496,8 +522,8 @@ class Fieldframe {
 	{
 		global $DB;
 		$DB->query("UPDATE exp_extensions
-		            SET enabled = 'n'
-		            WHERE class = '".$this->class."'");
+		              SET enabled = 'n'
+		              WHERE class = '{$this->class}'");
 	}
 
 	/**
@@ -527,16 +553,16 @@ class Fieldframe {
 		global $DSP;
 
 		$fields = $this->_get_fields();
-		foreach($fields as $class_name=>$OBJ)
+		foreach($fields as $class_name => $OBJ)
 		{
-			$r .= $DSP->input_select_option($class_name, $OBJ->info['name']);
+			$r .= $DSP->input_select_option('ff_'.$class_name, $OBJ->info['name']);
 		}
 
 		return $r;
 	}
 
 	/**
-	 * Edit Field Type - Cell One
+	 * Publish Admin - Edit Field Form - Cell One
 	 *
 	 * @param  array   $data  The data about this field from the database
 	 * @param  string  $cell  The contents of the cell
@@ -550,7 +576,7 @@ class Fieldframe {
 	}
 
 	/**
-	 * Edit Field Type - Cell Two
+	 * Publish Admin - Edit Field Form - Cell Two
 	 *
 	 * @param  array   $data  The data about this field from the database
 	 * @param  string  $cell  The contents of the cell
@@ -564,7 +590,7 @@ class Fieldframe {
 	}
 
 	/**
-	 * Edit Field - Add Extra Row
+	 * Publish Admin - Edit Field Form - Extra Row
 	 *
 	 * @param  array   $data  The data about this field from the database
 	 * @param  string  $r     The current contents of the page
@@ -578,7 +604,7 @@ class Fieldframe {
 	}
 
 	/**
-	 * Edit Field Format Menu
+	 * Publish Admin - Edit Field Form - Format
 	 *
 	 * @param  array   $data  The data about this field from the database
 	 * @param  string  $y     The current contents of the format cell
@@ -592,7 +618,7 @@ class Fieldframe {
 	}
 
 	/**
-	 * Edit Field Javascript
+	 * Publish Admin - Edit Field Form - Javascript
 	 *
 	 * @param  array   $data  The data about this field from the database
 	 * @param  string  $js    Currently existing javascript
@@ -606,7 +632,73 @@ class Fieldframe {
 	}
 
 	/**
-	 * Register a New Addon Source
+	 * Display - Show Full Control Panel - End
+	 *
+	 * Fill in missing Field Types
+	 *
+	 * @param  string  $end  The content of the admin page to be outputted
+	 * @return string  The modified $out
+	 * @see    http://expressionengine.com/developers/extension_hooks/show_full_control_panel_end/
+	 * @author Mark Huot
+	 */
+	function show_full_control_panel_end($out)
+	{
+		$out = $this->_get_last_call($out);
+
+		/*// if we are displaying the custom field list
+		if($IN->GBL('M', 'GET') == 'blog_admin' && ($IN->GBL('P', 'GET') == 'field_editor' || $IN->GBL('P', 'GET') == 'update_weblog_fields')  || $IN->GBL('P', 'GET') == 'delete_field')
+		{
+			// get the table rows
+			if( preg_match_all("/C=admin&amp;M=blog_admin&amp;P=edit_field&amp;field_id=(\d*).*?<\/td>.*?<td.*?>.*?<\/td>.*?<\/td>/is", $out, $matches) )
+			{
+				// for each field id
+				foreach($matches[1] as $key => $field_id)
+				{
+					// get the field type
+					$query = $DB->query("SELECT field_type FROM exp_weblog_fields WHERE field_id='" . $DB->escape_str($field_id) . "' LIMIT 1");
+        
+					$out = preg_replace("/(C=admin&amp;M=blog_admin&amp;P=edit_field&amp;field_id=" . $field_id . ".*?<\/td>.*?<td.*?>.*?<\/td>.*?)<\/td>/is", "$1" . $REGX->form_prep($this->name) . "</td>", $out);
+        
+					// if the field type is wysiwyg
+					if($query->row["field_type"] == $this->type)
+					{
+						$out = preg_replace("/(C=admin&amp;M=blog_admin&amp;P=edit_field&amp;field_id=" . $field_id . ".*?<\/td>.*?<td.*?>.*?<\/td>.*?)<\/td>/is", "$1" . $REGX->form_prep($this->name) . "</td>", $out);
+					}
+				}
+			}
+		}*/
+
+		return $out;
+	}
+
+	/**
+	 * Publish Form - Unique Field
+	 *
+	 * @param  array   $row  Parameters for the field from the database
+	 * @param  array   $field_data  If entry is not new, this will have field's current value
+	 * @return string  The field
+	 * @see    http://expressionengine.com/developers/extension_hooks/publish_form_field_unique/
+	 * @author Mark Huot
+	 */
+	function publish_form_field_unique($row, $field_data)
+	{
+		$r = $this->_get_last_call();
+		return $r;
+	}
+
+	/**
+	 * Publish Form - Submit New Entry
+	 *
+	 * @see    http://expressionengine.com/developers/extension_hooks/submit_new_entry_start/
+	 * @author Mark Huot
+	 */
+	function submit_new_entry_start()
+	{
+		
+	}
+
+	/**
+	 * LG Data Matrix - Register a New Addon Source
 	 *
 	 * @param  array  $sources  The existing sources
 	 * @return array  The new source list
@@ -627,7 +719,7 @@ class Fieldframe {
 	}
 
 	/**
-	 * Register a New Addon ID
+	 * LG Data Matrix - Register a New Addon ID
 	 *
 	 * @param  array  $addons  The existing sources
 	 * @return array  The new addon list
@@ -859,7 +951,7 @@ class FFSettingsDisplay {
 		global $DSP;
 		$vars = array_merge($vars, array('extras'=>''));
 		$r = '';
-		foreach($options as $option_value=>$option_name)
+		foreach($options as $option_value => $option_name)
 		{
 			if ($r) $r .= NBS.NBS.' ';
 			$r .= '<label style="white-space:nowrap;">'
