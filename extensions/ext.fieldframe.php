@@ -135,13 +135,13 @@ class Fieldframe {
 
 			// get enabled fields from the DB
 			global $DB;
-			$query = $DB->query("SELECT class FROM exp_ff_fields WHERE enabled = 'y'");
+			$query = $DB->query("SELECT * FROM exp_ff_fields WHERE enabled = 'y'");
 
 			if ($query->num_rows)
 			{
 				foreach($query->result as $field)
 				{
-					if (($OBJ = $this->_init_field($field['class'])) !== FALSE)
+					if (($OBJ = $this->_init_field($field)) !== FALSE)
 					{
 						$this->cache['fields'][$field['class']] = $OBJ;
 					}
@@ -182,8 +182,9 @@ class Fieldframe {
 	 * @param  string  $file  Field's folder name
 	 * @access private
 	 */
-	function _init_field($file)
+	function _init_field($field)
 	{
+		$file = is_array($field) ? $field['class'] : $field;
 		$class_name = ucfirst($file);
 
 		if ( ! class_exists($class_name))
@@ -216,22 +217,25 @@ class Fieldframe {
 		if ( ! isset($OBJ->info['versions_xml_url'])) $OBJ->info['versions_xml_url'] = '';
 
 		// do we already know about this field?
-		global $DB;
-		$query = $DB->query("SELECT * FROM exp_ff_fields WHERE class = '{$file}' LIMIT 1");
-		if ($query->row)
+		if (is_string($field))
+		{
+			global $DB;
+			$field = $DB->query("SELECT * FROM exp_ff_fields WHERE class = '{$file}' LIMIT 1")->row;
+		}
+		if ($field)
 		{
 			$OBJ->_is_new = FALSE;
-			$OBJ->_is_enabled = $query->row['enabled'] == 'y' ? TRUE : FALSE;
+			$OBJ->_is_enabled = $field['enabled'] == 'y' ? TRUE : FALSE;
 
-			if ($OBJ->info['version'] != $query->row['version'])
+			if ($OBJ->info['version'] != $field['version'])
 			{
 				$DB->query($DB->update_string('exp_ff_fields',
 				                              array('version' => $OBJ->info['version']),
-				                              "field_id = '{$query->row['field_id']}'"));
+				                              "field_id = '{$field['field_id']}'"));
 
 				if (method_exists($OBJ, 'update'))
 				{
-					$OBJ->update($query->row['version']);
+					$OBJ->update($field['version']);
 				}
 			}
 		}
