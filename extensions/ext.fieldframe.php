@@ -63,6 +63,11 @@ class Fieldframe {
 		$this->errors = array();
 	}
 
+	/**
+	 * Define constants
+	 *
+	 * @access private
+	 */
 	function _define_constants()
 	{
 		// define constants
@@ -690,12 +695,12 @@ class Fieldframe {
 		// if we are displaying the custom field list
 		if($IN->GBL('M', 'GET') == 'blog_admin' AND in_array($IN->GBL('P', 'GET'), array('field_editor', 'update_weblog_fields', 'delete_field')))
 		{
-			// get the FF fields
-			$ftypes = $this->_get_ftypes_by_field_id();
-			foreach($ftypes as $field_id => $ftype)
+			// get the FF fieldtypes
+			foreach($this->_get_ftypes_by_field_id() as $field_id => $ftype)
 			{
 				// add fieldtype name to this field
-				$out = preg_replace("/(C=admin&amp;M=blog_admin&amp;P=edit_field&amp;field_id=".$field_id.".*?<\/td>.*?<td.*?>.*?<\/td>.*?)<\/td>/is", "$1".$REGX->form_prep($ftype->info['name'])."</td>", $out);
+				$out = preg_replace("/(C=admin&amp;M=blog_admin&amp;P=edit_field&amp;field_id={$field_id}.*?<\/td>.*?<td.*?>.*?<\/td>.*?)<\/td>/is",
+				                      '$1'.$REGX->form_prep($ftype->info['name']).'</td>', $out);
 			}
 		}
 
