@@ -1,13 +1,24 @@
 <?php
 
-class Checkbox
-{
+if ( ! defined('EXT')) exit('Invalid file request');
+
+
+/**
+ * Checkbox Class
+ *
+ * @package   FieldFrame
+ * @author    Brandon Kelly <me@brandon-kelly.com>
+ * @copyright Copyright (c) 2009 Brandon Kelly
+ * @license   http://creativecommons.org/licenses/by-sa/3.0/ Attribution-Share Alike 3.0 Unported
+ */
+class Checkbox {
+
 	var $info = array(
-		'name'                    => 'Checkbox',
-		'version'                 => '1.0.0',
-		'desc'                    => 'Provides as single checkbox',
-		'docs_url'                => 'http://brandon-kelly.com/',
-		'versions_xml_url'        => 'http://brandon-kelly.com/downloads/versions.xml'
+		'name'             => 'Checkbox',
+		'version'          => '1.0.0',
+		'desc'             => 'Provides as single checkbox field type',
+		'docs_url'         => 'http://brandon-kelly.com/',
+		'versions_xml_url' => 'http://brandon-kelly.com/downloads/versions.xml'
 	);
 
 	/**
@@ -34,13 +45,15 @@ class Checkbox
 	 * @param  array   $cell_settings  The cell's settings
 	 * @return string  The cell's HTML
 	 */
-	function display_matrix_cell($cell_name, $cell_data)
+	function display_cell($cell_name, $cell_data)
 	{
 		// We're not doing anything special for matrix cells,
 		// so we just route this call to display_custom_field()
 		return $this->display_field($cell_name, $cell_data);
 	}
+
 }
+
 
 /* End of file ft.checkbox.php */
 /* Location: ./system/fieldtypes/ft.checkbox.php */

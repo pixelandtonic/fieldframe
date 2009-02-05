@@ -1,9 +1,7 @@
 <?php
 
-if ( ! defined('EXT'))
-{
-	exit('Invalid file request');
-}
+if ( ! defined('EXT')) exit('Invalid file request');
+
 
 /**
  * FieldFrame Class
@@ -794,6 +792,7 @@ class Fieldframe {
 		}
 		return $addons;
 	}
+
 }
 
 
@@ -1034,8 +1033,8 @@ class FFSettingsDisplay {
 		$loc_line = $LANG->line($line);
 		return $loc_line ? $loc_line : $line;
 	}
-}
 
+}
 
 
 /* End of file ext.fieldframe.php */
