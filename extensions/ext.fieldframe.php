@@ -162,13 +162,13 @@ class Fieldframe {
 		return $ftypes;
 	}
 
-	function _get_ff_fields()
+	function _get_ftypes_by_field_id()
 	{
 		global $DB;
 
-		if ( ! isset($this->cache['ff_fields']))
+		if ( ! isset($this->cache['ftypes_by_field_id']))
 		{
-			$this->cache['ff_fields'] = array();
+			$this->cache['ftypes_by_field_id'] = array();
 			// get the field types
 			if ($ftypes = $this->_get_ftypes())
 			{
@@ -180,13 +180,14 @@ class Fieldframe {
 					foreach($query->result as $row)
 					{
 						// add fieldtype name to this field
-						$this->cache['ff_fields'][$row['field_id']] = substr($row['field_type'], 3);
+						$class_name = substr($row['field_type'], 3);
+						$this->cache['ftypes_by_field_id'][$row['field_id']] = &$ftypes[$class_name];
 					}
 				}
 			}
 		}
 
-		return $this->cache['ff_fields'];
+		return $this->cache['ftypes_by_field_id'];
 	}
 
 	/**
@@ -676,12 +677,11 @@ class Fieldframe {
 		if($IN->GBL('M', 'GET') == 'blog_admin' AND in_array($IN->GBL('P', 'GET'), array('field_editor', 'update_weblog_fields', 'delete_field')))
 		{
 			// get the FF fields
-			$ftypes =  $this->_get_ftypes();
-			$fields = $this->_get_ff_fields();
-			foreach($fields as $field_id => $ftype)
+			$ftypes = $this->_get_ftypes_by_field_id();
+			foreach($ftypes as $field_id => $ftype)
 			{
 				// add fieldtype name to this field
-				$out = preg_replace("/(C=admin&amp;M=blog_admin&amp;P=edit_field&amp;field_id=".$field_id.".*?<\/td>.*?<td.*?>.*?<\/td>.*?)<\/td>/is", "$1".$REGX->form_prep($ftypes[$ftype]->info['name'])."</td>", $out);
+				$out = preg_replace("/(C=admin&amp;M=blog_admin&amp;P=edit_field&amp;field_id=".$field_id.".*?<\/td>.*?<td.*?>.*?<\/td>.*?)<\/td>/is", "$1".$REGX->form_prep($ftype->info['name'])."</td>", $out);
 			}
 		}
 
@@ -699,25 +699,24 @@ class Fieldframe {
 	 */
 	function publish_form_field_unique($row, $field_data)
 	{
-		$fields = $this->_get_ff_fields();
-		if ( ! array_key_exists($row['field_id'], $fields))
+		$ftypes = $this->_get_ftypes_by_field_id();
+		if ( ! array_key_exists($row['field_id'], $ftypes))
 		{
 			return $this->_get_last_call();
 		}
 
-		$ftypes = $this->_get_ftypes();
-		$OBJ = $ftypes[$fields[$row['field_id']]];
-		$field_id = 'field_id_'.$row['field_id'];
+		$OBJ = $ftypes[$row['field_id']];
+		$field_name = 'field_id_'.$row['field_id'];
 
 		if (method_exists($OBJ, 'display_field'))
 		{
-			$r = $OBJ->display_field($field_id, $field_data);
+			$r = $OBJ->display_field($field_name, $field_data);
 		}
 		else
 		{
 			global $DSP;
 			$r = '<div style="margin:0 32px 0 17px;">'
-			   . $DSP->input_text($field_id, $field_data, null, null, 'input', '100%')
+			   . $DSP->input_text($field_name, $field_data, null, null, 'input', '100%')
 			   . '</div>';
 		}
 

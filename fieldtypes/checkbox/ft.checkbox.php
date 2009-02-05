@@ -19,25 +19,25 @@ class Checkbox
 //	{
 //		$this->sitewide_settings = $sitewide_settings;
 //	}
-//
-//	/**
-//	 * Display Custom Field
-//	 * 
-//	 * @param string   $field_id        The field’s name
-//	 * @param mixed    $field_data      The field’s current value
-//	 * @param array    $field_settings  The field’s settings
-//	 * 
-//	 * @return string  The field’s HTML
-//	 */
-	function display_field($field_id, $field_data)
+
+	/**
+	 * Display Field
+	 * 
+	 * @param string  $field_name      The field’s name
+	 * @param mixed   $field_data      The field’s current value
+	 * @param array   $field_settings  The field’s settings
+	 * 
+	 * @return string  The field’s HTML
+	 */
+	function display_field($field_name, $field_data)
 	{
 		global $DSP;
 
 		return '<label style="display:inline-block; margin:5px 0 10px 17px; padding:1px; background:#768E9D;">'
-		         . $DSP->input_checkbox($field_id, 'y', $field_data == 'y' ? 1 : 0)
+		         . $DSP->input_checkbox($field_name, 'y', $field_data == 'y' ? 1 : 0)
 		         . '</label>';
 	}
-//
+
 //	/**
 //	 * Display Matrix Cell
 //	 * 
