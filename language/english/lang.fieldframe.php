@@ -5,31 +5,31 @@ $L = array(
 
 // errors
 
-'no_fields_path' =>
-'You haven&rsquo;t set your Fields Folder Path setting yet.',
+'no_fieldtypes_path' =>
+'You haven&rsquo;t set your Fieldtypes Folder Path setting yet.',
 
-'bad_fields_path' =>
+'bad_fieldtypes_path' =>
 'The directory specified by your Fields Folder Path doesn&rsquo;t exist.',
 
-'no_fields' =>
+'no_fieldtypes' =>
 'FieldFrame couldn&rsquo;t find any Field files. Make sure your Fields Folder Path setting is correct.',
 
 
 // Fields Folder settings
-'fields_folder_title' =>
-'Fields Folder',
+'fieldtypes_folder_title' =>
+'Fieldtypes Folder',
 
-'fields_url_label' =>
-'URL to your &ldquo;fields&rdquo; folder',
+'fieldtypes_url_label' =>
+'URL to your &ldquo;fieldtypes&rdquo; folder',
 
-'fields_url_subtext' =>
-'<i>ex:</i> &nbsp;http://www.example.com/system/fields/',
+'fieldtypes_url_subtext' =>
+'<i>ex:</i> &nbsp;http://www.example.com/system/fieldtypes/',
 
-'fields_path_label' =>
-'Path to your &ldquo;fields&rdquo; folder',
+'fieldtypes_path_label' =>
+'Path to your &ldquo;fieldtypes&rdquo; folder',
 
-'fields_path_subtext' =>
-'<i>ex:</i> /var/www/public_html/system/fields/',
+'fieldtypes_path_subtext' =>
+'<i>ex:</i> /var/www/public_html/system/fieldtypes/',
 
 
 // LG Addon Updater setting
@@ -38,7 +38,7 @@ $L = array(
 'Check for updates?',
 
 'check_for_updates_info' =>
-'FieldFrame can periodically phone home to see if any updates are available for itself and your enabled fields.',
+'FieldFrame can periodically phone home to see if any updates are available for itself and your enabled field types.',
 
 'check_for_updates_label' =>
 'Should this extension to check for updates and display them on your CP homepage?',
@@ -49,13 +49,13 @@ $L = array(
 
 // Field Manager
 
-'field_manager' =>
-'Field Management',
+'fieldtype_manager' =>
+'Field Type Manager',
 
-'field' =>
-'Field',
+'fieldtype' =>
+'Field type',
 
-'field_enabled' =>
+'fieldtype_enabled' =>
 'Enabled?',
 
 

@@ -19,10 +19,10 @@ class Fieldframe {
 
 	var $class = 'Fieldframe';
 	var $name = 'FieldFrame';
-	var $version = '0.0.3';
+	var $version = '0.0.4';
 	var $description = 'Field Type framework';
 	var $settings_exist = 'y';
-	var $docs_url = 'http://exp.fieldframe.com';
+	var $docs_url = 'http://eefields.com/';
 
 	/**
 	 * FieldFrame Constructor
@@ -66,13 +66,13 @@ class Fieldframe {
 	function _define_constants()
 	{
 		// define constants
-		if ( ! defined('FIELDS_PATH') AND $this->settings['fields_path'])
+		if ( ! defined('FIELDTYPES_PATH') AND $this->settings['fieldtypes_path'])
 		{
-			define('FIELDS_PATH', $this->settings['fields_path']);
+			define('FIELDTYPES_PATH', $this->settings['fieldtypes_path']);
 		}
-		if ( ! defined('FIELDS_URL') AND $this->settings['fields_url'])
+		if ( ! defined('FIELDTYPES_URL') AND $this->settings['fieldtypes_url'])
 		{
-			define('FIELDS_URL', $this->settings['fields_url']);
+			define('FIELDTYPES_URL', $this->settings['fieldtypes_url']);
 		}
 	}
 
@@ -103,8 +103,8 @@ class Fieldframe {
 	{
 		global $PREFS;
 		$defaults = array(
-			'fields_url' => '',
-			'fields_path' => '',
+			'fieldtypes_url' => '',
+			'fieldtypes_path' => '',
 			'check_for_updates' => 'y'
 		);
 		$site_id = $PREFS->ini('site_id');
@@ -113,51 +113,36 @@ class Fieldframe {
 		 : $defaults;
 	}
 
-	/**
-	 * Match Field Filename
-	 *
-	 * @param  string  $file  The filename in question
-	 * @return mixed   The filename (string) without its 'field.' prefix and '.php'
-	 *                 suffix if it's a Field file, or FALSE (bool)
-	 * @access private
-	 */
-	function _match_field_filename($file)
+	function _get_ftypes()
 	{
-		return (substr($file, 0, 6) == 'field.' AND substr($file, -strlen(EXT) == EXT))
-		 ? substr($file, 6, -strlen(EXT))
-		 : FALSE;
-	}
-
-	function _get_fields()
-	{
-		if ( ! isset($this->cache['fields']))
+		if ( ! isset($this->cache['ftypes']))
 		{
-			$this->cache['fields'] = array();
+			$this->cache['ftypes'] = array();
 
 			// get enabled fields from the DB
 			global $DB;
-			$query = $DB->query("SELECT * FROM exp_ff_fields WHERE enabled = 'y'");
+			$query = $DB->query("SELECT * FROM exp_ff_fieldtypes WHERE enabled = 'y'");
 
 			if ($query->num_rows)
 			{
-				foreach($query->result as $field)
+				foreach($query->result as $ftype)
 				{
-					if (($OBJ = $this->_init_field($field)) !== FALSE)
+					if (($OBJ = $this->_init_ftype($ftype)) !== FALSE)
 					{
-						$this->cache['fields'][$field['class']] = $OBJ;
+						$this->cache['ftypes'][$ftype['class']] = $OBJ;
 					}
 				}
 			}
 		}
 
-		return $this->cache['fields'];
+		return $this->cache['ftypes'];
 	}
 
-	function _get_installed_fields()
+	function _get_installed_ftypes()
 	{
-		$fields = array();
+		$ftypes = array();
 
-		if ( $fp = @opendir(FIELDS_PATH))
+		if ( $fp = @opendir(FIELDTYPES_PATH))
 		{
 			// iterate through the field folder contents
 			while (($file = readdir($fp)) !== FALSE)
@@ -165,17 +150,19 @@ class Fieldframe {
 				// skip hidden/navigational files
 				if (substr($file, 0, 1) == '.') continue;
 
-				// is this a directory, and does a field file exist inside it?
-				if (is_dir(FIELDS_PATH.$file) AND is_file(FIELDS_PATH.$file.'/field.'.$file.EXT))
+				// is this a directory, and does a ftype file exist inside it?
+				if (is_dir(FIELDTYPES_PATH.$file) AND is_file(FIELDTYPES_PATH.$file.'/ft.'.$file.EXT))
 				{
-					$fields[$file] = $this->_init_field($file);
+					$ftypes[$file] = $this->_init_ftype($file);
 				}
 			}
 			closedir($fp);
 		}
 
-		return $fields;
+		return $ftypes;
 	}
+
+	
 
 	/**
 	 * Initialize Field
@@ -183,20 +170,20 @@ class Fieldframe {
 	 * @param  string  $file  Field's folder name
 	 * @access private
 	 */
-	function _init_field($field)
+	function _init_ftype($ftype)
 	{
-		$file = is_array($field) ? $field['class'] : $field;
+		$file = is_array($ftype) ? $ftype['class'] : $ftype;
 		$class_name = ucfirst($file);
 
 		if ( ! class_exists($class_name))
 		{
 			// import the file
-			@include(FIELDS_PATH.$file.'/field.'.$file.EXT);
+			@include(FIELDTYPES_PATH.$file.'/ft.'.$file.EXT);
 
 			// skip if the class doesn't exist
 			if ( ! class_exists($class_name))
 			{
-				exit("Couldn't fild class '{$class_name}' - file is ".FIELDS_PATH.$file.'/field.'.$file.EXT);
+				exit("Couldn't fild class '{$class_name}' - file is ".FIELDTYPES_PATH.$file.'/ft.'.$file.EXT);
 				return FALSE;
 			}
 		}
@@ -217,27 +204,27 @@ class Fieldframe {
 		if ( ! isset($OBJ->info['author_url'])) $OBJ->info['author_url'] = '';
 		if ( ! isset($OBJ->info['versions_xml_url'])) $OBJ->info['versions_xml_url'] = '';
 
-		// do we already know about this field?
-		if (is_string($field))
+		// do we already know about this field type?
+		if (is_string($ftype))
 		{
 			global $DB;
-			$query = $DB->query("SELECT * FROM exp_ff_fields WHERE class = '{$file}' LIMIT 1");
-			$field = $query->row;
+			$query = $DB->query("SELECT * FROM exp_ff_fieldtypes WHERE class = '{$file}' LIMIT 1");
+			$ftype = $query->row;
 		}
-		if ($field)
+		if ($ftype)
 		{
 			$OBJ->_is_new = FALSE;
-			$OBJ->_is_enabled = $field['enabled'] == 'y' ? TRUE : FALSE;
+			$OBJ->_is_enabled = $ftype['enabled'] == 'y' ? TRUE : FALSE;
 
-			if ($OBJ->info['version'] != $field['version'])
+			if ($OBJ->info['version'] != $ftype['version'])
 			{
-				$DB->query($DB->update_string('exp_ff_fields',
+				$DB->query($DB->update_string('exp_ff_fieldtypes',
 				                              array('version' => $OBJ->info['version']),
-				                              "field_id = '{$field['field_id']}'"));
+				                              "fieldtype_id = '{$ftype['fieldtype_id']}'"));
 
 				if (method_exists($OBJ, 'update'))
 				{
-					$OBJ->update($field['version']);
+					$OBJ->update($ftype['version']);
 				}
 			}
 		}
@@ -293,14 +280,14 @@ class Fieldframe {
 		$LANG->fetch_language_file('publish_ad');
 
 		// Fields folder
-		$DSP->body .= $SD->block('fields_folder_title')
+		$DSP->body .= $SD->block('fieldtypes_folder_title')
 		            . $SD->row(array(
-		                           $SD->label('fields_url_label', 'fields_url_subtext'),
-		                           $SD->text('fields_url', $this->settings['fields_url'])
+		                           $SD->label('fieldtypes_url_label', 'fieldtypes_url_subtext'),
+		                           $SD->text('fieldtypes_url', $this->settings['fieldtypes_url'])
 		                         ))
 		            . $SD->row(array(
-		                           $SD->label('fields_path_label', 'fields_path_subtext'),
-		                           $SD->text('fields_path', $this->settings['fields_path'])
+		                           $SD->label('fieldtypes_path_label', 'fieldtypes_path_subtext'),
+		                           $SD->text('fieldtypes_path', $this->settings['fieldtypes_path'])
 		                         ))
 		            . $SD->block_c();
 
@@ -317,10 +304,10 @@ class Fieldframe {
 		            . $SD->block_c();
 
 		// Field settings
-		$DSP->body .= $SD->block('field_manager', 4);
+		$DSP->body .= $SD->block('fieldtype_manager', 4);
 
-		// initialize fields
-		$fields = $this->_get_installed_fields();
+		// initialize field types
+		$ftypes = $this->_get_installed_ftypes();
 
 		if ($this->errors)
 		{
@@ -333,16 +320,16 @@ class Fieldframe {
 		{
 			// add the headers
 			$DSP->body .= $SD->heading_row(array(
-			                                   $LANG->line('field'),
-			                                   $LANG->line('field_enabled'),
+			                                   $LANG->line('fieldtype'),
+			                                   $LANG->line('fieldtype_enabled'),
 			                                   $LANG->line('documentation')
 			                                 ));
 
-			foreach($fields as $class_name => $OBJ)
+			foreach($ftypes as $class_name => $OBJ)
 			{
 				$DSP->body .= $SD->row(array(
 				                         $SD->label($OBJ->info['name'].NBS.$DSP->qspan('xhtmlWrapperLight defaultSmall', $OBJ->info['version']), $OBJ->info['desc']),
-				                         $SD->radio_group('fields['.$class_name.'][enabled]', ($OBJ->_is_enabled ? 'y' : 'n'), array('y'=>'yes', 'n'=>'no')),
+				                         $SD->radio_group('ftypes['.$class_name.'][enabled]', ($OBJ->_is_enabled ? 'y' : 'n'), array('y'=>'yes', 'n'=>'no')),
 				                         ($OBJ->info['docs_url'] ? '<a href="'.stripslashes($OBJ->info['docs_url']).'">'.$LANG->line('documentation').'</a>' : '--')
 				                       ));
 			}
@@ -383,8 +370,8 @@ class Fieldframe {
 		// get the default FF settings
 		$this->settings = $this->_get_settings();
 
-		$this->settings['fields_url'] = $_POST['fields_url'] ? $this->_add_slash($_POST['fields_url']) : '';
-		$this->settings['fields_path'] = $_POST['fields_path'] ? $this->_add_slash($_POST['fields_path']) : '';
+		$this->settings['fieldtypes_url'] = $_POST['fieldtypes_url'] ? $this->_add_slash($_POST['fieldtypes_url']) : '';
+		$this->settings['fieldtypes_path'] = $_POST['fieldtypes_path'] ? $this->_add_slash($_POST['fieldtypes_path']) : '';
 		$this->settings['check_for_updates'] = ($_POST['check_for_updates'] != 'n') ? 'y' : 'n';
 
 		// save all FF settings
@@ -396,30 +383,30 @@ class Fieldframe {
 
 
 		// Field settings
-		if (isset($_POST['fields']))
+		if (isset($_POST['ftypes']))
 		{
 			$this->_define_constants();
 
-			foreach($_POST['fields'] as $file => $field_post)
+			foreach($_POST['ftypes'] as $file => $ftype_post)
 			{
 				// skip if it's disabled
-				if ($field_post['enabled'] != 'y') continue;
+				if ($ftype_post['enabled'] != 'y') continue;
 
 				// Initialize or skip
-				if (($OBJ = $this->_init_field($file)) === FALSE) continue;
+				if (($OBJ = $this->_init_ftype($file)) === FALSE) continue;
 
-				$data = array('enabled' => $field_post['enabled'] == 'y' ? 'y' : 'n');
+				$data = array('enabled' => $ftype_post['enabled'] == 'y' ? 'y' : 'n');
 
 				// insert a new row if it's new
 				if ($OBJ->_is_new)
 				{
 					$data['class'] = $file;
 					$data['version'] = $OBJ->info['version'];
-					$sql[] = $DB->insert_string('exp_ff_fields', $data);
+					$sql[] = $DB->insert_string('exp_ff_fieldtypes', $data);
 				}
 				else
 				{
-					$sql[] = $DB->update_string('exp_ff_fields', $data, "class = '{$file}'");
+					$sql[] = $DB->update_string('exp_ff_fieldtypes', $data, "class = '{$file}'");
 				}
 			}
 		}
@@ -442,7 +429,7 @@ class Fieldframe {
 		global $DB;
 
 		// Get settings
-		$settings = array();
+		$settings = $this->_get_all_settings();
 
 		// Delete old hooks
 		$DB->query("DELETE FROM exp_extensions
@@ -486,15 +473,15 @@ class Fieldframe {
 			$DB->query($DB->insert_string('exp_extensions', $ext));
 		}
 
-		// exp_ff_fields
-		if ( ! $DB->table_exists('exp_ff_fields'))
+		// exp_ff_fieldtypes
+		if ( ! $DB->table_exists('exp_ff_fieldtypes'))
 		{
-			$DB->query("CREATE TABLE exp_ff_fields (
-			              `field_id` int(10) unsigned NOT NULL auto_increment,
+			$DB->query("CREATE TABLE exp_ff_fieldtypes (
+			              `fieldtype_id` int(10) unsigned NOT NULL auto_increment,
 			              `class` varchar(50) NOT NULL default '',
 			              `version` varchar(10) NOT NULL default '',
 			              `enabled` char(1) NOT NULL default 'n',
-			              PRIMARY KEY (`field_id`)
+			              PRIMARY KEY (`fieldtype_id`)
 			            )");
 		}
 	}
@@ -512,20 +499,20 @@ class Fieldframe {
 			return FALSE;
 		}
 
-		if ($current < '0.0.3')
-		{
+		//if ($current < '0.0.3')
+		//{
 			// hooks have changed, so go through
 			// the whole activate_extension() process
 			$this->activate_extension();
-		}
-		else
-		{
-			// just update the version nums
-			global $DB;
-			$DB->query("UPDATE exp_extensions
-			              SET version = '".$DB->escape_str($this->version)."'
-			              WHERE class = '{$this->class}'");
-		}
+		//}
+		//else
+		//{
+		//	// just update the version nums
+		//	global $DB;
+		//	$DB->query("UPDATE exp_extensions
+		//	              SET version = '".$DB->escape_str($this->version)."'
+		//	              WHERE class = '{$this->class}'");
+		//}
 	}
 
 	/**
@@ -566,8 +553,8 @@ class Fieldframe {
 
 		global $DSP;
 
-		$fields = $this->_get_fields();
-		foreach($fields as $class_name => $OBJ)
+		$ftypes = $this->_get_ftypes();
+		foreach($ftypes as $class_name => $OBJ)
 		{
 			$r .= $DSP->input_select_option('ff_'.$class_name, $OBJ->info['name']);
 		}
@@ -658,29 +645,28 @@ class Fieldframe {
 	function show_full_control_panel_end($out)
 	{
 		$out = $this->_get_last_call($out);
+		global $IN, $DB, $REGX;
 
-		/*// if we are displaying the custom field list
-		if($IN->GBL('M', 'GET') == 'blog_admin' && ($IN->GBL('P', 'GET') == 'field_editor' || $IN->GBL('P', 'GET') == 'update_weblog_fields')  || $IN->GBL('P', 'GET') == 'delete_field')
+		// if we are displaying the custom field list
+		if($IN->GBL('M', 'GET') == 'blog_admin' AND in_array($IN->GBL('P', 'GET'), array('field_editor', 'update_weblog_fields', 'delete_field')))
 		{
-			// get the table rows
-			if( preg_match_all("/C=admin&amp;M=blog_admin&amp;P=edit_field&amp;field_id=(\d*).*?<\/td>.*?<td.*?>.*?<\/td>.*?<\/td>/is", $out, $matches) )
+			// get the field types
+			if ($ftypes = $this->_get_ftypes())
 			{
-				// for each field id
-				foreach($matches[1] as $key => $field_id)
+				// get the field IDs
+				$query = $DB->query("SELECT field_id, field_type FROM exp_weblog_fields
+				                       WHERE field_type IN ('ff_".implode("', 'ff_", array_keys($ftypes))."')");
+				if ($query->num_rows)
 				{
-					// get the field type
-					$query = $DB->query("SELECT field_type FROM exp_weblog_fields WHERE field_id='" . $DB->escape_str($field_id) . "' LIMIT 1");
-        
-					$out = preg_replace("/(C=admin&amp;M=blog_admin&amp;P=edit_field&amp;field_id=" . $field_id . ".*?<\/td>.*?<td.*?>.*?<\/td>.*?)<\/td>/is", "$1" . $REGX->form_prep($this->name) . "</td>", $out);
-        
-					// if the field type is wysiwyg
-					if($query->row["field_type"] == $this->type)
+					foreach($query->result as $row)
 					{
-						$out = preg_replace("/(C=admin&amp;M=blog_admin&amp;P=edit_field&amp;field_id=" . $field_id . ".*?<\/td>.*?<td.*?>.*?<\/td>.*?)<\/td>/is", "$1" . $REGX->form_prep($this->name) . "</td>", $out);
+						// add fieldtype name to this field
+						$class = substr($row['field_type'], 3);
+						$out = preg_replace("/(C=admin&amp;M=blog_admin&amp;P=edit_field&amp;field_id=".$row['field_id'].".*?<\/td>.*?<td.*?>.*?<\/td>.*?)<\/td>/is", "$1".$REGX->form_prep($ftypes[$class]->info['name'])."</td>", $out);
 					}
 				}
 			}
-		}*/
+		}
 
 		return $out;
 	}
