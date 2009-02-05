@@ -696,11 +696,11 @@ class Fieldframe {
 		if($IN->GBL('M', 'GET') == 'blog_admin' AND in_array($IN->GBL('P', 'GET'), array('field_editor', 'update_weblog_fields', 'delete_field')))
 		{
 			// get the FF fieldtypes
-			foreach($this->_get_ftypes_by_field_id() as $field_id => $ftype)
+			foreach($this->_get_ftypes_by_field_id() as $field_id => $OBJ)
 			{
 				// add fieldtype name to this field
 				$out = preg_replace("/(C=admin&amp;M=blog_admin&amp;P=edit_field&amp;field_id={$field_id}.*?<\/td>.*?<td.*?>.*?<\/td>.*?)<\/td>/is",
-				                      '$1'.$REGX->form_prep($ftype->info['name']).'</td>', $out);
+				                      '$1'.$REGX->form_prep($OBJ->info['name']).'</td>', $out);
 			}
 		}
 
@@ -747,7 +747,14 @@ class Fieldframe {
 	 */
 	function submit_new_entry_start()
 	{
-		
+		foreach($this->_get_ftypes_by_field_id() as $field_id => $OBJ)
+		{
+			if (method_exists($OBJ), 'save_field')
+			{
+				$field_name = 'field_id_'.$field_id;
+				$OBJ->save_field($field_name);
+			}
+		}
 	}
 
 	/**
