@@ -162,7 +162,32 @@ class Fieldframe {
 		return $ftypes;
 	}
 
-	
+	function _get_ff_fields()
+	{
+		global $DB;
+
+		if ( ! isset($this->cache['ff_fields']))
+		{
+			$this->cache['ff_fields'] = array();
+			// get the field types
+			if ($ftypes = $this->_get_ftypes())
+			{
+				// get the field IDs and class names
+				$query = $DB->query("SELECT field_id, field_type FROM exp_weblog_fields
+				                       WHERE field_type IN ('ff_".implode("', 'ff_", array_keys($ftypes))."')");
+				if ($query->num_rows)
+				{
+					foreach($query->result as $row)
+					{
+						// add fieldtype name to this field
+						$this->cache['ff_fields'][$row['field_id']] = substr($row['field_type'], 3);
+					}
+				}
+			}
+		}
+
+		return $this->cache['ff_fields'];
+	}
 
 	/**
 	 * Initialize Field
@@ -650,21 +675,13 @@ class Fieldframe {
 		// if we are displaying the custom field list
 		if($IN->GBL('M', 'GET') == 'blog_admin' AND in_array($IN->GBL('P', 'GET'), array('field_editor', 'update_weblog_fields', 'delete_field')))
 		{
-			// get the field types
-			if ($ftypes = $this->_get_ftypes())
+			// get the FF fields
+			$ftypes =  $this->_get_ftypes();
+			$fields = $this->_get_ff_fields();
+			foreach($fields as $field_id => $ftype)
 			{
-				// get the field IDs
-				$query = $DB->query("SELECT field_id, field_type FROM exp_weblog_fields
-				                       WHERE field_type IN ('ff_".implode("', 'ff_", array_keys($ftypes))."')");
-				if ($query->num_rows)
-				{
-					foreach($query->result as $row)
-					{
-						// add fieldtype name to this field
-						$class = substr($row['field_type'], 3);
-						$out = preg_replace("/(C=admin&amp;M=blog_admin&amp;P=edit_field&amp;field_id=".$row['field_id'].".*?<\/td>.*?<td.*?>.*?<\/td>.*?)<\/td>/is", "$1".$REGX->form_prep($ftypes[$class]->info['name'])."</td>", $out);
-					}
-				}
+				// add fieldtype name to this field
+				$out = preg_replace("/(C=admin&amp;M=blog_admin&amp;P=edit_field&amp;field_id=".$field_id.".*?<\/td>.*?<td.*?>.*?<\/td>.*?)<\/td>/is", "$1".$REGX->form_prep($ftypes[$ftype]->info['name'])."</td>", $out);
 			}
 		}
 
@@ -683,6 +700,18 @@ class Fieldframe {
 	function publish_form_field_unique($row, $field_data)
 	{
 		$r = $this->_get_last_call();
+
+		$fields = $this->_get_ff_fields();
+		if (array_key_exists($row['field_id'], $fields))
+		{
+			$ftypes = $this->_get_ftypes();
+			$OBJ = $ftypes[$fields[$row['field_id']]];
+			if (method_exists($OBJ, 'display_field'))
+			{
+				$r = $OBJ->display_field('field_id_'.$row['field_id'], $field_data);
+			}
+		}
+
 		return $r;
 	}
 

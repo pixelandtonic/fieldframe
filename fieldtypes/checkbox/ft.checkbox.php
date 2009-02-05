@@ -29,13 +29,14 @@ class Checkbox
 //	 * 
 //	 * @return string  The field’s HTML
 //	 */
-//	function display_custom_field($field_id, $field_data, $field_settings)
-//	{
-//		global $DSP;
-//
-//		$checked = $field_data == 'y' ? 1 : 0;
-//	 	return $DSP->input_checkbox($field_id, 'y', $checked);
-//	}
+	function display_field($field_id, $field_data)
+	{
+		global $DSP;
+
+		return '<label style="display:inline-block; margin:5px 0 10px 17px; padding:1px; background:#768E9D;">'
+		         . $DSP->input_checkbox($field_id, 'y', $field_data == 'y' ? 1 : 0)
+		         . '</label>';
+	}
 //
 //	/**
 //	 * Display Matrix Cell
