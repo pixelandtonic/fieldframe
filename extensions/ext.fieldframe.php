@@ -31,6 +31,20 @@ class Fieldframe {
 	 */
 	function Fieldframe($settings=array())
 	{
+		// only initialize if we're not on the Settings page
+		if ( ! ($IN->GBL('M', 'GET') == 'utilities' AND ($IN->GBL('P', 'GET') == 'extension_settings')))
+		{
+			$this->_init($settings);
+		}
+	}
+
+	/**
+	 * FieldFrame Initialization
+	 *
+	 * @param array  $settings
+	 */
+	function _init($settings)
+	{
 		global $SESS;
 
 		// get the site-specific settings
@@ -70,10 +84,8 @@ class Fieldframe {
 	function _get_all_settings()
 	{
 		global $DB;
-		$query = $DB->query("SELECT settings
-			                   FROM exp_extensions
-		                       WHERE class = '{$this->class}' AND settings != ''
-		                       LIMIT 1");
+		$query = $DB->query("SELECT settings FROM exp_extensions
+		                       WHERE class = '{$this->class}' AND settings != '' LIMIT 1");
 		return $query->num_rows
 		 ? unserialize($query->row['settings'])
 		 : array();
@@ -123,7 +135,7 @@ class Fieldframe {
 
 			// get enabled fields from the DB
 			global $DB;
-			$query = $DB->query("SELECT * FROM exp_ff_fields WHERE enabled = 'y'");
+			$query = $DB->query("SELECT class FROM exp_ff_fields WHERE enabled = 'y'");
 
 			if ($query->num_rows)
 			{
@@ -208,12 +220,20 @@ class Fieldframe {
 		$query = $DB->query("SELECT * FROM exp_ff_fields WHERE class = '{$file}' LIMIT 1");
 		if ($query->row)
 		{
-			/**
-			 * @todo compare versions, maybe update
-			 * @todo store saved settings in obj
-			 */
 			$OBJ->_is_new = FALSE;
 			$OBJ->_is_enabled = $query->row['enabled'] == 'y' ? TRUE : FALSE;
+
+			if ($OBJ->info['version'] != $query->row['version'])
+			{
+				$DB->query($DB->update_string('exp_ff_fields',
+				                              array('version' => $OBJ->info['version']),
+				                              "field_id = '{$query->row['field_id']}'"));
+
+				if (method_exists($OBJ, 'update'))
+				{
+					$OBJ->update($query->row['version']);
+				}
+			}
 		}
 		else
 		{
@@ -235,8 +255,8 @@ class Fieldframe {
 	function settings_form($current)
 	{
 		// EE doesn't send the settings when initializing extensions on
-		// settings forms, so we have to re-call FieldFrame() here
-		$this->Fieldframe($current);
+		// settings forms, so we have to initialize here instead
+		$this->_init($current);
 
 		global $DB, $DSP, $LANG, $IN;
 
@@ -279,10 +299,8 @@ class Fieldframe {
 		            . $SD->block_c();
 
 		// Check for Updates
-		$lgau_query = $DB->query("SELECT class
-		                            FROM exp_extensions
-		                            WHERE class = 'Lg_addon_updater_ext' AND enabled = 'y'
-		                            LIMIT 1");
+		$lgau_query = $DB->query("SELECT class FROM exp_extensions
+		                            WHERE class = 'Lg_addon_updater_ext' AND enabled = 'y' LIMIT 1");
 		$lgau_enabled = $lgau_query->num_rows ? TRUE : FALSE;
 		$DSP->body .= $SD->block('check_for_updates_title')
 		            . $SD->info_row('check_for_updates_info')
@@ -380,31 +398,24 @@ class Fieldframe {
 
 			foreach($_POST['fields'] as $file => $field_post)
 			{
-				$enabled = $field_post['enabled'] == 'y' ? 'y' : 'n';
-
 				// skip if it's disabled
-				if ($enabled == 'n') continue;
+				if ($field_post['enabled'] != 'y') continue;
 
-				// Initialize
-				$OBJ = $this->_init_field($file);
+				// Initialize or skip
+				if (($OBJ = $this->_init_field($file)) === FALSE) continue;
 
-				// skip if we couldn't initialize
-				if ($OBJ === FALSE) continue;
-
-				$settings = '';
+				$data = array('enabled' => $field_post['enabled'] == 'y' ? 'y' : 'n');
 
 				// insert a new row if it's new
 				if ($OBJ->_is_new)
 				{
-					$sql[] = "INSERT INTO exp_ff_fields (class, settings, version, enabled)
-					            VALUES ('{$file}', '{$settings}', '{$OBJ->info['version']}', '{$enabled}')";
+					$data['class'] = $file;
+					$data['version'] = $OBJ->info['version'];
+					$sql[] = $DB->insert_string('exp_ff_fields', $data);
 				}
 				else
 				{
-					$sql[] = "UPDATE exp_ff_fields
-					            SET settings = '{$settings}'
-					                version = '{$OBJ->info['version']}'
-					                enabled = '{$enabled}'";
+					$sql[] = $DB->update_string('exp_ff_fields', $data, "class = '{$file}'");
 				}
 			}
 		}
@@ -477,7 +488,6 @@ class Fieldframe {
 			$DB->query("CREATE TABLE exp_ff_fields (
 			              `field_id` int(10) unsigned NOT NULL auto_increment,
 			              `class` varchar(50) NOT NULL default '',
-			              `settings` text NOT NULL,
 			              `version` varchar(10) NOT NULL default '',
 			              `enabled` char(1) NOT NULL default 'n',
 			              PRIMARY KEY (`field_id`)
