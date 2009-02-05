@@ -195,15 +195,21 @@ class Fieldframe {
 			// get the field types
 			if ($ftypes = $this->_get_ftypes())
 			{
+				$ftypes_by_id = array();
+				foreach($ftypes as $class_name => $OBJ)
+				{
+					$ftypes_by_id[$OBJ->_fieldtype_id] = $class_name;
+				}
 				// get the field IDs and class names
 				$query = $DB->query("SELECT field_id, field_type FROM exp_weblog_fields
-				                       WHERE field_type IN ('ff_".implode("', 'ff_", array_keys($ftypes))."')");
+				                       WHERE field_type IN ('ftype_id_".implode("', 'ftype_id_", array_keys($ftypes_by_id))."')");
 				if ($query->num_rows)
 				{
 					foreach($query->result as $row)
 					{
 						// add fieldtype name to this field
-						$class_name = substr($row['field_type'], 3);
+						$ftype_id = substr($row['field_type'], 9);
+						$class_name = $ftypes_by_id[$ftype_id];
 						$this->cache['ftypes_by_field_id'][$row['field_id']] = &$ftypes[$class_name];
 					}
 				}
@@ -265,6 +271,7 @@ class Fieldframe {
 		{
 			$OBJ->_is_new = FALSE;
 			$OBJ->_is_enabled = $ftype['enabled'] == 'y' ? TRUE : FALSE;
+			$OBJ->_fieldtype_id = $ftype['fieldtype_id'];
 
 			if ($OBJ->info['version'] != $ftype['version'])
 			{
@@ -600,7 +607,7 @@ class Fieldframe {
 		$ftypes = $this->_get_ftypes();
 		foreach($ftypes as $class_name => $OBJ)
 		{
-			$field_type = 'ff_'.$class_name;
+			$field_type = 'ftype_id_'.$OBJ->_fieldtype_id;
 			$r .= $DSP->input_select_option($field_type, $OBJ->info['name'], ($data['field_type'] == $field_type ? 1 : 0));
 		}
 
