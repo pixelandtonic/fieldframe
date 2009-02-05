@@ -66,13 +66,13 @@ class Fieldframe {
 	function _define_constants()
 	{
 		// define constants
-		if ( ! defined('FIELDTYPES_PATH') AND $this->settings['fieldtypes_path'])
+		if ( ! defined('FT_PATH') AND $this->settings['fieldtypes_path'])
 		{
-			define('FIELDTYPES_PATH', $this->settings['fieldtypes_path']);
+			define('FT_PATH', $this->settings['fieldtypes_path']);
 		}
-		if ( ! defined('FIELDTYPES_URL') AND $this->settings['fieldtypes_url'])
+		if ( ! defined('FT_URL') AND $this->settings['fieldtypes_url'])
 		{
-			define('FIELDTYPES_URL', $this->settings['fieldtypes_url']);
+			define('FT_URL', $this->settings['fieldtypes_url']);
 		}
 	}
 
@@ -142,7 +142,7 @@ class Fieldframe {
 	{
 		$ftypes = array();
 
-		if ( $fp = @opendir(FIELDTYPES_PATH))
+		if ( $fp = @opendir(FT_PATH))
 		{
 			// iterate through the field folder contents
 			while (($file = readdir($fp)) !== FALSE)
@@ -151,7 +151,7 @@ class Fieldframe {
 				if (substr($file, 0, 1) == '.') continue;
 
 				// is this a directory, and does a ftype file exist inside it?
-				if (is_dir(FIELDTYPES_PATH.$file) AND is_file(FIELDTYPES_PATH.$file.'/ft.'.$file.EXT))
+				if (is_dir(FT_PATH.$file) AND is_file(FT_PATH.$file.'/ft.'.$file.EXT))
 				{
 					$ftypes[$file] = $this->_init_ftype($file);
 				}
@@ -178,12 +178,12 @@ class Fieldframe {
 		if ( ! class_exists($class_name))
 		{
 			// import the file
-			@include(FIELDTYPES_PATH.$file.'/ft.'.$file.EXT);
+			@include(FT_PATH.$file.'/ft.'.$file.EXT);
 
 			// skip if the class doesn't exist
 			if ( ! class_exists($class_name))
 			{
-				exit("Couldn't fild class '{$class_name}' - file is ".FIELDTYPES_PATH.$file.'/ft.'.$file.EXT);
+				exit("Couldn't fild class '{$class_name}' - file is ".FT_PATH.$file.'/ft.'.$file.EXT);
 				return FALSE;
 			}
 		}
@@ -259,7 +259,7 @@ class Fieldframe {
 		$DSP->crumb = $DSP->anchor(BASE.AMP.'C=admin'.AMP.'area=utilities', $LANG->line('utilities'))
 		            . $DSP->crumb_item($DSP->anchor(BASE.AMP.'C=admin'.AMP.'M=utilities'.AMP.'P=extensions_manager', $LANG->line('extensions_manager')))
 		            . $DSP->crumb_item($this->name);
-	    $DSP->right_crumb($LANG->line('disable_extension'), BASE.AMP.'C=admin'.AMP.'M=utilities'.AMP.'P=toggle_extension_confirm'.AMP.'which=disable'.AMP.'name='.$IN->GBL('name'));
+		$DSP->right_crumb($LANG->line('disable_extension'), BASE.AMP.'C=admin'.AMP.'M=utilities'.AMP.'P=toggle_extension_confirm'.AMP.'which=disable'.AMP.'name='.$IN->GBL('name'));
 
 		// open form
 		$DSP->body .= "<h1>{$this->name} <small>{$this->version}</small></h1>"
