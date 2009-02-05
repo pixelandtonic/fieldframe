@@ -743,13 +743,13 @@ class Fieldframe {
 	/**
 	 * Publish Form - Submit New Entry
 	 *
-	 * @see    http://expressionengine.com/developers/extension_hooks/submit_new_entry_start/
+	 * @see http://expressionengine.com/developers/extension_hooks/submit_new_entry_start/
 	 */
 	function submit_new_entry_start()
 	{
 		foreach($this->_get_ftypes_by_field_id() as $field_id => $OBJ)
 		{
-			if (method_exists($OBJ), 'save_field')
+			if (method_exists($OBJ, 'save_field'))
 			{
 				$field_name = 'field_id_'.$field_id;
 				$OBJ->save_field($field_name);
