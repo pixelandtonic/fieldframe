@@ -699,17 +699,26 @@ class Fieldframe {
 	 */
 	function publish_form_field_unique($row, $field_data)
 	{
-		$r = $this->_get_last_call();
-
 		$fields = $this->_get_ff_fields();
-		if (array_key_exists($row['field_id'], $fields))
+		if ( ! array_key_exists($row['field_id'], $fields))
 		{
-			$ftypes = $this->_get_ftypes();
-			$OBJ = $ftypes[$fields[$row['field_id']]];
-			if (method_exists($OBJ, 'display_field'))
-			{
-				$r = $OBJ->display_field('field_id_'.$row['field_id'], $field_data);
-			}
+			return $this->_get_last_call();
+		}
+
+		$ftypes = $this->_get_ftypes();
+		$OBJ = $ftypes[$fields[$row['field_id']]];
+		$field_id = 'field_id_'.$row['field_id'];
+
+		if (method_exists($OBJ, 'display_field'))
+		{
+			$r = $OBJ->display_field($field_id, $field_data);
+		}
+		else
+		{
+			global $DSP;
+			$r = '<div style="margin:0 32px 0 17px;">'
+			   . $DSP->input_text($field_id, $field_data, null, null, 'input', '100%')
+			   . '</div>';
 		}
 
 		return $r;
