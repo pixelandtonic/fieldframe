@@ -32,6 +32,7 @@ class Fieldframe {
 	function Fieldframe($settings=array())
 	{
 		// only initialize if we're not on the Settings page
+		global $IN;
 		if ( ! ($IN->GBL('M', 'GET') == 'utilities' AND ($IN->GBL('P', 'GET') == 'extension_settings')))
 		{
 			$this->_init($settings);
@@ -220,7 +221,8 @@ class Fieldframe {
 		if (is_string($field))
 		{
 			global $DB;
-			$field = $DB->query("SELECT * FROM exp_ff_fields WHERE class = '{$file}' LIMIT 1")->row;
+			$query = $DB->query("SELECT * FROM exp_ff_fields WHERE class = '{$file}' LIMIT 1");
+			$field = $query->row;
 		}
 		if ($field)
 		{
@@ -333,7 +335,6 @@ class Fieldframe {
 			$DSP->body .= $SD->heading_row(array(
 			                                   $LANG->line('field'),
 			                                   $LANG->line('field_enabled'),
-			                                   $LANG->line('settings'),
 			                                   $LANG->line('documentation')
 			                                 ));
 
@@ -342,7 +343,6 @@ class Fieldframe {
 				$DSP->body .= $SD->row(array(
 				                         $SD->label($OBJ->info['name'].NBS.$DSP->qspan('xhtmlWrapperLight defaultSmall', $OBJ->info['version']), $OBJ->info['desc']),
 				                         $SD->radio_group('fields['.$class_name.'][enabled]', ($OBJ->_is_enabled ? 'y' : 'n'), array('y'=>'yes', 'n'=>'no')),
-				                         (count($OBJ->settings) ? '<a href="#">'.$LANG->line('settings').'</a>' : '--'),
 				                         ($OBJ->info['docs_url'] ? '<a href="'.stripslashes($OBJ->info['docs_url']).'">'.$LANG->line('documentation').'</a>' : '--')
 				                       ));
 			}
