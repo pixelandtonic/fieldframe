@@ -8,7 +8,7 @@ if ( ! defined('EXT'))
 /**
  * FieldFrame Class
  *
- * This extension provides a framework for ExpressionEngine Field Type development.
+ * This extension provides a framework for ExpressionEngine field type development.
  *
  * @package   FieldFrame
  * @author    Brandon Kelly <me@brandon-kelly.com>
@@ -20,12 +20,12 @@ class Fieldframe {
 	var $class = 'Fieldframe';
 	var $name = 'FieldFrame';
 	var $version = '0.0.4';
-	var $description = 'Field Type framework';
+	var $description = 'Field Type Framework';
 	var $settings_exist = 'y';
 	var $docs_url = 'http://eefields.com/';
 
 	/**
-	 * FieldFrame Constructor
+	 * FieldFrame Class Constructor
 	 *
 	 * @param array  $settings
 	 */
@@ -40,7 +40,7 @@ class Fieldframe {
 	}
 
 	/**
-	 * FieldFrame Initialization
+	 * FieldFrame Class Initialization
 	 *
 	 * @param array  $settings
 	 */
@@ -93,7 +93,7 @@ class Fieldframe {
 	}
 
 	/**
-	 * Get Site Settings
+	 * Get Settings
 	 *
 	 * @param  array  $settings  All saved settings data
 	 * @return array  Default settings merged with any site-specific settings in $settings
@@ -113,6 +113,12 @@ class Fieldframe {
 		 : $defaults;
 	}
 
+	/**
+	 * Get Field Types
+	 *
+	 * @return array  All enabled FF field types, indexed by class name
+	 * @access private
+	 */
 	function _get_ftypes()
 	{
 		if ( ! isset($this->cache['ftypes']))
@@ -138,7 +144,13 @@ class Fieldframe {
 		return $this->cache['ftypes'];
 	}
 
-	function _get_installed_ftypes()
+	/**
+	 * Get All Installed Field Types
+	 *
+	 * @return array  All installed FF field types, indexed by class name
+	 * @access private
+	 */
+	function _get_all_installed_ftypes()
 	{
 		$ftypes = array();
 
@@ -162,6 +174,14 @@ class Fieldframe {
 		return $ftypes;
 	}
 
+	/**
+	 * Get Field Types Indexed By Field ID
+	 *
+	 * @return array  All enabled FF field types, indexed by the weblog field ID they're used in.
+	 *                Strong possibility that there will be duplicate field types in here,
+	 *                but it's not a big deal because they're just object references
+	 * @access private
+	 */
 	function _get_ftypes_by_field_id()
 	{
 		global $DB;
@@ -191,9 +211,10 @@ class Fieldframe {
 	}
 
 	/**
-	 * Initialize Field
+	 * Initialize Field Type
 	 *
-	 * @param  string  $file  Field's folder name
+	 * @param  mixed   $ftype  field type's class name or its row in exp_ff_fieldtypes
+	 * @return object  Initialized field type object
 	 * @access private
 	 */
 	function _init_ftype($ftype)
@@ -266,10 +287,8 @@ class Fieldframe {
 	/**
 	 * Settings Form
 	 *
-	 * Construct the custom settings form.
-	 *
-	 * @param  array  $current  Current extension settings (not site-specific)
-	 * @see    http://expressionengine.com/docs/development/extensions.html#settings
+	 * @param array  $current  Current extension settings (not site-specific)
+	 * @see   http://expressionengine.com/docs/development/extensions.html#settings
 	 */
 	function settings_form($current)
 	{
@@ -305,7 +324,7 @@ class Fieldframe {
 		// import lang files
 		$LANG->fetch_language_file('publish_ad');
 
-		// Fields folder
+		// fieldtypes folder
 		$DSP->body .= $SD->block('fieldtypes_folder_title')
 		            . $SD->row(array(
 		                           $SD->label('fieldtypes_url_label', 'fieldtypes_url_subtext'),
@@ -329,11 +348,11 @@ class Fieldframe {
 		                         ))
 		            . $SD->block_c();
 
-		// Field settings
+		// field type settings
 		$DSP->body .= $SD->block('fieldtype_manager', 4);
 
 		// initialize field types
-		$ftypes = $this->_get_installed_ftypes();
+		$ftypes = $this->_get_all_installed_ftypes();
 
 		if ($this->errors)
 		{
@@ -386,7 +405,6 @@ class Fieldframe {
 
 	/**
 	 * Save Settings
-	 *
 	 */
 	function save_settings()
 	{
@@ -408,7 +426,7 @@ class Fieldframe {
 		            WHERE class = '{$this->class}'";
 
 
-		// Field settings
+		// field type settings
 		if (isset($_POST['ftypes']))
 		{
 			$this->_define_constants();
@@ -446,9 +464,6 @@ class Fieldframe {
 
 	/**
 	 * Activate Extension
-	 *
-	 * Resets all FieldFrame exp_extensions rows
-	 *
 	 */
 	function activate_extension()
 	{
@@ -543,7 +558,6 @@ class Fieldframe {
 
 	/**
 	 * Disable Extension
-	 *
 	 */
 	function disable_extension()
 	{
@@ -558,6 +572,7 @@ class Fieldframe {
 	 *
 	 * @param  mixed  $param  Parameter sent by extension hook
 	 * @return mixed  Return value of last extension call if any, or $param
+	 * @access private
 	 */
 	function _get_last_call($param='')
 	{
@@ -566,7 +581,7 @@ class Fieldframe {
 	}
 
 	/**
-	 * Edit Field Type Menu
+	 * Publish Admin - Edit Field Form - Field Type Menu
 	 *
 	 * @param  array   $data  The data about this field from the database
 	 * @param  string  $typemenu  The contents of the type menu
@@ -666,7 +681,6 @@ class Fieldframe {
 	 * @param  string  $end  The content of the admin page to be outputted
 	 * @return string  The modified $out
 	 * @see    http://expressionengine.com/developers/extension_hooks/show_full_control_panel_end/
-	 * @author Mark Huot
 	 */
 	function show_full_control_panel_end($out)
 	{
@@ -693,21 +707,21 @@ class Fieldframe {
 	 *
 	 * @param  array   $row  Parameters for the field from the database
 	 * @param  array   $field_data  If entry is not new, this will have field's current value
-	 * @return string  The field
+	 * @return string  The field's HTML
 	 * @see    http://expressionengine.com/developers/extension_hooks/publish_form_field_unique/
-	 * @author Mark Huot
 	 */
 	function publish_form_field_unique($row, $field_data)
 	{
 		$ftypes = $this->_get_ftypes_by_field_id();
+
 		if ( ! array_key_exists($row['field_id'], $ftypes))
 		{
 			return $this->_get_last_call();
 		}
 
-		$OBJ = $ftypes[$row['field_id']];
 		$field_name = 'field_id_'.$row['field_id'];
 
+		$OBJ = $ftypes[$row['field_id']];
 		if (method_exists($OBJ, 'display_field'))
 		{
 			$r = $OBJ->display_field($field_name, $field_data);
@@ -715,19 +729,16 @@ class Fieldframe {
 		else
 		{
 			global $DSP;
-			$r = '<div style="margin:0 32px 0 17px;">'
-			   . $DSP->input_text($field_name, $field_data, null, null, 'input', '100%')
-			   . '</div>';
+			$r = $DSP->input_text($field_name, $field_data, null, null, 'input', '100%');
 		}
 
-		return $r;
+		return '<div style="padding:5px 27px 17px 17px;">'.$r.'</div>';
 	}
 
 	/**
 	 * Publish Form - Submit New Entry
 	 *
 	 * @see    http://expressionengine.com/developers/extension_hooks/submit_new_entry_start/
-	 * @author Mark Huot
 	 */
 	function submit_new_entry_start()
 	{

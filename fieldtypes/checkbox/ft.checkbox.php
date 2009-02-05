@@ -32,8 +32,7 @@ class Checkbox
 	function display_field($field_name, $field_data)
 	{
 		global $DSP;
-
-		return '<label style="display:inline-block; margin:5px 0 10px 17px; padding:1px; background:#768E9D;">'
+		return '<label style="display:inline-block; padding:1px; background:#768E9D;">'
 		         . $DSP->input_checkbox($field_name, 'y', $field_data == 'y' ? 1 : 0)
 		         . '</label>';
 	}
