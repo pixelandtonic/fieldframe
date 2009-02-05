@@ -48,7 +48,7 @@ class Checkbox {
 	function display_cell($cell_name, $cell_data)
 	{
 		// We're not doing anything special for matrix cells,
-		// so we just route this call to display_custom_field()
+		// so we just route this call to display_field()
 		return $this->display_field($cell_name, $cell_data);
 	}
 

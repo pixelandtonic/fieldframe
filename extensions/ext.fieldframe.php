@@ -600,7 +600,8 @@ class Fieldframe {
 		$ftypes = $this->_get_ftypes();
 		foreach($ftypes as $class_name => $OBJ)
 		{
-			$r .= $DSP->input_select_option('ff_'.$class_name, $OBJ->info['name']);
+			$field_type = 'ff_'.$class_name;
+			$r .= $DSP->input_select_option($field_type, $OBJ->info['name'], ($data['field_type'] == $field_type ? 1 : 0));
 		}
 
 		return $r;
