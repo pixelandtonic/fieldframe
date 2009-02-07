@@ -17,7 +17,7 @@ class Fieldframe {
 
 	var $class = 'Fieldframe';
 	var $name = 'FieldFrame';
-	var $version = '0.0.4';
+	var $version = '0.0.5';
 	var $description = 'Field Type Framework';
 	var $settings_exist = 'y';
 	var $docs_url = 'http://eefields.com/';
@@ -185,32 +185,36 @@ class Fieldframe {
 	 *                but it's not a big deal because they're just object references
 	 * @access private
 	 */
-	function _get_ftypes_by_field_id()
+	function _get_fields()
 	{
 		global $DB;
 
 		if ( ! isset($this->cache['ftypes_by_field_id']))
 		{
 			$this->cache['ftypes_by_field_id'] = array();
+
 			// get the field types
 			if ($ftypes = $this->_get_ftypes())
 			{
+				// sort them by ID rather than class
 				$ftypes_by_id = array();
 				foreach($ftypes as $class_name => $OBJ)
 				{
-					$ftypes_by_id[$OBJ->_fieldtype_id] = $class_name;
+					$ftypes_by_id[$OBJ->_fieldtype_id] = $OBJ;
 				}
-				// get the field IDs and class names
-				$query = $DB->query("SELECT field_id, field_type FROM exp_weblog_fields
+
+				// get the field info
+				$query = $DB->query("SELECT field_id, field_type, ff_settings FROM exp_weblog_fields
 				                       WHERE field_type IN ('ftype_id_".implode("', 'ftype_id_", array_keys($ftypes_by_id))."')");
 				if ($query->num_rows)
 				{
 					foreach($query->result as $row)
 					{
-						// add fieldtype name to this field
 						$ftype_id = substr($row['field_type'], 9);
-						$class_name = $ftypes_by_id[$ftype_id];
-						$this->cache['ftypes_by_field_id'][$row['field_id']] = &$ftypes[$class_name];
+						$this->cache['ftypes_by_field_id'][$row['field_id']] = array(
+							'ftype' => $ftypes_by_id[$ftype_id],
+							'settings' => $row['ff_settings'] ? unserialize($row['ff_settings']) : array()
+						);
 					}
 				}
 			}
@@ -535,6 +539,13 @@ class Fieldframe {
 			              PRIMARY KEY (`fieldtype_id`)
 			            )");
 		}
+
+		// exp_weblog_fields.ff_settings
+		$query = $DB->query("SHOW COLUMNS FROM `exp_weblog_fields` WHERE Field = 'ff_settings'");
+		if ( ! $query->num_rows)
+		{
+			$DB->query("ALTER TABLE `exp_weblog_fields` ADD COLUMN `ff_settings` text NOT NULL");
+		}
 	}
 
 	/**
@@ -702,11 +713,11 @@ class Fieldframe {
 		if($IN->GBL('M', 'GET') == 'blog_admin' AND in_array($IN->GBL('P', 'GET'), array('field_editor', 'update_weblog_fields', 'delete_field')))
 		{
 			// get the FF fieldtypes
-			foreach($this->_get_ftypes_by_field_id() as $field_id => $OBJ)
+			foreach($this->_get_fields() as $field_id => $field)
 			{
 				// add fieldtype name to this field
 				$out = preg_replace("/(C=admin&amp;M=blog_admin&amp;P=edit_field&amp;field_id={$field_id}.*?<\/td>.*?<td.*?>.*?<\/td>.*?)<\/td>/is",
-				                      '$1'.$REGX->form_prep($OBJ->info['name']).'</td>', $out);
+				                      '$1'.$REGX->form_prep($field['ftype']->info['name']).'</td>', $out);
 			}
 		}
 
@@ -723,19 +734,19 @@ class Fieldframe {
 	 */
 	function publish_form_field_unique($row, $field_data)
 	{
-		$ftypes = $this->_get_ftypes_by_field_id();
+		$fields = $this->_get_fields();
 
-		if ( ! array_key_exists($row['field_id'], $ftypes))
+		if ( ! array_key_exists($row['field_id'], $fields))
 		{
 			return $this->_get_last_call();
 		}
 
 		$field_name = 'field_id_'.$row['field_id'];
+		$field = $fields[$row['field_id']];
 
-		$OBJ = $ftypes[$row['field_id']];
-		if (method_exists($OBJ, 'display_field'))
+		if (method_exists($$field['ftype'], 'display_field'))
 		{
-			$r = $OBJ->display_field($field_name, $field_data);
+			$r = $field['ftype']->display_field($field_name, $field_data, $field['settings']);
 		}
 		else
 		{
@@ -753,12 +764,12 @@ class Fieldframe {
 	 */
 	function submit_new_entry_start()
 	{
-		foreach($this->_get_ftypes_by_field_id() as $field_id => $OBJ)
+		foreach($this->_get_fields() as $field_id => $field)
 		{
-			if (method_exists($OBJ, 'save_field'))
+			if (method_exists($field['ftype'], 'save_field'))
 			{
 				$field_name = 'field_id_'.$field_id;
-				$OBJ->save_field($field_name);
+				$field['ftype']->save_field($field_name);
 			}
 		}
 	}
