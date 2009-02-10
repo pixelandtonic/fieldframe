@@ -435,7 +435,7 @@ class Fieldframe {
 		// save all FF settings
 		$settings = $this->_get_all_settings();
 		$settings[$PREFS->ini('site_id')] = $this->settings;
-		$sql[] = $DB->update_string('exp_extensions', array('settings' => addslashes(serialize($settings)), "class = '{$this->class}'"));
+		$sql[] = $DB->update_string('exp_extensions', array('settings' => addslashes(serialize($settings))), "class = '{$this->class}'");
 
 
 		// field type settings
@@ -727,7 +727,7 @@ class Fieldframe {
 	 */
 	function publish_admin_edit_field_type_celltwo($data, $cell)
 	{
-			return $this->_publish_admin_edit_field_type_cell($data, $cell, '2');
+		return $this->_publish_admin_edit_field_type_cell($data, $cell, '2');
 	}
 
 	/**

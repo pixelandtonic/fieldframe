@@ -40,9 +40,13 @@ class Checkbox_group {
 			}
 		}
 		return array(
+		              'cell1' => 'Test Cell One',
 		              'cell2' => $DSP->qdiv('defaultBold', 'Checkbox Options')
 		                       . $DSP->qdiv('default', 'Put each item on a single line')
-		                       . $DSP->input_textarea('options', $options, '6', 'textarea', '99%')
+		                       . $DSP->input_textarea('options', $options, '6', 'textarea', '99%'),
+		              'rows' => array(
+		                               
+		                              )
 		             );
 	}
 
