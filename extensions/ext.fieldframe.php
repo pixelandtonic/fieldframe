@@ -17,7 +17,7 @@ class Fieldframe {
 
 	var $class = 'Fieldframe';
 	var $name = 'FieldFrame';
-	var $version = '0.0.5';
+	var $version = '0.0.6';
 	var $description = 'Field Type Framework';
 	var $settings_exist = 'y';
 	var $docs_url = 'http://eefields.com/';
@@ -506,6 +506,9 @@ class Fieldframe {
 			'publish_admin_edit_field_format',
 			'publish_admin_edit_field_js',
 
+			// Save Field
+			'sessions_start',
+
 			// Field Manager
 			'show_full_control_panel_end',
 
@@ -644,7 +647,7 @@ class Fieldframe {
 			$ftype->_field_settings = array_merge(
 			                                       $field_settings_tmpl,
 			                                       method_exists($ftype, 'display_field_settings')
-			                                        ? $ftype->display_field_settings($selected ? $data['ff_settings'] : array())
+			                                        ? $ftype->display_field_settings($selected ? unserialize($data['ff_settings']) : array())
 			                                        : array()
 			                                      );
 		}
@@ -672,7 +675,16 @@ class Fieldframe {
 		return $r;
 	}
 
-	function _publish_admin_edit_field_type_cell($data, $cell, $c)
+	/**
+	 * Publish Admin - Edit Field Form - Cell
+	 *
+	 * @param  array   $data   The data about this field from the database
+	 * @param  string  $cell   The contents of the cell
+	 * @param  string  $index  The cell index
+	 * @return string  The modified $cell
+	 * @access private
+	 */
+	function _publish_admin_edit_field_type_cell($data, $cell, $index)
 	{
 		$r = $this->_get_last_call($cell);
 		foreach($this->_get_ftypes() as $class_name => $ftype)
@@ -680,8 +692,15 @@ class Fieldframe {
 			$ftype_id = 'ftype_id_'.$ftype->_fieldtype_id;
 			$selected = ($data['field_type'] == $ftype_id);
 
-			$r .= '<div id="'.$ftype_id.'_cell'.$c.'"' . ($selected ? '' : ' style="display:none;"') . '>'
-			    . preg_replace('/name=[\'"](\w+)[\'"]/i', 'name="ff['.$ftype_id.'][$1]"', $ftype->_field_settings['cell'.$c])
+			// move inputs into ftype namespace
+			/**
+			 * @todo modify regex to account for inputs with their own namespacing
+			 *       e.g. `options[]`
+			 */
+			$field_settings = preg_replace('/(name=[\'"])(\w+)([\'"])/i', '$1ftype['.$ftype_id.'][$2]$3', $ftype->_field_settings['cell'.$index]);
+
+			$r .= '<div id="'.$ftype_id.'_cell'.$index.'"' . ($selected ? '' : ' style="display:none;"') . '>'
+			    . $field_settings
 			    . '</div>';
 		}
 		return $r;
@@ -739,6 +758,56 @@ class Fieldframe {
 	{
 		$r = $this->_get_last_call($r);
 		return $r;
+	}
+
+	/**
+	 * Sessions Start
+	 *
+	 * Modify FF post vars
+	 *
+	 * @param object  $this  The current instantiated Session class with all of its variables and functions,
+	 *                       use a reference in your functions to modify.
+	 * @see   http://expressionengine.com/developers/extension_hooks/sessions_start/
+	 */
+	function sessions_start($sess)
+	{
+		// are we saving a field?
+		if (isset($_POST['field_type']))
+		{
+			// is this a FF fieldtype?
+			if (preg_match('/^ftype_id_(\d+)$/', $_POST['field_type'], $matches) !== FALSE)
+			{
+				$ftype_id = $matches[1];
+				$settings = (isset($_POST['ftype']) AND isset($_POST['ftype'][$_POST['field_type']]))
+				 ? $_POST['ftype'][$_POST['field_type']]
+				 : array();
+
+				// initialize the fieldtype
+				global $DB;
+				$query = $DB->query("SELECT * FROM exp_ff_fieldtypes WHERE fieldtype_id = '{$ftype_id}'");
+				if ($query->row)
+				{
+					$ftype = $this->_init_ftype($query->row);
+					if (method_exists($ftype, 'save_field_settings'))
+					{
+						// let the fieldtype modify the settings
+						$settings = $ftype->save_field_settings($settings);
+					}
+				}
+
+				// save settings as a post var
+				$_POST['ff_settings'] = addslashes(serialize($settings));
+			}
+
+			// unset extra FF post vars
+			foreach($_POST as $key => $value)
+			{
+				if (substr($key, 0, 5) == 'ftype')
+				{
+					unset($_POST[$key]);
+				}
+			}
+		}
 	}
 
 	/**

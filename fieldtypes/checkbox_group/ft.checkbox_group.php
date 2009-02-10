@@ -30,10 +30,19 @@ class Checkbox_group {
 	function display_field_settings($settings)
 	{
 		global $DSP;
+		$options = '';
+		if (isset($settings['options']))
+		{
+			foreach($settings['options'] as $name => $label)
+			{
+				if ($options) $options .= "\n";
+				$options .= $name.' : '.$label;
+			}
+		}
 		return array(
 		              'cell2' => $DSP->qdiv('defaultBold', 'Checkbox Options')
 		                       . $DSP->qdiv('default', 'Put each item on a single line')
-		                       . $DSP->input_textarea('options', (isset($settings['options']) ? $settings['options'] : ''), '6', 'textarea', '99%')
+		                       . $DSP->input_textarea('options', $options, '6', 'textarea', '99%')
 		             );
 	}
 
