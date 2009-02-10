@@ -1,123 +1,106 @@
 <?php
 
-class Checkbox_group
-{
+if ( ! defined('EXT')) exit('Invalid file request');
+
+
+/**
+ * Checkbox Group Class
+ *
+ * @package   FieldFrame
+ * @author    Brandon Kelly <me@brandon-kelly.com>
+ * @copyright Copyright (c) 2009 Brandon Kelly
+ * @license   http://creativecommons.org/licenses/by-sa/3.0/ Attribution-Share Alike 3.0 Unported
+ */
+class Checkbox_group {
+
 	var $info = array(
-		'name'                    => 'Checkbox Group',
-		'version'                 => '1.0.0',
-		'desc'                    => 'Provides a group of checkboxes',
-		'docs_url'                => 'http://brandon-kelly.com/',
-		'author'                  => 'Brandon Kelly',
-		'author_url'              => 'http://brandon-kelly.com/',
-		'versions_xml_url'        => 'http://brandon-kelly.com/downloads/versions.xml'
+		'name'             => 'Checkbox Group',
+		'version'          => '1.0.0',
+		'desc'             => 'Provides as checkbox group field type',
+		'docs_url'         => 'http://brandon-kelly.com/',
+		'versions_xml_url' => 'http://brandon-kelly.com/downloads/versions.xml'
 	);
-//
-//	/**
-//	 * Field Constructor
-//	 */
-//	function Checkbox_group($sitewide_settings=array())
-//	{
-//		$this->sitewide_settings = $sitewide_settings;
-//	}
-//
-//	/**
-//	 * Display Sitewide Settings
-//	 * 
-//	 * Called if $field_info['sitewide_settings_exist'] == 'y'
-//	 * 
-//	 * Defines the field’s sitewide settings block in Field’s
-//	 * settings page within the Extensions Manager
-//	 * 
-//	 * @return array
-//	 */
-//	function display_sitewide_settings()
-//	{
-//		return array();
-//	}
-//
-//	/**
-//	 * Display Field Settings
-//	 * 
-//	 * Called form the Edit Custom Field form
-//	 * 
-//	 * @param  array  $field_settings  The currently saved field settings
-//	 * @return array  Blocks of HTML
-//	 */
-//	function display_field_settings($field_settings)
-//	{
-//		global $DSP;
-//		
-//		$v = '';
-//		foreach($field_settings['options'] as $option_value => $option_label) {
-//			if ($v != '') $v .= NL;
-//			$v .= "{$option_value} = {$option_label}";
-//		}
-//		$r = array(
-//			'block2' => $DSP->input_textarea('checkbox_options', $v)
-//		);
-//		return $r;
-//	}
-//
-//	/**
-//	 * Save Field Settings
-//	 * 
-//	 * @return array  The field settings (not serialized)
-//	 */
-//	function save_field_settings()
-//	{
-//		$r = array(
-//			'options' => array()
-//		);
-//		foreach(explode(NL, $_POST['checkbox_options']) as $option) {
-//			$option = explode('=', $option);
-//			$r['options'][trim($option[0])] = trim($option[1])
-//		}
-//		
-//		$r = array(
-//			'options' => )
-//		);
-//		return $r;
-//	}
-//
-//	/**
-//	 * Display Custom Field
-//	 * 
-//	 * @param string   $field_id        The field’s name
-//	 * @param mixed    $field_data      The field’s current value
-//	 * @param array    $field_settings  The field’s settings
-//	 * 
-//	 * @return string  The field’s HTML
-//	 */
-//	function display_custom_field($field_id, $field_data, $field_settings)
-//	{
-//		global $DSP;
-//		
-//		$r = '';
-//		foreach($field_settings['options'] as $option_label => $option_value) {
-//			$checked = in_array($option_value, $field_data) ? 1 : 0;
-//			if ($r != '') $r .= BR;
-//			$r .= '<label>'
-//			    . $DSP->input_checkbox("{$field_id}[]", $option_value, $checked)
-//			    . NBSP.$option_label
-//			    . '</label>';
-//		}
-//	 	return $r;
-//	}
-//
-//	/**
-//	 * Save Field
-//	 * 
-//	 * @param string  $field_id  The field’s name
-//	 * @return mixed  The field’s data
-//	 */
-//	function save_field_data($field_id)
-//	{
-//		$r = array();
-//		foreach($_POST[$field_id] as $option_value) {
-//			$r[] = $option_value;
-//		}
-//		return $r;
-//	}
+
+	/**
+	 * Display Field Settings
+	 * 
+	 * @param  array  $settings  The field's settings
+	 * @return array  Settings HTML (col1, col2, rows)
+	 */
+	function display_field_settings($settings)
+	{
+		global $DSP;
+		return array(
+		              'cell2' => $DSP->qdiv('defaultBold', 'Checkbox Options')
+		                       . $DSP->qdiv('default', 'Put each item on a single line')
+		                       . $DSP->input_textarea('options', (isset($settings['options']) ? $settings['options'] : ''), '6', 'textarea', '99%')
+		             );
+	}
+
+	/**
+	 * Save Field Settings
+	 *
+	 * Turn the options textarea value into an array of option names and labels
+	 * 
+	 * @param  array  $settings  The user-submitted settings, pulled from $_POST
+	 * @return array  Modified $settings
+	 */
+	function save_field_settings($settings)
+	{
+		$r = array('options' => array());
+		$options = preg_split('/[\r\n]/', $settings['options']);
+		foreach($options as $option)
+		{
+			$option = explode(':', $option);
+			$option_name = trim($option[0]);
+			$option_value = isset($option[1]) ? trim($option[1]) : $option_name;
+			$r['options'][$option_name] = $option_value;
+		}
+		return $r;
+	}
+
+	/**
+	 * Display Field
+	 * 
+	 * @param  string  $field_name      The field's name
+	 * @param  mixed   $field_data      The field's current value
+	 * @param  array   $field_settings  The field's settings
+	 * @return string  The field's HTML
+	 */
+	function display_field($field_name, $field_data, $field_settings)
+	{
+		global $DSP;
+		$r = '';
+		if (isset($field_settings['options']))
+		{
+			foreach($field_settings['options'] as $option_name => $option_label)
+			{
+				$checked = in_array($option_name, $field_data) ? 1 : 0;
+				$r .= '<label style="margin-right:10px;">'
+				    . $DSP->input_checkbox("{$field_name}[{}$option_name}]", 'y', $checked)
+				    . '</label>';
+			}
+		}
+		return $r;
+	}
+
+	/**
+	 * Display Cell
+	 * 
+	 * @param  string  $cell_name      The cell's name
+	 * @param  mixed   $cell_data      The cell's current value
+	 * @param  array   $cell_settings  The cell's settings
+	 * @return string  The cell's HTML
+	 */
+	function display_cell($cell_name, $cell_data, $cell_settings)
+	{
+		// We're not doing anything special for matrix cells,
+		// so we just route this call to display_field()
+		return $this->display_field($cell_name, $cell_data, $cell_settings);
+	}
+
 }
 
-?>
+
+/* End of file ft.checkbox.php */
+/* Location: ./system/fieldtypes/ft.checkbox.php */

@@ -435,9 +435,7 @@ class Fieldframe {
 		// save all FF settings
 		$settings = $this->_get_all_settings();
 		$settings[$PREFS->ini('site_id')] = $this->settings;
-		$sql[] = "UPDATE exp_extensions
-		            SET settings = '".addslashes(serialize($settings))."'
-		            WHERE class = '{$this->class}'";
+		$sql[] = $DB->update_string('exp_extensions', array('settings' => addslashes(serialize($settings)), "class = '{$this->class}'"));
 
 
 		// field type settings
@@ -583,9 +581,7 @@ class Fieldframe {
 	function disable_extension()
 	{
 		global $DB;
-		$DB->query("UPDATE exp_extensions
-		              SET enabled = 'n'
-		              WHERE class = '{$this->class}'");
+		$DB->query($DB->update_string('exp_extensions', array('enabled' => 'n'), "class = '{$this->class}'"));
 	}
 
 	/**
@@ -626,6 +622,72 @@ class Fieldframe {
 	}
 
 	/**
+	 * Publish Admin - Edit Field Form - Javascript
+	 *
+	 * @param  array   $data  The data about this field from the database
+	 * @param  string  $js    Currently existing javascript
+	 * @return string  The modified $js
+	 * @see    http://expressionengine.com/developers/extension_hooks/publish_admin_edit_field_js/
+	 */
+	function publish_admin_edit_field_js($data, $js)
+	{
+		// Prepare fieldtypes for following Publish Admin hooks
+		$field_settings_tmpl = array(
+			'cell1' => '',
+			'cell2' => '',
+			'rows' => array()
+		);
+		foreach($this->_get_ftypes() as $class_name => $ftype)
+		{
+			$ftype_id = 'ftype_id_'.$ftype->_fieldtype_id;
+			$selected = ($ftype_id == $data['field_type']) ? TRUE : FALSE;
+			$ftype->_field_settings = array_merge(
+			                                       $field_settings_tmpl,
+			                                       method_exists($ftype, 'display_field_settings')
+			                                        ? $ftype->display_field_settings($selected ? $data['ff_settings'] : array())
+			                                        : array()
+			                                      );
+		}
+
+		// Add the JS
+		$r = $this->_get_last_call($js);
+		$r = preg_replace("/(function\s+showhide_element\(\s*id\s*\)\s*{)/is", "$1
+		// Toggle divs for FieldFrame fieldtypes
+		// (This is how all fieldtype-related div toggling should be done -- inexplicitly.)
+		if (id.match(/^ftype_id_\d+$/))
+		{
+			for (var c=1; c<=2; c++)
+			{
+				var showDiv = document.getElementById(id+'_cell'+c);
+				var divs = showDiv.parentNode.childNodes;
+				for(var i=0; i<divs.length; i++)
+				{
+					var div = divs[i];
+					if ( ! (div.nodeType == 1 && div.id)) continue;
+					div.style.display = (div == showDiv) ? 'block' : 'none';
+				}
+			}
+			return;
+		}", $r);
+		return $r;
+	}
+
+	function _publish_admin_edit_field_type_cell($data, $cell, $c)
+	{
+		$r = $this->_get_last_call($cell);
+		foreach($this->_get_ftypes() as $class_name => $ftype)
+		{
+			$ftype_id = 'ftype_id_'.$ftype->_fieldtype_id;
+			$selected = ($data['field_type'] == $ftype_id);
+
+			$r .= '<div id="'.$ftype_id.'_cell'.$c.'"' . ($selected ? '' : ' style="display:none;"') . '>'
+			    . $ftype->_field_settings['cell'.$c]
+			    . '</div>';
+		}
+		return $r;
+	}
+
+	/**
 	 * Publish Admin - Edit Field Form - Cell One
 	 *
 	 * @param  array   $data  The data about this field from the database
@@ -635,8 +697,7 @@ class Fieldframe {
 	 */
 	function publish_admin_edit_field_type_cellone($data, $cell)
 	{
-		$cell = $this->_get_last_call($cell);
-		return $cell;
+		return $this->_publish_admin_edit_field_type_cell($data, $cell, '1');
 	}
 
 	/**
@@ -649,22 +710,7 @@ class Fieldframe {
 	 */
 	function publish_admin_edit_field_type_celltwo($data, $cell)
 	{
-		$cell = $this->_get_last_call($cell);
-		return $cell;
-	}
-
-	/**
-	 * Publish Admin - Edit Field Form - Extra Row
-	 *
-	 * @param  array   $data  The data about this field from the database
-	 * @param  string  $r     The current contents of the page
-	 * @return string  The modified $r
-	 * @see    http://expressionengine.com/developers/extension_hooks/publish_admin_edit_field_extra_row/
-	 */
-	function publish_admin_edit_field_extra_row($data, $r)
-	{
-		$r = $this->_get_last_call($r);
-		return $r;
+			return $this->_publish_admin_edit_field_type_cell($data, $cell, '2');
 	}
 
 	/**
@@ -682,17 +728,17 @@ class Fieldframe {
 	}
 
 	/**
-	 * Publish Admin - Edit Field Form - Javascript
+	 * Publish Admin - Edit Field Form - Extra Row
 	 *
 	 * @param  array   $data  The data about this field from the database
-	 * @param  string  $js    Currently existing javascript
-	 * @return string  The modified $js
-	 * @see    http://expressionengine.com/developers/extension_hooks/publish_admin_edit_field_js/
+	 * @param  string  $r     The current contents of the page
+	 * @return string  The modified $r
+	 * @see    http://expressionengine.com/developers/extension_hooks/publish_admin_edit_field_extra_row/
 	 */
-	function publish_admin_edit_field_js($data, $js)
+	function publish_admin_edit_field_extra_row($data, $r)
 	{
-		$js = $this->_get_last_call($js);
-		return $js;
+		$r = $this->_get_last_call($r);
+		return $r;
 	}
 
 	/**
@@ -744,7 +790,7 @@ class Fieldframe {
 		$field_name = 'field_id_'.$row['field_id'];
 		$field = $fields[$row['field_id']];
 
-		if (method_exists($$field['ftype'], 'display_field'))
+		if (method_exists($field['ftype'], 'display_field'))
 		{
 			$r = $field['ftype']->display_field($field_name, $field_data, $field['settings']);
 		}
