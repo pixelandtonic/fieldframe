@@ -651,7 +651,7 @@ class Fieldframe {
 
 		// Add the JS
 		$r = $this->_get_last_call($js);
-		$r = preg_replace("/(function\s+showhide_element\(\s*id\s*\)\s*{)/is", "$1
+		$r = preg_replace('/(function\s+showhide_element\(\s*id\s*\)\s*{)/is', "$1
 		// Toggle divs for FieldFrame fieldtypes
 		// (This is how all fieldtype-related div toggling should be done -- inexplicitly.)
 		if (id.match(/^ftype_id_\d+$/))
@@ -681,7 +681,7 @@ class Fieldframe {
 			$selected = ($data['field_type'] == $ftype_id);
 
 			$r .= '<div id="'.$ftype_id.'_cell'.$c.'"' . ($selected ? '' : ' style="display:none;"') . '>'
-			    . $ftype->_field_settings['cell'.$c]
+			    . preg_replace('/name=[\'"](\w+)[\'"]/i', 'name="ff['.$ftype_id.'][$1]"', $ftype->_field_settings['cell'.$c])
 			    . '</div>';
 		}
 		return $r;
