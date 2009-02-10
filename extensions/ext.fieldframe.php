@@ -693,11 +693,9 @@ class Fieldframe {
 			$selected = ($data['field_type'] == $ftype_id);
 
 			// move inputs into ftype namespace
-			/**
-			 * @todo modify regex to account for inputs with their own namespacing
-			 *       e.g. `options[]`
-			 */
-			$field_settings = preg_replace('/(name=[\'"])(\w+)([\'"])/i', '$1ftype['.$ftype_id.'][$2]$3', $ftype->_field_settings['cell'.$index]);
+			// e.g. name="options"   => name="ftype[ftype_id_1][options]"
+			//      name="options[]" => name="ftype[ftype_id_1][options][]"
+			$field_settings = preg_replace('/(name=[\'"])([^\'"\[\]]+)([^\'"]*)([\'"])/i', '$1ftype['.$ftype_id.'][$2]$3$4', $ftype->_field_settings['cell'.$index]);
 
 			$r .= '<div id="'.$ftype_id.'_cell'.$index.'"' . ($selected ? '' : ' style="display:none;"') . '>'
 			    . $field_settings
