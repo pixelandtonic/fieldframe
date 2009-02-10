@@ -948,10 +948,21 @@ class Fieldframe {
 		$sources = $this->_get_last_call($sources);
 		if ($this->settings['check_for_updates'] == 'y')
 		{
+			// add FieldFrame source
 			$source = 'http://brandon-kelly.com/downloads/versions.xml';
 			if ( ! in_array($source, $sources))
 			{
 				$sources[] = $source;
+			}
+
+			// add ftype sources
+			foreach($this->_get_ftypes() as $class_name => $ftype)
+			{
+				$source = $ftype->info['versions_xml_url'];
+				if ($source AND ! in_array($source, $sources))
+				{
+					$sources[] = $source;
+				}
 			}
 		}
 		return $sources;
@@ -969,7 +980,14 @@ class Fieldframe {
 		$addons = $this->_get_last_call($addons);
 		if ($this->settings['check_for_updates'] == 'y')
 		{
+			// add FieldFrame
 			$addons[$this->class] = $this->version;
+
+			// add ftypes
+			foreach($this->_get_ftypes() as $class_name => $ftype)
+			{
+				$addons[$class_name] = $ftype->info['version'];
+			}
 		}
 		return $addons;
 	}
