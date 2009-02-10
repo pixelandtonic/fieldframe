@@ -44,9 +44,10 @@ class Checkbox_group {
 		              'cell2' => $DSP->qdiv('defaultBold', 'Checkbox Options')
 		                       . $DSP->qdiv('default', 'Put each item on a single line')
 		                       . $DSP->input_textarea('options', $options, '6', 'textarea', '99%'),
-		              'rows' => array(
-		                               
-		                              )
+		              'rows'  => array(
+		                                array($DSP->qdiv('defaultBold', 'Test Row 1'), '<label>Yes'.NBS.$DSP->input_radio('row1', 'y', 1).'</label>'.NBS.NBS.NBS.'<label>No'.NBS.$DSP->input_radio('row1', 'n').'</label>'),
+		                                array($DSP->qdiv('defaultBold', 'Test Row 2'), '<label>Yes'.NBS.$DSP->input_radio('row2', 'y', 1).'</label>'.NBS.NBS.NBS.'<label>No'.NBS.$DSP->input_radio('row2', 'n').'</label>')
+		                               )
 		             );
 	}
 

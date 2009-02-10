@@ -640,6 +640,7 @@ class Fieldframe {
 			'cell2' => '',
 			'rows' => array()
 		);
+		$prev_ftype_id = '';
 		foreach($this->_get_ftypes() as $class_name => $ftype)
 		{
 			$ftype_id = 'ftype_id_'.$ftype->_fieldtype_id;
@@ -650,28 +651,53 @@ class Fieldframe {
 			                                        ? $ftype->display_field_settings($selected ? unserialize($data['ff_settings']) : array())
 			                                        : array()
 			                                      );
+			if ($selected) $prev_ftype_id = $ftype_id;
 		}
 
 		// Add the JS
 		$r = $this->_get_last_call($js);
-		$r = preg_replace('/(function\s+showhide_element\(\s*id\s*\)\s*{)/is', "$1
-		// Toggle divs for FieldFrame fieldtypes
-		// (This is how all fieldtype-related div toggling should be done -- inexplicitly.)
-		if (id.match(/^ftype_id_\d+$/))
-		{
-			for (var c=1; c<=2; c++)
+		$r = preg_replace('/(function\s+showhide_element\(\s*id\s*\)\s*{)/is', "
+		var prev_ftype_id = '{$prev_ftype_id}';
+
+		$1
+			if (prev_ftype_id)
 			{
-				var showDiv = document.getElementById(id+'_cell'+c);
-				var divs = showDiv.parentNode.childNodes;
-				for(var i=0; i<divs.length; i++)
+				var c=1, r=1;
+				while(cell = document.getElementById(prev_ftype_id+'_cell'+c))
 				{
-					var div = divs[i];
-					if ( ! (div.nodeType == 1 && div.id)) continue;
-					div.style.display = (div == showDiv) ? 'block' : 'none';
+					cell.style.display = 'none';
+					c++;
+				}
+				while(row = document.getElementById(prev_ftype_id+'_row'+r))
+				{
+					console.log(row);
+					row.style.display = 'none';
+					r++;
 				}
 			}
-			return;
-		}", $r);
+
+			if (id.match(/^ftype_id_\d+$/))
+			{
+				var c=1, r=1;
+				while(cell = document.getElementById(id+'_cell'+c))
+				{
+					//var showDiv = document.getElementById(id+'_cell'+c);
+					var divs = cell.parentNode.childNodes;
+					for(var i=0; i<divs.length; i++)
+					{
+						var div = divs[i];
+						if ( ! (div.nodeType == 1 && div.id)) continue;
+						div.style.display = (div == cell) ? 'block' : 'none';
+					}
+					c++;
+				}
+				while(row = document.getElementById(id+'_row'+r))
+				{
+					row.style.display = 'table-row';
+					r++;
+				}
+				prev_ftype_id = id;
+			}\n", $r);
 		return $r;
 	}
 
@@ -697,7 +723,7 @@ class Fieldframe {
 			//      name="options[]" => name="ftype[ftype_id_1][options][]"
 			$field_settings = preg_replace('/(name=[\'"])([^\'"\[\]]+)([^\'"]*)([\'"])/i', '$1ftype['.$ftype_id.'][$2]$3$4', $ftype->_field_settings['cell'.$index]);
 
-			$r .= '<div id="'.$ftype_id.'_cell'.$index.'"' . ($selected ? '' : ' style="display:none;"') . '>'
+			$r .= '<div id="'.$ftype_id.'_cell'.$index.'" style="margin-top:5px; display:'.($selected ? 'block' : 'none').';">'
 			    . $field_settings
 			    . '</div>';
 		}
@@ -754,7 +780,30 @@ class Fieldframe {
 	 */
 	function publish_admin_edit_field_extra_row($data, $r)
 	{
+		global $DSP, $LANG;
+
+		$rows = '';
+		foreach($this->_get_ftypes() as $class_name => $ftype)
+		{
+			$ftype_id = 'ftype_id_'.$ftype->_fieldtype_id;
+			$selected = ($data['field_type'] == $ftype_id);
+
+			foreach($ftype->_field_settings['rows'] as $index => $row)
+			{
+				$rows .= '<tr id="'.$ftype_id.'_row'.($index+1).'"' . ($selected ? '' : ' style="display:none;"') . '>'
+				       . $DSP->td('tableCellOne')
+				       . $row[0]
+				       . $DSP->td_c()
+				       . $DSP->td('tableCellOne')
+				       . $row[1]
+				       . $DSP->td_c()
+				       . $DSP->tr_c();
+			}
+		}
+		$rows = preg_replace('/(name=[\'"])([^\'"\[\]]+)([^\'"]*)([\'"])/i', '$1ftype['.$ftype_id.'][$2]$3$4', $rows);
+
 		$r = $this->_get_last_call($r);
+		$r = preg_replace('/(<tr>\s*<td[^>]*>\s*<div[^>]*>\s*'.$LANG->line('deft_field_formatting').'\s*<\/div>)/is', $rows.'$1', $r);
 		return $r;
 	}
 
