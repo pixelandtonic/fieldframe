@@ -79,14 +79,16 @@ class Checkbox_group {
 	function display_field($field_name, $field_data, $field_settings)
 	{
 		global $DSP;
+		$field_data = $field_data ? unserialize($field_data) : array();
 		$r = '';
 		if (isset($field_settings['options']))
 		{
 			foreach($field_settings['options'] as $option_name => $option_label)
 			{
 				$checked = in_array($option_name, $field_data) ? 1 : 0;
-				$r .= '<label style="margin-right:10px;">'
+				$r .= '<label style="margin-right:15px; white-space:nowrap;">'
 				    . $DSP->input_checkbox("{$field_name}[{}$option_name}]", 'y', $checked)
+				    . $option_label
 				    . '</label>';
 			}
 		}
