@@ -134,11 +134,11 @@ class Fieldframe {
 
 			if ($query->num_rows)
 			{
-				foreach($query->result as $ftype)
+				foreach($query->result as $row)
 				{
-					if (($OBJ = $this->_init_ftype($ftype)) !== FALSE)
+					if (($ftype = $this->_init_ftype($row)) !== FALSE)
 					{
-						$this->cache['ftypes'][$ftype['class']] = $OBJ;
+						$this->cache['ftypes'][$row['class']] = $ftype;
 					}
 				}
 			}
@@ -198,9 +198,9 @@ class Fieldframe {
 			{
 				// sort them by ID rather than class
 				$ftypes_by_id = array();
-				foreach($ftypes as $class_name => $OBJ)
+				foreach($ftypes as $class_name => $ftype)
 				{
-					$ftypes_by_id[$OBJ->_fieldtype_id] = $OBJ;
+					$ftypes_by_id[$ftype->_fieldtype_id] = $ftype;
 				}
 
 				// get the field info
@@ -384,12 +384,12 @@ class Fieldframe {
 			                                   $LANG->line('documentation')
 			                                 ));
 
-			foreach($ftypes as $class_name => $OBJ)
+			foreach($ftypes as $class_name => $ftype)
 			{
 				$DSP->body .= $SD->row(array(
-				                         $SD->label($OBJ->info['name'].NBS.$DSP->qspan('xhtmlWrapperLight defaultSmall', $OBJ->info['version']), $OBJ->info['desc']),
-				                         $SD->radio_group('ftypes['.$class_name.'][enabled]', ($OBJ->_is_enabled ? 'y' : 'n'), array('y'=>'yes', 'n'=>'no')),
-				                         ($OBJ->info['docs_url'] ? '<a href="'.stripslashes($OBJ->info['docs_url']).'">'.$LANG->line('documentation').'</a>' : '--')
+				                         $SD->label($ftype->info['name'].NBS.$DSP->qspan('xhtmlWrapperLight defaultSmall', $ftype->info['version']), $ftype->info['desc']),
+				                         $SD->radio_group('ftypes['.$class_name.'][enabled]', ($ftype->_is_enabled ? 'y' : 'n'), array('y'=>'yes', 'n'=>'no')),
+				                         ($ftype->info['docs_url'] ? '<a href="'.stripslashes($ftype->info['docs_url']).'">'.$LANG->line('documentation').'</a>' : '--')
 				                       ));
 			}
 		}
@@ -449,15 +449,15 @@ class Fieldframe {
 				if ($ftype_post['enabled'] != 'y') continue;
 
 				// Initialize or skip
-				if (($OBJ = $this->_init_ftype($file)) === FALSE) continue;
+				if (($ftype = $this->_init_ftype($file)) === FALSE) continue;
 
 				$data = array('enabled' => $ftype_post['enabled'] == 'y' ? 'y' : 'n');
 
 				// insert a new row if it's new
-				if ($OBJ->_is_new)
+				if ($ftype->_is_new)
 				{
 					$data['class'] = $file;
-					$data['version'] = $OBJ->info['version'];
+					$data['version'] = $ftype->info['version'];
 					$sql[] = $DB->insert_string('exp_ff_fieldtypes', $data);
 				}
 				else
@@ -615,10 +615,10 @@ class Fieldframe {
 		global $DSP;
 
 		$ftypes = $this->_get_ftypes();
-		foreach($ftypes as $class_name => $OBJ)
+		foreach($ftypes as $class_name => $ftype)
 		{
-			$field_type = 'ftype_id_'.$OBJ->_fieldtype_id;
-			$r .= $DSP->input_select_option($field_type, $OBJ->info['name'], ($data['field_type'] == $field_type ? 1 : 0));
+			$field_type = 'ftype_id_'.$ftype->_fieldtype_id;
+			$r .= $DSP->input_select_option($field_type, $ftype->info['name'], ($data['field_type'] == $field_type ? 1 : 0));
 		}
 
 		return $r;

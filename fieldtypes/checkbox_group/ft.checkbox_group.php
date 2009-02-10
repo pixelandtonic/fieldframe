@@ -62,7 +62,7 @@ class Checkbox_group {
 	function save_field_settings($settings)
 	{
 		$r = array('options' => array());
-		$options = preg_split('/[\r\n]/', $settings['options']);
+		$options = preg_split('/[\r\n]+/', $settings['options']);
 		foreach($options as $option)
 		{
 			$option = explode(':', $option);
