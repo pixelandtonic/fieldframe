@@ -56,4 +56,4 @@ class Checkbox {
 
 
 /* End of file ft.checkbox.php */
-/* Location: ./system/fieldtypes/ft.checkbox.php */
+/* Location: ./system/fieldtypes/checkbox/ft.checkbox.php */

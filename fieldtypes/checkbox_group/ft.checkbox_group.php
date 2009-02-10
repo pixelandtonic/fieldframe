@@ -113,5 +113,5 @@ class Checkbox_group {
 }
 
 
-/* End of file ft.checkbox.php */
-/* Location: ./system/fieldtypes/ft.checkbox.php */
+/* End of file ft.checkbox_group.php */
+/* Location: ./system/fieldtypes/checkbox_group/ft.checkbox_group.php */
