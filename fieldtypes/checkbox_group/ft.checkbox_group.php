@@ -87,7 +87,7 @@ class Checkbox_group {
 			{
 				$checked = in_array($option_name, $field_data) ? 1 : 0;
 				$r .= '<label style="margin-right:15px; white-space:nowrap;">'
-				    . $DSP->input_checkbox("{$field_name}[{}$option_name}]", 'y', $checked)
+				    . $DSP->input_checkbox("{$field_name}[{$option_name}]", 'y', $checked)
 				    . $option_label
 				    . '</label>';
 			}
