@@ -17,7 +17,7 @@ class Fieldframe {
 
 	var $class = 'Fieldframe';
 	var $name = 'FieldFrame';
-	var $version = '0.0.6';
+	var $version = '0.0.7';
 	var $description = 'Field Type Framework';
 	var $settings_exist = 'y';
 	var $docs_url = 'http://eefields.com/';
@@ -513,8 +513,11 @@ class Fieldframe {
 			'show_full_control_panel_end',
 
 			// Entry Form
+			'publish_form_start',
+			'publish_form_headers',
 			'publish_form_field_unique',
 			'submit_new_entry_start',
+			'submit_new_entry_end',
 
 			// LG Addon Updater
 			'lg_addon_update_register_source',
@@ -603,6 +606,8 @@ class Fieldframe {
 	/**
 	 * Publish Admin - Edit Field Form - Field Type Menu
 	 *
+	 * Allows modifying or adding onto Custom Weblog Field Type Pulldown
+	 *
 	 * @param  array   $data  The data about this field from the database
 	 * @param  string  $typemenu  The contents of the type menu
 	 * @return string  The modified $typemenu
@@ -626,6 +631,8 @@ class Fieldframe {
 
 	/**
 	 * Publish Admin - Edit Field Form - Javascript
+	 *
+	 * Allows modifying or adding onto Custom Weblog Field JS
 	 *
 	 * @param  array   $data  The data about this field from the database
 	 * @param  string  $js    Currently existing javascript
@@ -733,6 +740,8 @@ class Fieldframe {
 	/**
 	 * Publish Admin - Edit Field Form - Cell One
 	 *
+	 * Allows modifying or adding onto Custom Weblog Field Type - First Table Cell
+	 *
 	 * @param  array   $data  The data about this field from the database
 	 * @param  string  $cell  The contents of the cell
 	 * @return string  The modified $cell
@@ -745,6 +754,8 @@ class Fieldframe {
 
 	/**
 	 * Publish Admin - Edit Field Form - Cell Two
+	 *
+	 * Allows modifying or adding onto Custom Weblog Field Type - Second Table Cell
 	 *
 	 * @param  array   $data  The data about this field from the database
 	 * @param  string  $cell  The contents of the cell
@@ -759,6 +770,8 @@ class Fieldframe {
 	/**
 	 * Publish Admin - Edit Field Form - Format
 	 *
+	 * Allows modifying or adding onto Default Text Formatting Cell
+	 *
 	 * @param  array   $data  The data about this field from the database
 	 * @param  string  $y     The current contents of the format cell
 	 * @return string  The modified $y
@@ -772,6 +785,8 @@ class Fieldframe {
 
 	/**
 	 * Publish Admin - Edit Field Form - Extra Row
+	 *
+	 * Allows modifying or adding onto the Custom Field settings table
 	 *
 	 * @param  array   $data  The data about this field from the database
 	 * @param  string  $r     The current contents of the page
@@ -810,7 +825,9 @@ class Fieldframe {
 	/**
 	 * Sessions Start
 	 *
-	 * Modify FF post vars
+	 * - Reset any session class variable
+	 * - Override the whole session check
+	 * - Modify default/guest settings
 	 *
 	 * @param object  $this  The current instantiated Session class with all of its variables and functions,
 	 *                       use a reference in your functions to modify.
@@ -860,7 +877,8 @@ class Fieldframe {
 	/**
 	 * Display - Show Full Control Panel - End
 	 *
-	 * Fill in missing Field Types
+	 * - Rewrite CP's HTML
+	 * - Find/Replace stuff, etc.
 	 *
 	 * @param  string  $end  The content of the admin page to be outputted
 	 * @return string  The modified $out
@@ -887,7 +905,42 @@ class Fieldframe {
 	}
 
 	/**
+	 * Publish Form - Start
+	 *
+	 * Allows complete rewrite of Publish page
+	 *
+	 * @param  string  $which             new, preview, edit, or save
+	 * @param  string  $submission_error  submission error, if any
+	 * @param  string  $entry_id          Entry ID being sent to the form
+	 * @see    http://expressionengine.com/developers/extension_hooks/publish_form_start/
+	 */
+	function publish_form_start($which, $submission_error, $entry_id)
+	{
+		
+	}
+
+	/**
+	 * Publish Form - Headers
+	 *
+	 * Adds content to headers for Publish page
+	 *
+	 * @param  string  $which             new, preview, edit, or save
+	 * @param  string  $submission_error  submission error, if any
+	 * @param  string  $entry_id          Entry ID being sent to the form
+	 * @param  string  $weblog_id         the Weblog ID being sent to the form
+	 * @return string  extra HTML to be added to the Publish page header
+	 * @see    http://expressionengine.com/developers/extension_hooks/publish_form_headers/
+	 */
+	function publish_form_headers($which, $submission_error, $entry_id)
+	{
+		$r = $this->_get_last_call();
+		return $r;
+	}
+
+	/**
 	 * Publish Form - Unique Field
+	 *
+	 * Allows adding of unique custom fields via extensions
 	 *
 	 * @param  array   $row  Parameters for the field from the database
 	 * @param  array   $field_data  If entry is not new, this will have field's current value
@@ -922,6 +975,8 @@ class Fieldframe {
 	/**
 	 * Publish Form - Submit New Entry
 	 *
+	 * Add More Stuff to do when you first submit an entry
+	 *
 	 * @see http://expressionengine.com/developers/extension_hooks/submit_new_entry_start/
 	 */
 	function submit_new_entry_start()
@@ -934,6 +989,21 @@ class Fieldframe {
 				$field['ftype']->save_field($field_name);
 			}
 		}
+	}
+
+	/**
+	 * Publish Form - Submit New End
+	 *
+	 * After an entry is submitted, do more processing
+	 *
+	 * @param string  $entry_id      Entry's ID
+	 * @param array   $data          Array of data about entry (title, url_title)
+	 * @param string  $ping_message  Error message if trackbacks or pings have failed to be sent
+	 * @see   http://expressionengine.com/developers/extension_hooks/submit_new_entry_end/
+	 */
+	function submit_new_entry_end()
+	{
+		
 	}
 
 	/**
