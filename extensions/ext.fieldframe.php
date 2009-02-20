@@ -4,9 +4,12 @@ if ( ! defined('EXT')) exit('Invalid file request');
 
 // define FF constants
 // (used by Fieldframe and Fieldframe_Main)
-if ( ! defined('FF_CLASS'))   define('FF_CLASS',   'Fieldframe');
-if ( ! defined('FF_NAME'))    define('FF_NAME',    'FieldFrame');
-if ( ! defined('FF_VERSION')) define('FF_VERSION', '1.0.7');
+if ( ! defined('FF_CLASS'))
+{
+	define('FF_CLASS',   'Fieldframe');
+	define('FF_NAME',    'FieldFrame');
+	define('FF_VERSION', '1.0.7');
+}
 
 
 /**
