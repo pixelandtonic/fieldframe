@@ -2,6 +2,12 @@
 
 if ( ! defined('EXT')) exit('Invalid file request');
 
+// define FF constants
+// (used by Fieldframe and Fieldframe_Main)
+if ( ! defined('FF_CLASS'))   define('FF_CLASS',   'Fieldframe');
+if ( ! defined('FF_NAME'))    define('FF_NAME',    'FieldFrame');
+if ( ! defined('FF_VERSION')) define('FF_VERSION', '1.0.7');
+
 
 /**
  * FieldFrame Class
@@ -15,12 +21,11 @@ if ( ! defined('EXT')) exit('Invalid file request');
  */
 class Fieldframe {
 
-	var $class = 'Fieldframe';
-	var $name = 'FieldFrame';
-	var $version = '0.0.7';
-	var $description = 'Field Type Framework';
+	var $name           = FF_NAME;
+	var $version        = FF_VERSION;
+	var $description    = 'Field Type Framework';
 	var $settings_exist = 'y';
-	var $docs_url = 'http://eefields.com/';
+	var $docs_url       = 'http://eefields.com/';
 
 	/**
 	 * FieldFrame Class Constructor
@@ -33,16 +38,73 @@ class Fieldframe {
 		global $IN;
 		if ( ! ($IN->GBL('M', 'GET') == 'utilities' AND ($IN->GBL('P', 'GET') == 'extension_settings')))
 		{
-			$this->_init($settings);
+			$this->_init_main($settings);
 		}
 	}
 
 	/**
-	 * FieldFrame Class Initialization
+	 * Settings Form
 	 *
 	 * @param array  $settings
 	 */
-	function _init($settings)
+	function settings_form($settings=array())
+	{
+		$this->_init_main($settings);
+		return $this->OBJ->settings_form();
+	}
+
+	/**
+	 * Initialize Main class
+	 *
+	 * @param  array  $settings
+	 * @access private
+	 */
+	function _init_main($settings)
+	{
+		global $SESS;
+		if ( ! isset($SESS->cache[FF_CLASS]))
+		{
+			$SESS->cache[FF_CLASS] = array();
+		}
+		if ( ! isset($SESS->cache[FF_CLASS]['Main']))
+		{
+			$SESS->cache[FF_CLASS]['Main'] = new Fieldframe_Main($settings);
+		}
+		$this->OBJ = &$SESS->cache[FF_CLASS]['Main'];
+	}
+
+	/**
+	 * __call Magic Method
+	 *
+	 * Routes calls to missing methods to the $OBJ
+	 *
+	 * @param string  $method  Name of the missing method
+	 * @param array   $args    Arguments sent to the missing method
+	 */
+	function __call($method, $args)
+	{
+		return (isset($this->OBJ) AND method_exists($this->OBJ, $method))
+		  ? call_user_func_array(array(&$this->OBJ, $method), $args)
+		  : FALSE;
+	}
+
+}
+
+/**
+ * FieldFrame_Main Class
+ *
+ * Provides the core extension logic + hooks
+ *
+ * @package   FieldFrame
+ */
+class Fieldframe_Main {
+
+	/**
+	 * FieldFrame_Main Class Initialization
+	 *
+	 * @param array  $settings
+	 */
+	function Fieldframe_Main($settings)
 	{
 		global $SESS;
 
@@ -50,25 +112,8 @@ class Fieldframe {
 		$this->settings = $this->_get_settings($settings);
 
 		// create a reference to the cache
-		if ( ! isset($SESS->cache[$this->class]))
-		{
-			$SESS->cache[$this->class] = array();
-		}
-		$this->cache = &$SESS->cache[$this->class];
+		$this->cache = &$SESS->cache[FF_CLASS];
 
-		$this->_define_constants();
-
-		$this->errors = array();
-	}
-
-	/**
-	 * Define constants
-	 *
-	 * @access private
-	 */
-	function _define_constants()
-	{
-		// define constants
 		if ( ! defined('FT_PATH') AND $this->settings['fieldtypes_path'])
 		{
 			define('FT_PATH', $this->settings['fieldtypes_path']);
@@ -88,8 +133,8 @@ class Fieldframe {
 	function _get_all_settings()
 	{
 		global $DB;
-		$query = $DB->query("SELECT settings FROM exp_extensions
-		                       WHERE class = '{$this->class}' AND settings != '' LIMIT 1");
+		$query = $DB->query('SELECT settings FROM exp_extensions
+		                       WHERE class = "'.FF_CLASS.'" AND settings != "" LIMIT 1');
 		return $query->num_rows
 		 ? unserialize($query->row['settings'])
 		 : array();
@@ -304,11 +349,11 @@ class Fieldframe {
 	 * @param array  $current  Current extension settings (not site-specific)
 	 * @see   http://expressionengine.com/docs/development/extensions.html#settings
 	 */
-	function settings_form($current)
+	function settings_form()
 	{
 		// EE doesn't send the settings when initializing extensions on
 		// settings forms, so we have to initialize here instead
-		$this->_init($current);
+		//$this->_init($current);
 
 		global $DB, $DSP, $LANG, $IN;
 
@@ -317,11 +362,11 @@ class Fieldframe {
 		$DSP->title = $LANG->line('extension_settings');
 		$DSP->crumb = $DSP->anchor(BASE.AMP.'C=admin'.AMP.'area=utilities', $LANG->line('utilities'))
 		            . $DSP->crumb_item($DSP->anchor(BASE.AMP.'C=admin'.AMP.'M=utilities'.AMP.'P=extensions_manager', $LANG->line('extensions_manager')))
-		            . $DSP->crumb_item($this->name);
+		            . $DSP->crumb_item(FF_NAME);
 		$DSP->right_crumb($LANG->line('disable_extension'), BASE.AMP.'C=admin'.AMP.'M=utilities'.AMP.'P=toggle_extension_confirm'.AMP.'which=disable'.AMP.'name='.$IN->GBL('name'));
 
 		// open form
-		$DSP->body .= "<h1>{$this->name} <small>{$this->version}</small></h1>"
+		$DSP->body .= '<h1>'.FF_NAME.' <small>'.FF_VERSION.'</small></h1>'
 		            . $DSP->form_open(
 		                  array(
 		                    'action' => 'C=admin'.AMP.'M=utilities'.AMP.'P=save_extension_settings',
@@ -329,7 +374,7 @@ class Fieldframe {
 		                    'id'     => 'settings_subtext'
 		                  ),
 		                  array(
-		                    'name' => strtolower($this->class)
+		                    'name' => strtolower(FF_CLASS)
 		                  ));
 
 		// initialize FFSettingsDisplay
@@ -368,30 +413,20 @@ class Fieldframe {
 		// initialize field types
 		$ftypes = $this->_get_all_installed_ftypes();
 
-		if ($this->errors)
-		{
-			foreach($this->errors as $error)
-			{
-				$DSP->body .= $SD->info_row($error);
-			}
-		}
-		else
-		{
-			// add the headers
-			$DSP->body .= $SD->heading_row(array(
-			                                   $LANG->line('fieldtype'),
-			                                   $LANG->line('fieldtype_enabled'),
-			                                   $LANG->line('documentation')
-			                                 ));
+		// add the headers
+		$DSP->body .= $SD->heading_row(array(
+		                                   $LANG->line('fieldtype'),
+		                                   $LANG->line('fieldtype_enabled'),
+		                                   $LANG->line('documentation')
+		                                 ));
 
-			foreach($ftypes as $class_name => $ftype)
-			{
-				$DSP->body .= $SD->row(array(
-				                         $SD->label($ftype->info['name'].NBS.$DSP->qspan('xhtmlWrapperLight defaultSmall', $ftype->info['version']), $ftype->info['desc']),
-				                         $SD->radio_group('ftypes['.$class_name.'][enabled]', ($ftype->_is_enabled ? 'y' : 'n'), array('y'=>'yes', 'n'=>'no')),
-				                         ($ftype->info['docs_url'] ? '<a href="'.stripslashes($ftype->info['docs_url']).'">'.$LANG->line('documentation').'</a>' : '--')
-				                       ));
-			}
+		foreach($ftypes as $class_name => $ftype)
+		{
+			$DSP->body .= $SD->row(array(
+			                         $SD->label($ftype->info['name'].NBS.$DSP->qspan('xhtmlWrapperLight defaultSmall', $ftype->info['version']), $ftype->info['desc']),
+			                         $SD->radio_group('ftypes['.$class_name.'][enabled]', ($ftype->_is_enabled ? 'y' : 'n'), array('y'=>'yes', 'n'=>'no')),
+			                         ($ftype->info['docs_url'] ? '<a href="'.stripslashes($ftype->info['docs_url']).'">'.$LANG->line('documentation').'</a>' : '--')
+			                       ));
 		}
 
 		$DSP->body .= $SD->block_c();
@@ -435,26 +470,21 @@ class Fieldframe {
 		// save all FF settings
 		$settings = $this->_get_all_settings();
 		$settings[$PREFS->ini('site_id')] = $this->settings;
-		$sql[] = $DB->update_string('exp_extensions', array('settings' => addslashes(serialize($settings))), "class = '{$this->class}'");
+		$sql[] = $DB->update_string('exp_extensions', array('settings' => addslashes(serialize($settings))), 'class = "'.FF_CLASS.'"');
 
 
 		// field type settings
 		if (isset($_POST['ftypes']))
 		{
-			$this->_define_constants();
-
 			foreach($_POST['ftypes'] as $file => $ftype_post)
 			{
-				// skip if it's disabled
-				if ($ftype_post['enabled'] != 'y') continue;
-
-				// Initialize or skip
-				if (($ftype = $this->_init_ftype($file)) === FALSE) continue;
+				// Initialize
+				$ftype = $this->_init_ftype($file);
 
 				$data = array('enabled' => $ftype_post['enabled'] == 'y' ? 'y' : 'n');
 
 				// insert a new row if it's new
-				if ($ftype->_is_new)
+				if ($ftype AND $ftype->_is_new)
 				{
 					$data['class'] = $file;
 					$data['version'] = $ftype->info['version'];
@@ -485,15 +515,15 @@ class Fieldframe {
 		$settings = $this->_get_all_settings();
 
 		// Delete old hooks
-		$DB->query("DELETE FROM exp_extensions
-		              WHERE class = '{$this->class}'");
+		$DB->query('DELETE FROM exp_extensions
+		              WHERE class = "'.FF_CLASS.'"');
 
 		// Add new extensions
 		$hook_tmpl = array(
-			'class'    => $this->class,
+			'class'    => FF_CLASS,
 			'settings' => addslashes(serialize($settings)),
 			'priority' => 10,
-			'version'  => $this->version,
+			'version'  => FF_VERSION,
 			'enabled'  => 'y'
 		);
 
@@ -559,7 +589,7 @@ class Fieldframe {
 	 */
 	function update_extension($current='')
 	{
-		if ( ! $current OR $current == $this->version)
+		if ( ! $current OR $current == FF_VERSION)
 		{
 			// why did you call me again?
 			return FALSE;
@@ -576,8 +606,8 @@ class Fieldframe {
 		//	// just update the version nums
 		//	global $DB;
 		//	$DB->query("UPDATE exp_extensions
-		//	              SET version = '".$DB->escape_str($this->version)."'
-		//	              WHERE class = '{$this->class}'");
+		//	              SET version = '".$DB->escape_str(FF_VERSION)."'
+		//	              WHERE class = '{FF_CLASS}'");
 		//}
 	}
 
@@ -587,7 +617,7 @@ class Fieldframe {
 	function disable_extension()
 	{
 		global $DB;
-		$DB->query($DB->update_string('exp_extensions', array('enabled' => 'n'), "class = '{$this->class}'"));
+		$DB->query($DB->update_string('exp_extensions', array('enabled' => 'n'), 'class = "'.FF_CLASS.'"'));
 	}
 
 	/**
@@ -1051,7 +1081,7 @@ class Fieldframe {
 		if ($this->settings['check_for_updates'] == 'y')
 		{
 			// add FieldFrame
-			$addons[$this->class] = $this->version;
+			$addons[FF_CLASS] = FF_VERSION;
 
 			// add ftypes
 			foreach($this->_get_ftypes() as $class_name => $ftype)
