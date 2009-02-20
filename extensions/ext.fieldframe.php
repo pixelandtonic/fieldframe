@@ -93,6 +93,8 @@ class Fieldframe_Base {
 
 }
 
+// define actual Fieldframe class which extends
+// Fieldframe_Base with PHP version-targetted methods
 if (phpversion() >= '5')
 {
 	eval('
