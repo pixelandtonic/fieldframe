@@ -22,7 +22,7 @@ if ( ! defined('FF_CLASS'))
  * @copyright Copyright (c) 2009 Brandon Kelly
  * @license   http://creativecommons.org/licenses/by-sa/3.0/ Attribution-Share Alike 3.0 Unported
  */
-class Fieldframe {
+class Fieldframe_Base {
 
 	var $name           = FF_NAME;
 	var $version        = FF_VERSION;
@@ -35,7 +35,7 @@ class Fieldframe {
 	 *
 	 * @param array  $settings
 	 */
-	function Fieldframe($settings=array())
+	function Fieldframe_Base($settings=array())
 	{
 		// only initialize if we're not on the Settings page
 		global $IN;
@@ -77,20 +77,45 @@ class Fieldframe {
 	}
 
 	/**
-	 * __call Magic Method
+	 * _call Magic Method
 	 *
 	 * Routes calls to missing methods to the $OBJ
 	 *
 	 * @param string  $method  Name of the missing method
 	 * @param array   $args    Arguments sent to the missing method
 	 */
-	function __call($method, $args)
+	function _call($method, $args)
 	{
 		return (isset($this->OBJ) AND method_exists($this->OBJ, $method))
 		  ? call_user_func_array(array(&$this->OBJ, $method), $args)
 		  : FALSE;
 	}
 
+}
+
+if (phpversion() >= '5')
+{
+	eval('
+		class Fieldframe extends Fieldframe_Base {
+
+			function __call($method, $args)
+			{
+				return $this->_call($method, $args);
+			}
+		}
+	');
+}
+else
+{
+	eval('
+		class Fieldframe extends Fieldframe_Base {
+
+			function __call($method, $args, &$return_value)
+			{
+				$return_value = $this->_call($method, $args);
+			}
+		}
+	');
 }
 
 /**
@@ -905,6 +930,7 @@ class Fieldframe_Main {
 				}
 			}
 		}
+		return TRUE;
 	}
 
 	/**
