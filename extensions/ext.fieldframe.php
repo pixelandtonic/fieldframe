@@ -12,6 +12,25 @@ if ( ! defined('FF_CLASS'))
 }
 
 
+function _log()
+{
+	//return FALSE;
+	foreach(func_get_args() as $var)
+	{
+		if (is_string($var))
+		{
+			echo "<code style='display:block; margin:0; padding:5px 10px;'>{$var}</code>";
+		}
+		else
+		{
+			echo '<pre style="display:block; margin:0; padding:5px 10px; width:auto">';
+			print_r($var);
+			echo '</pre>';
+		}
+	}
+}
+
+
 /**
  * FieldFrame Class
  *
@@ -37,6 +56,8 @@ class Fieldframe_Base {
 	 */
 	function Fieldframe_Base($settings=array())
 	{
+		_log('<b>initialize</b> Fieldframe_Base');
+
 		// only initialize if we're not on the Settings page
 		global $IN;
 		if ( ! ($IN->GBL('M', 'GET') == 'utilities' AND ($IN->GBL('P', 'GET') == 'extension_settings')))
@@ -53,7 +74,9 @@ class Fieldframe_Base {
 	function settings_form($settings=array())
 	{
 		$this->_init_main($settings);
-		return $this->OBJ->settings_form();
+
+		global $FF;
+		$FF->settings_form();
 	}
 
 	/**
@@ -64,16 +87,13 @@ class Fieldframe_Base {
 	 */
 	function _init_main($settings)
 	{
-		global $SESS;
-		if ( ! isset($SESS->cache[FF_CLASS]))
+		global $SESS, $FF;
+
+		if ( ! isset($FF))
 		{
 			$SESS->cache[FF_CLASS] = array();
+			$FF = new Fieldframe_Main($settings);
 		}
-		if ( ! isset($SESS->cache[FF_CLASS]['Main']))
-		{
-			$SESS->cache[FF_CLASS]['Main'] = new Fieldframe_Main($settings);
-		}
-		$this->OBJ = &$SESS->cache[FF_CLASS]['Main'];
 	}
 
 	/**
@@ -86,9 +106,22 @@ class Fieldframe_Base {
 	 */
 	function _call($method, $args)
 	{
-		return (isset($this->OBJ) AND method_exists($this->OBJ, $method))
-		  ? call_user_func_array(array(&$this->OBJ, $method), $args)
-		  : FALSE;
+		_log('<b>call</b> '.$method);
+
+		global $FF;
+		if (isset($FF))
+		{
+			if (method_exists($FF, $method))
+			{
+				return call_user_func_array(array(&$FF, $method), $args);
+			}	
+			else if (substr($method, 0, 13) == 'forward_hook:')
+			{
+				$ext = explode(':', $method);
+				return call_user_func_array(array(&$FF, 'forward_hook'), array($ext[1], $ext[2], $args));
+			}
+		}
+		return FALSE;
 	}
 
 }
@@ -136,6 +169,8 @@ class Fieldframe_Main {
 	 */
 	function Fieldframe_Main($settings)
 	{
+		_log('<b>initialize</b> Fieldframe_Main', $settings);
+
 		global $SESS;
 
 		// get the site-specific settings
@@ -152,6 +187,8 @@ class Fieldframe_Main {
 		{
 			define('FT_URL', $this->settings['fieldtypes_url']);
 		}
+
+		$this->ftypes = $this->_get_ftypes();
 	}
 
 	/**
@@ -220,6 +257,14 @@ class Fieldframe_Main {
 		}
 
 		return $this->cache['ftypes'];
+	}
+
+	function _get_ftype($class_name)
+	{
+		$ftypes = $this->_get_ftypes();
+		return isset($ftypes[$class_name])
+		  ?  $ftypes[$class_name]
+		  :  FALSE;
 	}
 
 	/**
@@ -306,7 +351,9 @@ class Fieldframe_Main {
 	 * @access private
 	 */
 	function _init_ftype($ftype)
-	{
+	{	
+		global $DB;
+
 		$file = is_array($ftype) ? $ftype['class'] : $ftype;
 		$class_name = ucfirst($file);
 
@@ -326,6 +373,11 @@ class Fieldframe_Main {
 		// initialize object
 		$OBJ = new $class_name();
 
+		$OBJ->_class_name = $file;
+		$OBJ->_is_new     = FALSE;
+		$OBJ->_is_enabled = FALSE;
+		$OBJ->_is_updated = FALSE;
+
 		// settings
 		if ( ! isset($OBJ->settings)) $OBJ->settings = array();
 
@@ -339,25 +391,38 @@ class Fieldframe_Main {
 		if ( ! isset($OBJ->info['author_url'])) $OBJ->info['author_url'] = '';
 		if ( ! isset($OBJ->info['versions_xml_url'])) $OBJ->info['versions_xml_url'] = '';
 
+		// hooks
+		if ( ! isset($OBJ->hooks)) $OBJ->hooks = array();
+
 		// do we already know about this field type?
 		if (is_string($ftype))
 		{
-			global $DB;
 			$query = $DB->query("SELECT * FROM exp_ff_fieldtypes WHERE class = '{$file}' LIMIT 1");
 			$ftype = $query->row;
 		}
 		if ($ftype)
 		{
-			$OBJ->_is_new = FALSE;
-			$OBJ->_is_enabled = $ftype['enabled'] == 'y' ? TRUE : FALSE;
+			if ($ftype['enabled'])
+			{
+				$OBJ->_is_enabled = TRUE;
+			}
+
 			$OBJ->_fieldtype_id = $ftype['fieldtype_id'];
 
+			// new version?
 			if ($OBJ->info['version'] != $ftype['version'])
 			{
+				$OBJ->_is_updated = TRUE;
+
+				// update exp_ff_fieldtypes
 				$DB->query($DB->update_string('exp_ff_fieldtypes',
 				                              array('version' => $OBJ->info['version']),
-				                              "fieldtype_id = '{$ftype['fieldtype_id']}'"));
+				                              'fieldtype_id = "'.$ftype['fieldtype_id'].'"'));
 
+				// update the hooks
+				$this->_insert_ftype_hooks($OBJ);
+
+				// call update()
 				if (method_exists($OBJ, 'update'))
 				{
 					$OBJ->update($ftype['version']);
@@ -367,10 +432,56 @@ class Fieldframe_Main {
 		else
 		{
 			$OBJ->_is_new = TRUE;
-			$OBJ->_is_enabled = FALSE;
 		}
 
 		return $OBJ;
+	}
+
+	function _insert_ftype_hooks($ftype)
+	{
+		global $DB;
+
+		// remove any existing hooks
+		$DB->query('DELETE FROM exp_extensions
+		              WHERE class = "'.FF_CLASS.'" AND method LIKE "forward_hook:'.$ftype->_class_name.':%"');
+
+		// (re)insert the hooks
+		if ($ftype->hooks)
+		{
+			$hook_tmpl = array(
+				'priority' => 10,
+				'enabled'  => 'y'
+			);
+
+			$hook_req = array(
+				'class' => FF_CLASS,
+				//'settings' => 'fieldtype::'.$ftype->_class_name,
+				'settings' => '',
+				'version' => FF_VERSION
+			);
+
+			foreach($ftype->hooks as $hook)
+			{
+				$ext = array_merge(
+				         array_merge(
+				           $hook_tmpl,
+				           is_string($hook)
+				             ?  array('hook' => $hook, 'method' => $hook)
+				             :  $hook),
+				         $hook_req);
+
+				// format method - forward_hook:class_name:method
+				$ext['method'] = 'forward_hook:'.$ftype->_class_name.':'.$ext['method'];
+
+				// can't allow a ftype's hook to get called before FieldFrame
+				if ($ext['hook'] == 'sessions_start' AND $ext['priority'] == 1)
+				{
+					$ext['priority'] = 2;
+				}
+
+				$DB->query($DB->insert_string('exp_extensions', $ext));
+			}
+		}
 	}
 
 	/**
@@ -558,6 +669,8 @@ class Fieldframe_Main {
 		);
 
 		$hooks = array(
+			array('hook' => 'sessions_start', 'method' => 'sessions_start', 'priority' => 1),
+
 			// Edit Field Form
 			'publish_admin_edit_field_type_pulldown',
 			'publish_admin_edit_field_type_cellone',
@@ -565,9 +678,6 @@ class Fieldframe_Main {
 			'publish_admin_edit_field_extra_row',
 			'publish_admin_edit_field_format',
 			'publish_admin_edit_field_js',
-
-			// Save Field
-			'sessions_start',
 
 			// Field Manager
 			'show_full_control_panel_end',
@@ -661,6 +771,27 @@ class Fieldframe_Main {
 	{
 		global $EXT;
 		return ($EXT->last_call !== FALSE) ? $EXT->last_call : $param;
+	}
+
+	/**
+	 * Sessions Start
+	 *
+	 * - Reset any session class variable
+	 * - Override the whole session check
+	 * - Modify default/guest settings
+	 *
+	 * @param object  $this  The current instantiated Session class with all of its variables and functions,
+	 *                       use a reference in your functions to modify.
+	 * @see   http://expressionengine.com/developers/extension_hooks/sessions_start/
+	 */
+	function sessions_start($sess)
+	{
+		// are we saving a field?
+		if (isset($_POST['field_type']))
+		{
+			$this->publish_admin_edit_field_save();
+		}
+		return TRUE;
 	}
 
 	/**
@@ -883,56 +1014,46 @@ class Fieldframe_Main {
 	}
 
 	/**
-	 * Sessions Start
+	 * Publish Admin - Edit Field Form - Save Field
 	 *
-	 * - Reset any session class variable
-	 * - Override the whole session check
-	 * - Modify default/guest settings
-	 *
-	 * @param object  $this  The current instantiated Session class with all of its variables and functions,
-	 *                       use a reference in your functions to modify.
-	 * @see   http://expressionengine.com/developers/extension_hooks/sessions_start/
+	 * Made-up hook called by sessions_start
+	 * when $_POST['field_type'] is set
 	 */
-	function sessions_start($sess)
+	function publish_admin_edit_field_save()
 	{
-		// are we saving a field?
-		if (isset($_POST['field_type']))
+		// is this a FF fieldtype?
+		if (preg_match('/^ftype_id_(\d+)$/', $_POST['field_type'], $matches) !== FALSE)
 		{
-			// is this a FF fieldtype?
-			if (preg_match('/^ftype_id_(\d+)$/', $_POST['field_type'], $matches) !== FALSE)
+			$ftype_id = $matches[1];
+			$settings = (isset($_POST['ftype']) AND isset($_POST['ftype'][$_POST['field_type']]))
+			 ? $_POST['ftype'][$_POST['field_type']]
+			 : array();
+
+			// initialize the fieldtype
+			global $DB;
+			$query = $DB->query("SELECT * FROM exp_ff_fieldtypes WHERE fieldtype_id = '{$ftype_id}'");
+			if ($query->row)
 			{
-				$ftype_id = $matches[1];
-				$settings = (isset($_POST['ftype']) AND isset($_POST['ftype'][$_POST['field_type']]))
-				 ? $_POST['ftype'][$_POST['field_type']]
-				 : array();
-
-				// initialize the fieldtype
-				global $DB;
-				$query = $DB->query("SELECT * FROM exp_ff_fieldtypes WHERE fieldtype_id = '{$ftype_id}'");
-				if ($query->row)
+				$ftype = $this->_init_ftype($query->row);
+				if (method_exists($ftype, 'save_field_settings'))
 				{
-					$ftype = $this->_init_ftype($query->row);
-					if (method_exists($ftype, 'save_field_settings'))
-					{
-						// let the fieldtype modify the settings
-						$settings = $ftype->save_field_settings($settings);
-					}
+					// let the fieldtype modify the settings
+					$settings = $ftype->save_field_settings($settings);
 				}
-
-				// save settings as a post var
-				$_POST['ff_settings'] = addslashes(serialize($settings));
 			}
 
-			// unset extra FF post vars
-			foreach($_POST as $key => $value)
+			// save settings as a post var
+			$_POST['ff_settings'] = addslashes(serialize($settings));
+		}
+
+		// unset extra FF post vars
+		foreach($_POST as $key => $value)
+		{
+			if (substr($key, 0, 5) == 'ftype')
 			{
-				if (substr($key, 0, 5) == 'ftype')
-				{
-					unset($_POST[$key]);
-				}
+				unset($_POST[$key]);
 			}
 		}
-		return TRUE;
 	}
 
 	/**
@@ -1121,6 +1242,21 @@ class Fieldframe_Main {
 			}
 		}
 		return $addons;
+	}
+
+	/**
+	 * Forward hook to fieldtype
+	 */
+	function forward_hook($class_name, $method, $args)
+	{
+		_log("<b>call</b> forward_hook('$class_name', '$method')");
+
+		$ftype = $this->_get_ftype($class_name);
+		if (method_exists($ftype, $method))
+		{
+			return call_user_func_array(array(&$ftype, $method), $args);
+		}
+		return FALSE;
 	}
 
 }
