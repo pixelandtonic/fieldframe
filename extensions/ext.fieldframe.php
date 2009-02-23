@@ -8,26 +8,7 @@ if ( ! defined('FF_CLASS'))
 {
 	define('FF_CLASS',   'Fieldframe');
 	define('FF_NAME',    'FieldFrame');
-	define('FF_VERSION', '0.0.7');
-}
-
-
-function _log()
-{
-	//return FALSE;
-	foreach(func_get_args() as $var)
-	{
-		if (is_string($var))
-		{
-			echo "<code style='display:block; margin:0; padding:5px 10px;'>{$var}</code>";
-		}
-		else
-		{
-			echo '<pre style="display:block; margin:0; padding:5px 10px; width:auto">';
-			print_r($var);
-			echo '</pre>';
-		}
-	}
+	define('FF_VERSION', '0.0.8');
 }
 
 
@@ -56,8 +37,6 @@ class Fieldframe_Base {
 	 */
 	function Fieldframe_Base($settings=array())
 	{
-		_log('<b>initialize</b> Fieldframe_Base');
-
 		// only initialize if we're not on the Settings page
 		global $IN;
 		if ( ! ($IN->GBL('M', 'GET') == 'utilities' AND ($IN->GBL('P', 'GET') == 'extension_settings')))
@@ -106,9 +85,8 @@ class Fieldframe_Base {
 	 */
 	function _call($method, $args)
 	{
-		_log('<b>call</b> '.$method);
-
 		global $FF;
+
 		if (isset($FF))
 		{
 			if (method_exists($FF, $method))
@@ -121,6 +99,7 @@ class Fieldframe_Base {
 				return call_user_func_array(array(&$FF, 'forward_hook'), array($ext[1], $ext[2], $args));
 			}
 		}
+
 		return FALSE;
 	}
 
@@ -162,6 +141,24 @@ else
  */
 class Fieldframe_Main {
 
+	function log()
+	{
+		//return;
+		foreach(func_get_args() as $var)
+		{
+			if (is_string($var))
+			{
+				echo "<code style='display:block; margin:0; padding:5px 10px;'>{$var}</code>";
+			}
+			else
+			{
+				echo '<pre style="display:block; margin:0; padding:5px 10px; width:auto">';
+				print_r($var);
+				echo '</pre>';
+			}
+		}
+	}
+
 	/**
 	 * FieldFrame_Main Class Initialization
 	 *
@@ -169,8 +166,6 @@ class Fieldframe_Main {
 	 */
 	function Fieldframe_Main($settings)
 	{
-		_log('<b>initialize</b> Fieldframe_Main', $settings);
-
 		global $SESS;
 
 		// get the site-specific settings
@@ -466,9 +461,11 @@ class Fieldframe_Main {
 				         array_merge(
 				           $hook_tmpl,
 				           is_string($hook)
-				             ?  array('hook' => $hook, 'method' => $hook)
+				             ?  array('hook' => $hook)
 				             :  $hook),
 				         $hook_req);
+
+				if ( ! isset($ext['method'])) $ext['method'] = $ext['hook'];
 
 				// format method - forward_hook:class_name:method
 				$ext['method'] = 'forward_hook:'.$ftype->_class_name.':'.$ext['method'];
@@ -630,6 +627,15 @@ class Fieldframe_Main {
 					$data['class'] = $file;
 					$data['version'] = $ftype->info['version'];
 					$sql[] = $DB->insert_string('exp_ff_fieldtypes', $data);
+
+					// insert hooks
+					$this->_insert_ftype_hooks($ftype);
+
+					// call update()
+					if (method_exists($ftype, 'update'))
+					{
+						$ftype->update(FALSE);
+					}
 				}
 				else
 				{
@@ -683,11 +689,8 @@ class Fieldframe_Main {
 			'show_full_control_panel_end',
 
 			// Entry Form
-			'publish_form_start',
-			'publish_form_headers',
 			'publish_form_field_unique',
 			'submit_new_entry_start',
-			'submit_new_entry_end',
 
 			// LG Addon Updater
 			'lg_addon_update_register_source',
@@ -767,7 +770,7 @@ class Fieldframe_Main {
 	 * @return mixed  Return value of last extension call if any, or $param
 	 * @access private
 	 */
-	function _get_last_call($param='')
+	function get_last_call($param='')
 	{
 		global $EXT;
 		return ($EXT->last_call !== FALSE) ? $EXT->last_call : $param;
@@ -806,7 +809,7 @@ class Fieldframe_Main {
 	 */
 	function publish_admin_edit_field_type_pulldown($data, $typemenu)
 	{
-		$r = $this->_get_last_call($typemenu);
+		$r = $this->get_last_call($typemenu);
 
 		global $DSP;
 
@@ -832,6 +835,8 @@ class Fieldframe_Main {
 	 */
 	function publish_admin_edit_field_js($data, $js)
 	{
+		global $LANG;
+
 		// Prepare fieldtypes for following Publish Admin hooks
 		$field_settings_tmpl = array(
 			'cell1' => '',
@@ -843,17 +848,22 @@ class Fieldframe_Main {
 		{
 			$ftype_id = 'ftype_id_'.$ftype->_fieldtype_id;
 			$selected = ($ftype_id == $data['field_type']) ? TRUE : FALSE;
-			$ftype->_field_settings = array_merge(
-			                                       $field_settings_tmpl,
-			                                       method_exists($ftype, 'display_field_settings')
-			                                        ? $ftype->display_field_settings($selected ? unserialize($data['ff_settings']) : array())
-			                                        : array()
-			                                      );
+			if (method_exists($ftype, 'display_field_settings'))
+			{
+				// Load the language file
+				$LANG->fetch_language_file($class_name);
+
+				$ftype->_field_settings = array_merge($field_settings_tmpl, $ftype->display_field_settings($selected ? unserialize($data['ff_settings']) : array()));
+			}
+			else
+			{
+				$ftype->_field_settings = $field_settings_tmpl;
+			}
 			if ($selected) $prev_ftype_id = $ftype_id;
 		}
 
 		// Add the JS
-		$r = $this->_get_last_call($js);
+		$r = $this->get_last_call($js);
 		$r = preg_replace('/(function\s+showhide_element\(\s*id\s*\)\s*{)/is', "
 		var prev_ftype_id = '{$prev_ftype_id}';
 
@@ -868,7 +878,6 @@ class Fieldframe_Main {
 				}
 				while(row = document.getElementById(prev_ftype_id+'_row'+r))
 				{
-					console.log(row);
 					row.style.display = 'none';
 					r++;
 				}
@@ -910,7 +919,7 @@ class Fieldframe_Main {
 	 */
 	function _publish_admin_edit_field_type_cell($data, $cell, $index)
 	{
-		$r = $this->_get_last_call($cell);
+		$r = $this->get_last_call($cell);
 		foreach($this->_get_ftypes() as $class_name => $ftype)
 		{
 			$ftype_id = 'ftype_id_'.$ftype->_fieldtype_id;
@@ -970,7 +979,7 @@ class Fieldframe_Main {
 	 */
 	function publish_admin_edit_field_format($data, $y)
 	{
-		$y = $this->_get_last_call($y);
+		$y = $this->get_last_call($y);
 		return $y;
 	}
 
@@ -1008,7 +1017,7 @@ class Fieldframe_Main {
 		}
 		$rows = preg_replace('/(name=[\'"])([^\'"\[\]]+)([^\'"]*)([\'"])/i', '$1ftype['.$ftype_id.'][$2]$3$4', $rows);
 
-		$r = $this->_get_last_call($r);
+		$r = $this->get_last_call($r);
 		$r = preg_replace('/(<tr>\s*<td[^>]*>\s*<div[^>]*>\s*'.$LANG->line('deft_field_formatting').'\s*<\/div>)/is', $rows.'$1', $r);
 		return $r;
 	}
@@ -1021,24 +1030,26 @@ class Fieldframe_Main {
 	 */
 	function publish_admin_edit_field_save()
 	{
+		global $DB;
+
 		// is this a FF fieldtype?
 		if (preg_match('/^ftype_id_(\d+)$/', $_POST['field_type'], $matches) !== FALSE)
 		{
 			$ftype_id = $matches[1];
 			$settings = (isset($_POST['ftype']) AND isset($_POST['ftype'][$_POST['field_type']]))
-			 ? $_POST['ftype'][$_POST['field_type']]
-			 : array();
+			  ?  $_POST['ftype'][$_POST['field_type']]
+			  :  array();
 
 			// initialize the fieldtype
-			global $DB;
 			$query = $DB->query("SELECT * FROM exp_ff_fieldtypes WHERE fieldtype_id = '{$ftype_id}'");
 			if ($query->row)
-			{
+			{	
+				// let the fieldtype modify the settings
 				$ftype = $this->_init_ftype($query->row);
 				if (method_exists($ftype, 'save_field_settings'))
 				{
-					// let the fieldtype modify the settings
 					$settings = $ftype->save_field_settings($settings);
+					if ( ! is_array($settings)) $settings = array();
 				}
 			}
 
@@ -1068,7 +1079,7 @@ class Fieldframe_Main {
 	 */
 	function show_full_control_panel_end($out)
 	{
-		$out = $this->_get_last_call($out);
+		$out = $this->get_last_call($out);
 		global $IN, $DB, $REGX;
 
 		// if we are displaying the custom field list
@@ -1087,39 +1098,6 @@ class Fieldframe_Main {
 	}
 
 	/**
-	 * Publish Form - Start
-	 *
-	 * Allows complete rewrite of Publish page
-	 *
-	 * @param  string  $which             new, preview, edit, or save
-	 * @param  string  $submission_error  submission error, if any
-	 * @param  string  $entry_id          Entry ID being sent to the form
-	 * @see    http://expressionengine.com/developers/extension_hooks/publish_form_start/
-	 */
-	function publish_form_start($which, $submission_error, $entry_id)
-	{
-		
-	}
-
-	/**
-	 * Publish Form - Headers
-	 *
-	 * Adds content to headers for Publish page
-	 *
-	 * @param  string  $which             new, preview, edit, or save
-	 * @param  string  $submission_error  submission error, if any
-	 * @param  string  $entry_id          Entry ID being sent to the form
-	 * @param  string  $weblog_id         the Weblog ID being sent to the form
-	 * @return string  extra HTML to be added to the Publish page header
-	 * @see    http://expressionengine.com/developers/extension_hooks/publish_form_headers/
-	 */
-	function publish_form_headers($which, $submission_error, $entry_id)
-	{
-		$r = $this->_get_last_call();
-		return $r;
-	}
-
-	/**
 	 * Publish Form - Unique Field
 	 *
 	 * Allows adding of unique custom fields via extensions
@@ -1135,7 +1113,7 @@ class Fieldframe_Main {
 
 		if ( ! array_key_exists($row['field_id'], $fields))
 		{
-			return $this->_get_last_call();
+			return $this->get_last_call();
 		}
 
 		$field_name = 'field_id_'.$row['field_id'];
@@ -1170,22 +1148,18 @@ class Fieldframe_Main {
 				$field_name = 'field_id_'.$field_id;
 				$field['ftype']->save_field($field_name);
 			}
-		}
-	}
 
-	/**
-	 * Publish Form - Submit New End
-	 *
-	 * After an entry is submitted, do more processing
-	 *
-	 * @param string  $entry_id      Entry's ID
-	 * @param array   $data          Array of data about entry (title, url_title)
-	 * @param string  $ping_message  Error message if trackbacks or pings have failed to be sent
-	 * @see   http://expressionengine.com/developers/extension_hooks/submit_new_entry_end/
-	 */
-	function submit_new_entry_end()
-	{
-		
+			// unset extra FF post vars
+			$prefix = 'field_id_'.$field_id.'_';
+			$length = strlen($prefix);
+			foreach($_POST as $key => $value)
+			{
+				if (substr($key, 0, $length) == $prefix)
+				{
+					unset($_POST[$key]);
+				}
+			}
+		}
 	}
 
 	/**
@@ -1197,7 +1171,7 @@ class Fieldframe_Main {
 	 */
 	function lg_addon_update_register_source($sources)
 	{
-		$sources = $this->_get_last_call($sources);
+		$sources = $this->get_last_call($sources);
 		if ($this->settings['check_for_updates'] == 'y')
 		{
 			// add FieldFrame source
@@ -1229,7 +1203,7 @@ class Fieldframe_Main {
 	 */
 	function lg_addon_update_register_addon($addons)
 	{
-		$addons = $this->_get_last_call($addons);
+		$addons = $this->get_last_call($addons);
 		if ($this->settings['check_for_updates'] == 'y')
 		{
 			// add FieldFrame
@@ -1249,8 +1223,6 @@ class Fieldframe_Main {
 	 */
 	function forward_hook($class_name, $method, $args)
 	{
-		_log("<b>call</b> forward_hook('$class_name', '$method')");
-
 		$ftype = $this->_get_ftype($class_name);
 		if (method_exists($ftype, $method))
 		{
