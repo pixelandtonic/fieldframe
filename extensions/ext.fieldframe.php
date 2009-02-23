@@ -515,8 +515,8 @@ class Fieldframe_Main {
 		                    'name' => strtolower(FF_CLASS)
 		                  ));
 
-		// initialize FFSettingsDisplay
-		$SD = new FFSettingsDisplay();
+		// initialize Fieldframe_SettingsDisplay
+		$SD = new Fieldframe_SettingsDisplay();
 
 		// import lang files
 		$LANG->fetch_language_file('publish_ad');
@@ -1243,12 +1243,12 @@ class Fieldframe_Main {
  * @package  FieldFrame
  * @author   Brandon Kelly <me@brandon-kelly.com>
  */
-class FFSettingsDisplay {
+class Fieldframe_SettingsDisplay {
 
 	/**
-	 * FFSettingsDisplay Constructor
+	 * Fieldframe_SettingsDisplay Constructor
 	 */
-	function FFSettingsDisplay()
+	function Fieldframe_SettingsDisplay()
 	{
 		// initialize Display Class
 		global $DSP;
