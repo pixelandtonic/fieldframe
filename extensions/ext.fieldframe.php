@@ -8,7 +8,7 @@ if ( ! defined('FF_CLASS'))
 {
 	define('FF_CLASS',   'Fieldframe');
 	define('FF_NAME',    'FieldFrame');
-	define('FF_VERSION', '0.0.8');
+	define('FF_VERSION', '0.0.9');
 }
 
 
@@ -30,6 +30,29 @@ class Fieldframe_Base {
 	var $settings_exist = 'y';
 	var $docs_url       = 'http://eefields.com/';
 
+	var $hooks = array(
+		'sessions_start'                         => array('priority' => 1),
+
+		// Edit Field Form
+		'publish_admin_edit_field_type_pulldown' => array('priority' => 10),
+		'publish_admin_edit_field_type_cellone'  => array('priority' => 10),
+		'publish_admin_edit_field_type_celltwo'  => array('priority' => 10),
+		'publish_admin_edit_field_extra_row'     => array('priority' => 10),
+		'publish_admin_edit_field_format'        => array('priority' => 10),
+		'publish_admin_edit_field_js'            => array('priority' => 10),
+
+		// Field Manager
+		'show_full_control_panel_end'            => array('priority' => 10),
+
+		// Entry Form
+		'publish_form_field_unique'              => array('priority' => 10),
+		'submit_new_entry_start'                 => array('priority' => 10),
+
+		// LG Addon Updater
+		'lg_addon_update_register_source'        => array('priority' => 10),
+		'lg_addon_update_register_addon'         => array('priority' => 10)
+	);
+
 	/**
 	 * FieldFrame Class Constructor
 	 *
@@ -43,6 +66,94 @@ class Fieldframe_Base {
 		{
 			$this->_init_main($settings);
 		}
+	}
+
+	/**
+	 * Activate Extension
+	 */
+	function activate_extension()
+	{
+		global $DB;
+
+		// Get settings
+		$settings = Fieldframe_Main::_get_all_settings();
+
+		// Delete old hooks
+		$DB->query('DELETE FROM exp_extensions
+		              WHERE class = "'.FF_CLASS.'"
+		                      AND method NOT LIKE "forward_hook:%"');
+
+		// Add new extensions
+		$hook_tmpl = array(
+			'class'    => FF_CLASS,
+			'settings' => addslashes(serialize($settings)),
+			'priority' => 10,
+			'version'  => FF_VERSION,
+			'enabled'  => 'y'
+		);
+
+		foreach($this->hooks as $hook => $data)
+		{
+			$data = array_merge($hook_tmpl, array('hook' => $hook, 'method' => $hook), $data);
+			$DB->query($DB->insert_string('exp_extensions', $data));
+		}
+
+		// exp_ff_fieldtypes
+		if ( ! $DB->table_exists('exp_ff_fieldtypes'))
+		{
+			$DB->query("CREATE TABLE exp_ff_fieldtypes (
+			              `fieldtype_id` int(10) unsigned NOT NULL auto_increment,
+			              `class` varchar(50) NOT NULL default '',
+			              `version` varchar(10) NOT NULL default '',
+			              `enabled` char(1) NOT NULL default 'n',
+			              PRIMARY KEY (`fieldtype_id`)
+			            )");
+		}
+
+		// exp_weblog_fields.ff_settings
+		$query = $DB->query("SHOW COLUMNS FROM `exp_weblog_fields` WHERE Field = 'ff_settings'");
+		if ( ! $query->num_rows)
+		{
+			$DB->query("ALTER TABLE `exp_weblog_fields` ADD COLUMN `ff_settings` text NOT NULL");
+		}
+	}
+
+	/**
+	 * Update Extension
+	 *
+	 * @param string  $current  Previous installed version of the extension
+	 */
+	function update_extension($current='')
+	{
+		if ( ! $current OR $current == FF_VERSION)
+		{
+			// why did you call me again?
+			return FALSE;
+		}
+
+		//if ($current < '0.0.3')
+		//{
+			// hooks have changed, so go through
+			// the whole activate_extension() process
+			$this->activate_extension();
+		//}
+		//else
+		//{
+		//	// just update the version nums
+		//	global $DB;
+		//	$DB->query("UPDATE exp_extensions
+		//	              SET version = '".$DB->escape_str(FF_VERSION)."'
+		//	              WHERE class = '{FF_CLASS}'");
+		//}
+	}
+
+	/**
+	 * Disable Extension
+	 */
+	function disable_extension()
+	{
+		global $DB;
+		$DB->query($DB->update_string('exp_extensions', array('enabled' => 'n'), 'class = "'.FF_CLASS.'"'));
 	}
 
 	/**
@@ -649,119 +760,6 @@ class Fieldframe_Main {
 		{
 			$DB->query($query);
 		}
-	}
-
-	/**
-	 * Activate Extension
-	 */
-	function activate_extension()
-	{
-		global $DB;
-
-		// Get settings
-		$settings = $this->_get_all_settings();
-
-		// Delete old hooks
-		$DB->query('DELETE FROM exp_extensions
-		              WHERE class = "'.FF_CLASS.'"
-		                      AND method NOT LIKE "forward_hook:%"');
-
-		// Add new extensions
-		$hook_tmpl = array(
-			'class'    => FF_CLASS,
-			'settings' => addslashes(serialize($settings)),
-			'priority' => 10,
-			'version'  => FF_VERSION,
-			'enabled'  => 'y'
-		);
-
-		$hooks = array(
-			array('hook' => 'sessions_start', 'method' => 'sessions_start', 'priority' => 1),
-
-			// Edit Field Form
-			'publish_admin_edit_field_type_pulldown',
-			'publish_admin_edit_field_type_cellone',
-			'publish_admin_edit_field_type_celltwo',
-			'publish_admin_edit_field_extra_row',
-			'publish_admin_edit_field_format',
-			'publish_admin_edit_field_js',
-
-			// Field Manager
-			'show_full_control_panel_end',
-
-			// Entry Form
-			'publish_form_field_unique',
-			'submit_new_entry_start',
-
-			// LG Addon Updater
-			'lg_addon_update_register_source',
-			'lg_addon_update_register_addon',
-		);
-
-		foreach($hooks as $hook)
-		{
-			$ext = array_merge($hook_tmpl, is_string($hook)
-			                                ? array('hook' => $hook, 'method' => $hook)
-			                                : $hook);
-			$DB->query($DB->insert_string('exp_extensions', $ext));
-		}
-
-		// exp_ff_fieldtypes
-		if ( ! $DB->table_exists('exp_ff_fieldtypes'))
-		{
-			$DB->query("CREATE TABLE exp_ff_fieldtypes (
-			              `fieldtype_id` int(10) unsigned NOT NULL auto_increment,
-			              `class` varchar(50) NOT NULL default '',
-			              `version` varchar(10) NOT NULL default '',
-			              `enabled` char(1) NOT NULL default 'n',
-			              PRIMARY KEY (`fieldtype_id`)
-			            )");
-		}
-
-		// exp_weblog_fields.ff_settings
-		$query = $DB->query("SHOW COLUMNS FROM `exp_weblog_fields` WHERE Field = 'ff_settings'");
-		if ( ! $query->num_rows)
-		{
-			$DB->query("ALTER TABLE `exp_weblog_fields` ADD COLUMN `ff_settings` text NOT NULL");
-		}
-	}
-
-	/**
-	 * Update Extension
-	 *
-	 * @param string  $current  Previous installed version of the extension
-	 */
-	function update_extension($current='')
-	{
-		if ( ! $current OR $current == FF_VERSION)
-		{
-			// why did you call me again?
-			return FALSE;
-		}
-
-		//if ($current < '0.0.3')
-		//{
-			// hooks have changed, so go through
-			// the whole activate_extension() process
-			$this->activate_extension();
-		//}
-		//else
-		//{
-		//	// just update the version nums
-		//	global $DB;
-		//	$DB->query("UPDATE exp_extensions
-		//	              SET version = '".$DB->escape_str(FF_VERSION)."'
-		//	              WHERE class = '{FF_CLASS}'");
-		//}
-	}
-
-	/**
-	 * Disable Extension
-	 */
-	function disable_extension()
-	{
-		global $DB;
-		$DB->query($DB->update_string('exp_extensions', array('enabled' => 'n'), 'class = "'.FF_CLASS.'"'));
 	}
 
 	/**
