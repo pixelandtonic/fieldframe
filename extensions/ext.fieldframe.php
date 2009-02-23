@@ -663,7 +663,8 @@ class Fieldframe_Main {
 
 		// Delete old hooks
 		$DB->query('DELETE FROM exp_extensions
-		              WHERE class = "'.FF_CLASS.'"');
+		              WHERE class = "'.FF_CLASS.'"
+		                      AND method NOT LIKE "forward_hook:%"');
 
 		// Add new extensions
 		$hook_tmpl = array(
