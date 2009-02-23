@@ -111,10 +111,10 @@ class Fieldframe_Base {
 		}
 
 		// exp_weblog_fields.ff_settings
-		$query = $DB->query("SHOW COLUMNS FROM `exp_weblog_fields` WHERE Field = 'ff_settings'");
+		$query = $DB->query("SHOW COLUMNS FROM `{$DB->prefix}weblog_fields` LIKE 'ff_settings'");
 		if ( ! $query->num_rows)
 		{
-			$DB->query("ALTER TABLE `exp_weblog_fields` ADD COLUMN `ff_settings` text NOT NULL");
+			$DB->query("ALTER TABLE `{$DB->prefix}weblog_fields` ADD COLUMN `ff_settings` text NOT NULL");
 		}
 	}
 
