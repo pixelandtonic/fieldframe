@@ -62,7 +62,7 @@ class Fieldframe_Base {
 	{
 		// only initialize if we're not on the Settings page
 		global $IN;
-		if ( ! ($IN->GBL('M', 'GET') == 'utilities' AND ($IN->GBL('P', 'GET') == 'extension_settings')))
+		if ( ! ($IN->GBL('M', 'GET') == 'utilities' AND in_array($IN->GBL('P', 'GET'), array('extensions_manager', 'extension_settings'))))
 		{
 			$this->_init_main($settings);
 		}
