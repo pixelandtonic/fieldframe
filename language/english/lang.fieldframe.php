@@ -23,13 +23,13 @@ $L = array(
 'URL to your &ldquo;fieldtypes&rdquo; folder',
 
 'fieldtypes_url_subtext' =>
-'<i>ex:</i> &nbsp;http://www.example.com/system/fieldtypes/',
+'<i>ex:</i> &nbsp;http://www.example.com/system/extensions/fieldtypes/',
 
 'fieldtypes_path_label' =>
 'Path to your &ldquo;fieldtypes&rdquo; folder',
 
 'fieldtypes_path_subtext' =>
-'<i>ex:</i> /var/www/public_html/system/fieldtypes/',
+'<i>ex:</i> /var/www/public_html/system/extensions/fieldtypes/',
 
 
 // LG Addon Updater setting

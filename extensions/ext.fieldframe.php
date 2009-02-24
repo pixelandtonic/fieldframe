@@ -58,11 +58,11 @@ class Fieldframe_Base {
 	 *
 	 * @param array  $settings
 	 */
-	function Fieldframe_Base($settings=array())
+	function Fieldframe_Base($settings=FALSE)
 	{
 		// only initialize if we're not on the Settings page
 		global $IN;
-		if ( ! ($IN->GBL('M', 'GET') == 'utilities' AND in_array($IN->GBL('P', 'GET'), array('extensions_manager', 'extension_settings'))))
+		if (! ($settings === FALSE AND $IN->GBL('M', 'GET') == 'utilities' AND in_array($IN->GBL('P', 'GET'), array('extensions_manager', 'toggle_extension', 'extension_settings'))))
 		{
 			$this->_init_main($settings);
 		}
@@ -254,7 +254,6 @@ class Fieldframe_Main {
 
 	function log()
 	{
-		//return;
 		foreach(func_get_args() as $var)
 		{
 			if (is_string($var))
