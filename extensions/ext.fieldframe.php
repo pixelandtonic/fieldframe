@@ -61,8 +61,8 @@ class Fieldframe_Base {
 	function Fieldframe_Base($settings=FALSE)
 	{
 		// only initialize if we're not on the Settings page
-		global $IN;
-		if (! ($settings === FALSE AND $IN->GBL('M', 'GET') == 'utilities' AND in_array($IN->GBL('P', 'GET'), array('extensions_manager', 'toggle_extension', 'extension_settings'))))
+		global $PREFS;
+		if ($settings !== FALSE && isset($settings[$PREFS->ini('site_id')]))
 		{
 			$this->_init_main($settings);
 		}
