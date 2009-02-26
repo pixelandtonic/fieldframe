@@ -1107,24 +1107,31 @@ class Fieldframe_Main {
 	 */
 	function publish_form_field_unique($row, $field_data)
 	{
-		$fields = $this->_get_fields();
-
-		if ( ! array_key_exists($row['field_id'], $fields))
+		// return if this isn't a FieldFrame fieldtype
+		if (substr($row['field_type'], 0, 9) != 'ftype_id_')
 		{
 			return $this->get_last_call();
 		}
 
 		$field_name = 'field_id_'.$row['field_id'];
-		$field = $fields[$row['field_id']];
+		$fields = $this->_get_fields();
 
-		if (method_exists($field['ftype'], 'display_field'))
+		if (array_key_exists($row['field_id'], $fields))
 		{
-			$r = $field['ftype']->display_field($field_name, $field_data, $field['settings']);
+			$field = $fields[$row['field_id']];
+
+			if (method_exists($field['ftype'], 'display_field'))
+			{
+				$r = $field['ftype']->display_field($field_name, $field_data, $field['settings']);
+			}
 		}
-		else
+
+		// place field data in a basic textfield if the fieldtype
+		// wasn't enabled or didn't have a display_field method
+		if ( ! isset($r))
 		{
 			global $DSP;
-			$r = $DSP->input_text($field_name, $field_data, null, null, 'input', '100%');
+			$r = $DSP->input_textarea($field_name, $field_data, 1, 'textarea', '100%');
 		}
 
 		return '<div style="padding:5px 27px 17px 17px;">'.$r.'</div>';
