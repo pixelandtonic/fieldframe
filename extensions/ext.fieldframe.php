@@ -507,7 +507,7 @@ class Fieldframe_Main {
 		}
 		if ($ftype)
 		{
-			if ($ftype['enabled'])
+			if ($ftype['enabled'] == 'y')
 			{
 				$OBJ->_is_enabled = TRUE;
 			}
