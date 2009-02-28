@@ -775,6 +775,19 @@ class Fieldframe_Main {
 	}
 
 	/**
+	 * Get Line
+	 *
+	 * @param  string  $line  unlocalized string or the name of a $LANG line
+	 * @return string  Localized string
+	 */
+	function get_line($line)
+	{
+		global $LANG;
+		$loc_line = $LANG->line($line);
+		return $loc_line ? $loc_line : $line;
+	}
+
+	/**
 	 * Sessions Start
 	 *
 	 * - Reset any session class variable
@@ -1283,7 +1296,7 @@ class Fieldframe_SettingsDisplay {
 		                          'border' => '0',
 		                          'style' => 'margin-top:18px; width:100%'
 		                        ))
-		     . $this->row(array($this->line($title_line)), 'tableHeading');
+		     . $this->row(array($this->get_line($title_line)), 'tableHeading');
 	}
 
 	/**
@@ -1349,7 +1362,7 @@ class Fieldframe_SettingsDisplay {
 	{
 		return $this->row(array(
 		                   '<div class="box" style="border-width:0 0 1px 0; margin:0; padding:10px 5px">'
-		                 . '<p>'.$this->line($info_line).'</p>'
+		                 . '<p>'.$this->get_line($info_line).'</p>'
 		                 . '</div>'
 		                  ), '');
 	}
@@ -1364,8 +1377,8 @@ class Fieldframe_SettingsDisplay {
 	function label($label_line, $subtext_line='')
 	{
 		global $DSP;
-		$r = $DSP->qdiv('defaultBold', $this->line($label_line));
-		if ($subtext_line) $r .= $DSP->qdiv('subtext', $this->line($subtext_line));
+		$r = $DSP->qdiv('defaultBold', $this->get_line($label_line));
+		if ($subtext_line) $r .= $DSP->qdiv('subtext', $this->get_line($subtext_line));
 		return $r;
 	}
 
@@ -1418,7 +1431,7 @@ class Fieldframe_SettingsDisplay {
 			$selected = is_array($value)
 			 ? in_array($option_value, $value)
 			 : ($option_value == $value);
-			$r .= $DSP->input_select_option($option_value, $this->line($option_line), $selected ? 1 : 0);
+			$r .= $DSP->input_select_option($option_value, $this->get_line($option_line), $selected ? 1 : 0);
 		}
 		$r .= $DSP->input_select_footer();
 		return $r;
@@ -1458,23 +1471,22 @@ class Fieldframe_SettingsDisplay {
 			if ($r) $r .= NBS.NBS.' ';
 			$r .= '<label style="white-space:nowrap;">'
 			    . $DSP->input_radio($name, $option_value, ($option_value == $value) ? 1 : 0, $vars['extras'])
-			    . ' '.$this->line($option_name)
+			    . ' '.$this->get_line($option_name)
 			    . '</label>';
 		}
 		return $r;
 	}
 
 	/**
-	 * Line
+	 * Get Line
 	 *
 	 * @param  string  $line  unlocalized string or the name of a $LANG line
 	 * @return string  Localized string
 	 */
-	function line($line)
+	function get_line($line)
 	{
-		global $LANG;
-		$loc_line = $LANG->line($line);
-		return $loc_line ? $loc_line : $line;
+		global $FF;
+		return $FF->get_line($line);
 	}
 
 }
