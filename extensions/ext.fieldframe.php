@@ -8,7 +8,7 @@ if ( ! defined('FF_CLASS'))
 {
 	define('FF_CLASS',   'Fieldframe');
 	define('FF_NAME',    'FieldFrame');
-	define('FF_VERSION', '0.0.9');
+	define('FF_VERSION', '0.1.0');
 }
 
 
@@ -31,26 +31,26 @@ class Fieldframe_Base {
 	var $docs_url       = 'http://eefields.com/';
 
 	var $hooks = array(
-		'sessions_start'                         => array('priority' => 1),
+		'sessions_start' => array('priority' => 1),
 
 		// Edit Field Form
-		'publish_admin_edit_field_type_pulldown' => array('priority' => 10),
-		'publish_admin_edit_field_type_cellone'  => array('priority' => 10),
-		'publish_admin_edit_field_type_celltwo'  => array('priority' => 10),
-		'publish_admin_edit_field_extra_row'     => array('priority' => 10),
-		'publish_admin_edit_field_format'        => array('priority' => 10),
-		'publish_admin_edit_field_js'            => array('priority' => 10),
+		'publish_admin_edit_field_type_pulldown',
+		'publish_admin_edit_field_type_cellone',
+		'publish_admin_edit_field_type_celltwo',
+		'publish_admin_edit_field_extra_row',
+		'publish_admin_edit_field_format',
+		'publish_admin_edit_field_js',
 
 		// Field Manager
-		'show_full_control_panel_end'            => array('priority' => 10),
+		'show_full_control_panel_end',
 
 		// Entry Form
-		'publish_form_field_unique'              => array('priority' => 10),
-		'submit_new_entry_start'                 => array('priority' => 10),
+		'publish_form_field_unique',
+		'submit_new_entry_start',
 
 		// LG Addon Updater
-		'lg_addon_update_register_source'        => array('priority' => 10),
-		'lg_addon_update_register_addon'         => array('priority' => 10)
+		'lg_addon_update_register_source',
+		'lg_addon_update_register_addon'
 	);
 
 	/**
@@ -94,6 +94,11 @@ class Fieldframe_Base {
 
 		foreach($this->hooks as $hook => $data)
 		{
+			if (is_string($data))
+			{
+				$hook = $data;
+				$data = array();
+			}
 			$data = array_merge($hook_tmpl, array('hook' => $hook, 'method' => $hook), $data);
 			$DB->query($DB->insert_string('exp_extensions', $data));
 		}
@@ -103,10 +108,23 @@ class Fieldframe_Base {
 		{
 			$DB->query("CREATE TABLE exp_ff_fieldtypes (
 			              `fieldtype_id` int(10) unsigned NOT NULL auto_increment,
-			              `class` varchar(50) NOT NULL default '',
-			              `version` varchar(10) NOT NULL default '',
-			              `enabled` char(1) NOT NULL default 'n',
+			              `class`        varchar(50)      NOT NULL default '',
+			              `version`      varchar(10)      NOT NULL default '',
+			              `enabled`      char(1)          NOT NULL default 'n',
 			              PRIMARY KEY (`fieldtype_id`)
+			            )");
+		}
+
+		// exp_ff_fieldtype_hooks
+		if ( ! $DB->table_exists('exp_ff_fieldtype_hooks'))
+		{
+			$DB->query("CREATE TABLE exp_ff_fieldtype_hooks (
+			              `hook_id`  int(10) unsigned NOT NULL auto_increment,
+			              `class`    varchar(50)      NOT NULL default '',
+			              `hook`     varchar(50)      NOT NULL default '',
+			              `method`   varchar(50)      NOT NULL default '',
+			              `priority` int(2)           NOT NULL DEFAULT '10',
+			              PRIMARY KEY (`hook_id`)
 			            )");
 		}
 
@@ -125,10 +143,18 @@ class Fieldframe_Base {
 	 */
 	function update_extension($current='')
 	{
+		global $DB;
+
 		if ( ! $current OR $current == FF_VERSION)
 		{
 			// why did you call me again?
 			return FALSE;
+		}
+
+		if ($current < '0.1.0')
+		{
+			$hooks_q = $DB->query('DELETE FROM exp_extensions
+			                         WHERE class = "Fieldframe" AND method LIKE "forward_hook:%"');
 		}
 
 		//if ($current < '0.0.3')
@@ -182,7 +208,7 @@ class Fieldframe_Base {
 		if ( ! isset($FF))
 		{
 			$SESS->cache[FF_CLASS] = array();
-			$FF = new Fieldframe_Main($settings);
+			$FF = new Fieldframe_Main($settings, $this->hooks);
 		}
 	}
 
@@ -203,10 +229,10 @@ class Fieldframe_Base {
 			if (method_exists($FF, $method))
 			{
 				return call_user_func_array(array(&$FF, $method), $args);
-			}	
+			}
 			else if (substr($method, 0, 13) == 'forward_hook:')
 			{
-				$ext = explode(':', $method);
+				$ext = explode(':', $method); // [ forward_hook, hook name, priority ]
 				return call_user_func_array(array(&$FF, 'forward_hook'), array($ext[1], $ext[2], $args));
 			}
 		}
@@ -269,14 +295,18 @@ class Fieldframe_Main {
 		}
 	}
 
+	var $ftype_hooks = array();
+
 	/**
 	 * FieldFrame_Main Class Initialization
 	 *
 	 * @param array  $settings
 	 */
-	function Fieldframe_Main($settings)
+	function Fieldframe_Main($settings, $hooks)
 	{
-		global $SESS;
+		global $SESS, $DB;
+
+		$this->hooks = $hooks;
 
 		// get the site-specific settings
 		$this->settings = $this->_get_settings($settings);
@@ -292,8 +322,6 @@ class Fieldframe_Main {
 		{
 			define('FT_URL', $this->settings['fieldtypes_url']);
 		}
-
-		$this->ftypes = $this->_get_ftypes();
 	}
 
 	/**
@@ -546,49 +574,55 @@ class Fieldframe_Main {
 	{
 		global $DB;
 
-		// remove any existing hooks
-		$DB->query('DELETE FROM exp_extensions
-		              WHERE class = "'.FF_CLASS.'" AND method LIKE "forward_hook:'.$ftype->_class_name.':%"');
+		// remove any existing hooks from exp_ff_fieldtype_hooks
+		$DB->query('DELETE FROM exp_ff_fieldtype_hooks
+		              WHERE class = "'.$ftype->_class_name.'"');
 
 		// (re)insert the hooks
 		if ($ftype->hooks)
 		{
-			$hook_tmpl = array(
-				'priority' => 10,
-				'enabled'  => 'y'
-			);
-
-			$hook_req = array(
-				'class' => FF_CLASS,
-				//'settings' => 'fieldtype::'.$ftype->_class_name,
-				'settings' => '',
-				'version' => FF_VERSION
-			);
-
-			foreach($ftype->hooks as $hook)
+			foreach($ftype->hooks as $hook => $data)
 			{
-				$ext = array_merge(
-				         array_merge(
-				           $hook_tmpl,
-				           is_string($hook)
-				             ?  array('hook' => $hook)
-				             :  $hook),
-				         $hook_req);
-
-				if ( ! isset($ext['method'])) $ext['method'] = $ext['hook'];
-
-				// format method - forward_hook:class_name:method
-				$ext['method'] = 'forward_hook:'.$ftype->_class_name.':'.$ext['method'];
-
-				// can't allow a ftype's hook to get called before FieldFrame
-				if ($ext['hook'] == 'sessions_start' AND $ext['priority'] == 1)
+				if (is_string($data))
 				{
-					$ext['priority'] = 2;
+					$hook = $data;
+					$data = array();
 				}
 
-				$DB->query($DB->insert_string('exp_extensions', $ext));
+				// exp_ff_fieldtype_hooks
+				$data = array_merge(array('method' => $hook, 'priority' => 10), $data, array('hook' => $hook, 'class' => $ftype->_class_name));
+				$DB->query($DB->insert_string('exp_ff_fieldtype_hooks', $data));
+
+				// exp_extensions
+				$hooks_q = $DB->query('SELECT extension_id FROM exp_extensions WHERE class = "'.FF_CLASS.'" AND hook = "'.$hook.'" AND priority = "'.$data['priority'].'"');
+				if ( ! $hooks_q->num_rows)
+				{
+					$ext_data = array('class' => FF_CLASS, 'method' => 'forward_hook:'.$hook.':'.$data['priority'], 'hook' => $hook, 'settings' => '', 'priority' => $data['priority'], 'version' => FF_VERSION, 'enabled' => 'y');
+					$DB->query($DB->insert_string('exp_extensions', $ext_data));
+				}
 			}
 		}
+
+		// reset cached hooks array
+		$this->_get_ftype_hooks(TRUE);
+	}
+
+	function _get_ftype_hooks($reset=FALSE)
+	{
+		global $DB;
+
+		if ($reset OR ! isset($this->cache['ftype_hooks']))
+		{
+			$this->cache['ftype_hooks'] = array();
+
+			$hooks_q = $DB->query('SELECT * FROM exp_ff_fieldtype_hooks');
+			foreach($hooks_q->result as $hook_r)
+			{
+				$this->cache['ftype_hooks'][$hook_r['hook']][$hook_r['priority']][$hook_r['class']] = $hook_r['method'];
+			}
+		}
+
+		return $this->cache['ftype_hooks'];
 	}
 
 	/**
@@ -775,6 +809,43 @@ class Fieldframe_Main {
 	}
 
 	/**
+	 * Forward hook to fieldtype
+	 */
+	function forward_hook($hook, $priority, $args=array())
+	{
+		if ( ! isset($this->last_call))
+		{
+			$this->last_call = TRUE;
+		}
+
+		$ftype_hooks = $this->_get_ftype_hooks();
+		if (isset($ftype_hooks[$hook]) AND isset($ftype_hooks[$hook][$priority]))
+		{
+			$ftypes = $this->_get_ftypes();
+
+			foreach ($ftype_hooks[$hook][$priority] as $class_name => $method)
+			{
+				if (isset($ftypes[$class_name]) AND method_exists($ftypes[$class_name], $method))
+				{
+					$this->last_call = call_user_func_array(array(&$ftypes[$class_name], $method), $args);
+				}
+			}
+		}
+		$r = $this->last_call;
+		unset($this->last_call);
+		return $r;
+	}
+
+	function forward_ff_hook($hook, $args=array(), $r=TRUE)
+	{
+		$this->last_call = $r;
+		$priority = isset($this->hooks[$hook]) AND isset($this->hooks[$hook]['priority'])
+		  ?  $this->hooks[$hook]['priority']
+		  :  10;
+		return $this->forward_hook($hook, $priority, $args);
+	}
+
+	/**
 	 * Get Line
 	 *
 	 * @param  string  $line  unlocalized string or the name of a $LANG line
@@ -805,7 +876,8 @@ class Fieldframe_Main {
 		{
 			$this->publish_admin_edit_field_save();
 		}
-		return TRUE;
+		$args = func_get_args();
+		return $this->forward_ff_hook('sessions_start', $args);
 	}
 
 	/**
@@ -831,7 +903,8 @@ class Fieldframe_Main {
 			$r .= $DSP->input_select_option($field_type, $ftype->info['name'], ($data['field_type'] == $field_type ? 1 : 0));
 		}
 
-		return $r;
+		$args = func_get_args();
+		return $this->forward_ff_hook('publish_admin_edit_field_type_pulldown', $args, $r);
 	}
 
 	/**
@@ -916,7 +989,9 @@ class Fieldframe_Main {
 				}
 				prev_ftype_id = id;
 			}\n", $r);
-		return $r;
+
+		$args = func_get_args();
+		return $this->forward_ff_hook('publish_admin_edit_field_js', $args, $r);
 	}
 
 	/**
@@ -945,6 +1020,7 @@ class Fieldframe_Main {
 			    . $field_settings
 			    . '</div>';
 		}
+
 		return $r;
 	}
 
@@ -960,7 +1036,9 @@ class Fieldframe_Main {
 	 */
 	function publish_admin_edit_field_type_cellone($data, $cell)
 	{
-		return $this->_publish_admin_edit_field_type_cell($data, $cell, '1');
+		$r = $this->_publish_admin_edit_field_type_cell($data, $cell, '1');
+		$args = func_get_args();
+		return $this->forward_ff_hook('publish_admin_edit_field_type_cellone', $args, $r);
 	}
 
 	/**
@@ -975,7 +1053,9 @@ class Fieldframe_Main {
 	 */
 	function publish_admin_edit_field_type_celltwo($data, $cell)
 	{
-		return $this->_publish_admin_edit_field_type_cell($data, $cell, '2');
+		$r = $this->_publish_admin_edit_field_type_cell($data, $cell, '2');
+		$args = func_get_args();
+		return $this->forward_ff_hook('publish_admin_edit_field_type_celltwo', $args, $r);
 	}
 
 	/**
@@ -991,7 +1071,8 @@ class Fieldframe_Main {
 	function publish_admin_edit_field_format($data, $y)
 	{
 		$y = $this->get_last_call($y);
-		return $y;
+		$args = func_get_args();
+		return $this->forward_ff_hook('publish_admin_edit_field_format', $args, $y);
 	}
 
 	/**
@@ -1030,7 +1111,9 @@ class Fieldframe_Main {
 
 		$r = $this->get_last_call($r);
 		$r = preg_replace('/(<tr>\s*<td[^>]*>\s*<div[^>]*>\s*'.$LANG->line('deft_field_formatting').'\s*<\/div>)/is', $rows.'$1', $r);
-		return $r;
+
+		$args = func_get_args();
+		return $this->forward_ff_hook('publish_admin_edit_field_extra_row', $args, $r);
 	}
 
 	/**
@@ -1105,7 +1188,8 @@ class Fieldframe_Main {
 			}
 		}
 
-		return $out;
+		$args = func_get_args();
+		return $this->forward_ff_hook('show_full_control_panel_end', $args, $out);
 	}
 
 	/**
@@ -1147,7 +1231,9 @@ class Fieldframe_Main {
 			$r = $DSP->input_textarea($field_name, $field_data, 1, 'textarea', '100%');
 		}
 
-		return '<div style="padding:5px 27px 17px 17px;">'.$r.'</div>';
+		$r = '<div style="padding:5px 27px 17px 17px;">'.$r.'</div>';
+		$args = func_get_args();
+		return $this->forward_ff_hook('publish_form_field_unique', $args, $r);
 	}
 
 	/**
@@ -1178,6 +1264,8 @@ class Fieldframe_Main {
 				}
 			}
 		}
+
+		return $this->forward_ff_hook('submit_new_entry_start');
 	}
 
 	/**
@@ -1234,19 +1322,6 @@ class Fieldframe_Main {
 			}
 		}
 		return $addons;
-	}
-
-	/**
-	 * Forward hook to fieldtype
-	 */
-	function forward_hook($class_name, $method, $args)
-	{
-		$ftype = $this->_get_ftype($class_name);
-		if (method_exists($ftype, $method))
-		{
-			return call_user_func_array(array(&$ftype, $method), $args);
-		}
-		return FALSE;
 	}
 
 }
