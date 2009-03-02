@@ -805,7 +805,9 @@ class Fieldframe_Main {
 	function get_last_call($param='')
 	{
 		global $EXT;
-		return ($EXT->last_call !== FALSE) ? $EXT->last_call : $param;
+		return isset($this->_last_call)
+		  ?  $this->_last_call
+		  :  ($EXT->last_call !== FALSE ? $EXT->last_call : $param);
 	}
 
 	/**
@@ -813,11 +815,6 @@ class Fieldframe_Main {
 	 */
 	function forward_hook($hook, $priority, $args=array())
 	{
-		if ( ! isset($this->last_call))
-		{
-			$this->last_call = TRUE;
-		}
-
 		$ftype_hooks = $this->_get_ftype_hooks();
 		if (isset($ftype_hooks[$hook]) AND isset($ftype_hooks[$hook][$priority]))
 		{
@@ -827,18 +824,25 @@ class Fieldframe_Main {
 			{
 				if (isset($ftypes[$class_name]) AND method_exists($ftypes[$class_name], $method))
 				{
-					$this->last_call = call_user_func_array(array(&$ftypes[$class_name], $method), $args);
+					$this->_last_call = call_user_func_array(array(&$ftypes[$class_name], $method), $args);
 				}
 			}
 		}
-		$r = $this->last_call;
-		unset($this->last_call);
+		if (isset($this->_last_call))
+		{
+			$r = $this->_last_call;
+			unset($this->_last_call);
+		}
+		else
+		{
+			$r = $this->get_last_call();
+		}
 		return $r;
 	}
 
 	function forward_ff_hook($hook, $args=array(), $r=TRUE)
 	{
-		$this->last_call = $r;
+		$this->_last_call = $r;
 		$priority = isset($this->hooks[$hook]) AND isset($this->hooks[$hook]['priority'])
 		  ?  $this->hooks[$hook]['priority']
 		  :  10;
@@ -1566,6 +1570,25 @@ class Fieldframe_SettingsDisplay {
 
 }
 
+/**
+ * Fieldframe Fieldtype Base Class
+ *
+ * Provides FieldFrame fieldtypes with a couple handy methods
+ *
+ * @package  FieldFrame
+ * @author   Brandon Kelly <me@brandon-kelly.com>
+ */
+class Fieldframe_Fieldtype {
+
+
+
+	function get_last_call($param='')
+	{
+		global $FF;
+		$FF->get_last_call($param);
+	}
+
+}
 
 /* End of file ext.fieldframe.php */
 /* Location: ./system/extensions/ext.fieldframe.php */
