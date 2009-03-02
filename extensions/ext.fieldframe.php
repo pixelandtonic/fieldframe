@@ -151,12 +151,6 @@ class Fieldframe_Base {
 			return FALSE;
 		}
 
-		if ($current < '0.1.0')
-		{
-			$hooks_q = $DB->query('DELETE FROM exp_extensions
-			                         WHERE class = "Fieldframe" AND method LIKE "forward_hook:%"');
-		}
-
 		//if ($current < '0.0.3')
 		//{
 			// hooks have changed, so go through
