@@ -189,6 +189,15 @@ class Fieldframe_Base {
 		$FF->settings_form();
 	}
 
+	function save_settings()
+	{
+		$settings = Fieldframe_Main::_get_all_settings();
+		$this->_init_main($settings);
+
+		global $FF;
+		$FF->save_settings();
+	}
+
 	/**
 	 * Initialize Main class
 	 *
@@ -420,7 +429,6 @@ class Fieldframe_Main {
 			}
 			closedir($fp);
 		}
-
 		return $ftypes;
 	}
 
@@ -478,7 +486,7 @@ class Fieldframe_Main {
 	 * @access private
 	 */
 	function _init_ftype($ftype)
-	{	
+	{
 		global $DB;
 
 		$file = is_array($ftype) ? $ftype['class'] : $ftype;
@@ -627,10 +635,6 @@ class Fieldframe_Main {
 	 */
 	function settings_form()
 	{
-		// EE doesn't send the settings when initializing extensions on
-		// settings forms, so we have to initialize here instead
-		//$this->_init($current);
-
 		global $DB, $DSP, $LANG, $IN;
 
 		// Breadcrumbs
@@ -734,7 +738,6 @@ class Fieldframe_Main {
 	function save_settings()
 	{
 		global $DB, $PREFS;
-		$sql = array();
 
 		// get the default FF settings
 		$this->settings = $this->_get_settings();
@@ -746,7 +749,7 @@ class Fieldframe_Main {
 		// save all FF settings
 		$settings = $this->_get_all_settings();
 		$settings[$PREFS->ini('site_id')] = $this->settings;
-		$sql[] = $DB->update_string('exp_extensions', array('settings' => addslashes(serialize($settings))), 'class = "'.FF_CLASS.'"');
+		$DB->query($DB->update_string('exp_extensions', array('settings' => addslashes(serialize($settings))), 'class = "'.FF_CLASS.'"'));
 
 
 		// field type settings
@@ -764,7 +767,11 @@ class Fieldframe_Main {
 				{
 					$data['class'] = $file;
 					$data['version'] = $ftype->info['version'];
-					$sql[] = $DB->insert_string('exp_ff_fieldtypes', $data);
+					$DB->query($DB->insert_string('exp_ff_fieldtypes', $data));
+
+					// get the fieldtype_id
+					$query = $DB->query("SELECT fieldtype_id FROM exp_ff_fieldtypes WHERE class = '{$file}' LIMIT 1");
+					$ftype->_fieldtype_id = $query->row['fieldtype_id'];
 
 					// insert hooks
 					$this->_insert_ftype_hooks($ftype);
@@ -777,15 +784,9 @@ class Fieldframe_Main {
 				}
 				else
 				{
-					$sql[] = $DB->update_string('exp_ff_fieldtypes', $data, "class = '{$file}'");
+					$DB->query($DB->update_string('exp_ff_fieldtypes', $data, "class = '{$file}'"));
 				}
 			}
-		}
-
-		// write to the DB
-		foreach($sql as $query)
-		{
-			$DB->query($query);
 		}
 	}
 
@@ -1573,8 +1574,6 @@ class Fieldframe_SettingsDisplay {
  * @author   Brandon Kelly <me@brandon-kelly.com>
  */
 class Fieldframe_Fieldtype {
-
-
 
 	function get_last_call($param='')
 	{
