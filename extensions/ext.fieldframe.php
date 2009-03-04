@@ -797,7 +797,7 @@ class Fieldframe_Main {
 	 * @return mixed  Return value of last extension call if any, or $param
 	 * @access private
 	 */
-	function get_last_call($param='')
+	function get_last_call($param=FALSE)
 	{
 		global $EXT;
 		return isset($this->_last_call)
@@ -1575,10 +1575,10 @@ class Fieldframe_SettingsDisplay {
  */
 class Fieldframe_Fieldtype {
 
-	function get_last_call($param='')
+	function get_last_call($param=FALSE)
 	{
 		global $FF;
-		$FF->get_last_call($param);
+		return $FF->get_last_call($param);
 	}
 
 }
