@@ -8,7 +8,7 @@ if ( ! defined('FF_CLASS'))
 {
 	define('FF_CLASS',   'Fieldframe');
 	define('FF_NAME',    'FieldFrame');
-	define('FF_VERSION', '0.1.0');
+	define('FF_VERSION', '0.1.1');
 }
 
 
@@ -47,6 +47,9 @@ class Fieldframe_Base {
 		// Entry Form
 		'publish_form_field_unique',
 		'submit_new_entry_start',
+
+		// Templates
+		'weblog_entries_tagdata' => array('priority' => 1),
 
 		// LG Addon Updater
 		'lg_addon_update_register_source',
@@ -459,7 +462,7 @@ class Fieldframe_Main {
 				}
 
 				// get the field info
-				$query = $DB->query("SELECT field_id, field_type, ff_settings FROM exp_weblog_fields
+				$query = $DB->query("SELECT field_id, field_name, field_type, ff_settings FROM exp_weblog_fields
 				                       WHERE field_type IN ('ftype_id_".implode("', 'ftype_id_", array_keys($ftypes_by_id))."')");
 				if ($query->num_rows)
 				{
@@ -467,6 +470,7 @@ class Fieldframe_Main {
 					{
 						$ftype_id = substr($row['field_type'], 9);
 						$this->cache['ftypes_by_field_id'][$row['field_id']] = array(
+							'name' => $row['field_name'],
 							'ftype' => $ftypes_by_id[$ftype_id],
 							'settings' => $row['ff_settings'] ? unserialize($row['ff_settings']) : array()
 						);
@@ -1265,6 +1269,64 @@ class Fieldframe_Main {
 		}
 
 		return $this->forward_ff_hook('submit_new_entry_start');
+	}
+
+	/**
+	 * Weblog - Entry Tag Data
+	 *
+	 * Modify the tagdata for the weblog entries before anything else is parsed
+	 *
+	 * @param  string   $tagdata   The Weblog Entries tag data
+	 * @param  array    $row       Array of data for the current entry
+	 * @param  object   $weblog    The current Weblog object including all data relating to categories and custom fields
+	 * @return string              Modified $tagdata
+	 * @see    http://expressionengine.com/developers/extension_hooks/weblog_entries_tagdata/
+	 * @author Mark Huot <docs@markhuot.com>
+	 * @author Brandon Kelly <me@brandon-kelly.com>
+	 * @since  version 1.0.0
+	 */
+	function weblog_entries_tagdata($tagdata, $row, &$weblog)
+	{
+		$tagdata = $this->get_last_call($tagdata);
+
+		foreach($this->_get_fields() as $field_id => $field)
+		{
+			if (method_exists($field['ftype'], 'display_tag'))
+			{
+				// find all FF field tags
+				if (preg_match_all('/'.LD.$field['name'].'(\s+.*)?'.RD.'/sU', $tagdata, $matches, PREG_OFFSET_CAPTURE))
+				{
+					for ($i = 0; $i < count($matches[0]); $i++)
+					{
+						$tag_pos = $matches[0][$i][1];
+						$tag_len = strlen($matches[0][$i][0]);
+						$tagdata_pos = $tag_pos + $tag_len;
+
+						// get the params
+						$params = array();
+						if (preg_match_all('/\s+(\w+)\s*=\s*[\'\"]([\w\s]+)[\'\"]/sU', $matches[1][$i][0], $param_matches))
+						{
+							for ($j = 0; $j < count($param_matches[0]); $j++)
+							{
+								$params[$param_matches[1][$j]] = $param_matches[2][$j];
+							}
+						}
+
+						// is this a tag pair?
+						$endtag_pos = strpos($tagdata, LD.SLASH.$field['name'].RD, $tagdata_pos);
+						$field_tagdata = ($endtag_pos !== FALSE AND ( ! isset($matches[0][$i+1]) OR $endtag_pos < $matches[0][$i+1][1]))
+						  ?  substr($tagdata, $tagdata_pos, $endtag_pos - $tagdata_pos)
+						  :  '';
+
+						// let the fieldtype do what it wants with in
+						$field['ftype']->display_tag($field_tagdata, $row, $field_id, $field['settings'], $params);
+					}
+				}
+			}
+		}
+
+		$args = func_get_args();
+		return $this->forward_ff_hook('weblog_entries_tagdata', $args, $tagdata);
 	}
 
 	/**
