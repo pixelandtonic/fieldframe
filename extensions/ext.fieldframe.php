@@ -1296,12 +1296,15 @@ class Fieldframe_Main {
 				// find all FF field tags
 				if (preg_match_all('/'.LD.$field['name'].'(\s+.*)?'.RD.'/sU', $tagdata, $matches, PREG_OFFSET_CAPTURE))
 				{
-					for ($i = 0; $i < count($matches[0]); $i++)
+					for ($i = count($matches[0])-1; $i >= 0; $i--)
 					{
 						$tag_pos = $matches[0][$i][1];
 						$tag_len = strlen($matches[0][$i][0]);
 						$tagdata_pos = $tag_pos + $tag_len;
-
+						$endtag = LD.SLASH.$field['name'].RD;
+						$endtag_len = strlen($endtag);
+						$endtag_pos = strpos($tagdata, $endtag, $tagdata_pos);
+        
 						// get the params
 						$params = array();
 						if (preg_match_all('/\s+(\w+)\s*=\s*[\'\"]([\w\s]+)[\'\"]/sU', $matches[1][$i][0], $param_matches))
@@ -1311,15 +1314,16 @@ class Fieldframe_Main {
 								$params[$param_matches[1][$j]] = $param_matches[2][$j];
 							}
 						}
-
+        
 						// is this a tag pair?
-						$endtag_pos = strpos($tagdata, LD.SLASH.$field['name'].RD, $tagdata_pos);
-						$field_tagdata = ($endtag_pos !== FALSE AND ( ! isset($matches[0][$i+1]) OR $endtag_pos < $matches[0][$i+1][1]))
+						$field_tagdata = ($endtag_pos !== FALSE)
 						  ?  substr($tagdata, $tagdata_pos, $endtag_pos - $tagdata_pos)
 						  :  '';
-
+        
 						// let the fieldtype do what it wants with in
-						$field['ftype']->display_tag($field_tagdata, $row, $field_id, $field['settings'], $params);
+						$tagdata = substr($tagdata, 0, $tag_pos)
+						         . $field['ftype']->display_tag($field_tagdata, $row, $field_id, $field['settings'], $params)
+						         . substr($tagdata, ($endtag_pos !== FALSE ? $endtag_pos+$endtag_len : $tagdata_pos));
 					}
 				}
 			}
