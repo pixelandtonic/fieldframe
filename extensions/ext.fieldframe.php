@@ -1278,16 +1278,13 @@ class Fieldframe_Main {
 	 *
 	 * @param  string   $tagdata   The Weblog Entries tag data
 	 * @param  array    $row       Array of data for the current entry
-	 * @param  object   $weblog    The current Weblog object including all data relating to categories and custom fields
 	 * @return string              Modified $tagdata
 	 * @see    http://expressionengine.com/developers/extension_hooks/weblog_entries_tagdata/
-	 * @author Mark Huot <docs@markhuot.com>
-	 * @author Brandon Kelly <me@brandon-kelly.com>
-	 * @since  version 1.0.0
 	 */
-	function weblog_entries_tagdata($tagdata, $row, &$weblog)
+	function weblog_entries_tagdata($tagdata, $row)
 	{
-		$tagdata = $this->get_last_call($tagdata);
+		$this->tagdata = $this->get_last_call($tagdata);
+		$this->row = $row;
 
 		foreach($this->_get_fields() as $field_id => $field)
 		{
@@ -1296,6 +1293,8 @@ class Fieldframe_Main {
 				// find all FF field tags
 				if (preg_match_all('/'.LD.$field['name'].'(\s+.*)?'.RD.'/sU', $tagdata, $matches, PREG_OFFSET_CAPTURE))
 				{
+					$this->field_id = $field_id;
+
 					for ($i = count($matches[0])-1; $i >= 0; $i--)
 					{
 						$tag_pos = $matches[0][$i][1];
@@ -1303,7 +1302,7 @@ class Fieldframe_Main {
 						$tagdata_pos = $tag_pos + $tag_len;
 						$endtag = LD.SLASH.$field['name'].RD;
 						$endtag_len = strlen($endtag);
-						$endtag_pos = strpos($tagdata, $endtag, $tagdata_pos);
+						$endtag_pos = strpos($this->tagdata, $endtag, $tagdata_pos);
         
 						// get the params
 						$params = array();
@@ -1317,18 +1316,22 @@ class Fieldframe_Main {
         
 						// is this a tag pair?
 						$field_tagdata = ($endtag_pos !== FALSE)
-						  ?  substr($tagdata, $tagdata_pos, $endtag_pos - $tagdata_pos)
+						  ?  substr($this->tagdata, $tagdata_pos, $endtag_pos - $tagdata_pos)
 						  :  '';
         
-						// let the fieldtype do what it wants with in
-						$tagdata = substr($tagdata, 0, $tag_pos)
-						         . $field['ftype']->display_tag($field_tagdata, $row, $field_id, $field['settings'], $params)
-						         . substr($tagdata, ($endtag_pos !== FALSE ? $endtag_pos+$endtag_len : $tagdata_pos));
+						// let the fieldtype do what it wants with it
+						$this->tagdata = substr($this->tagdata, 0, $tag_pos)
+						               . $field['ftype']->display_tag($field_tagdata, $row['field_id_'.$field_id], $field['settings'], $params)
+						               . substr($this->tagdata, ($endtag_pos !== FALSE ? $endtag_pos+$endtag_len : $tagdata_pos));
 					}
 				}
 			}
 		}
 
+		$tagdata = $this->tagdata;
+		unset($this->tagdata);
+		unset($this->row);
+		if (isset($this->field_id)) unset($this->field_id);
 		$args = func_get_args();
 		return $this->forward_ff_hook('weblog_entries_tagdata', $args, $tagdata);
 	}
