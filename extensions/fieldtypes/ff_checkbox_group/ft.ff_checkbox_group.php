@@ -11,13 +11,13 @@ if ( ! defined('EXT')) exit('Invalid file request');
  * @copyright Copyright (c) 2009 Brandon Kelly
  * @license   http://creativecommons.org/licenses/by-sa/3.0/ Attribution-Share Alike 3.0 Unported
  */
-class Checkbox_group {
+class Ff_checkbox_group extends Fieldframe_Fieldtype {
 
 	var $info = array(
-		'name'             => 'Checkbox Group',
+		'name'             => 'FF Checkbox Group',
 		'version'          => '1.0.0',
 		'desc'             => 'Provides as checkbox group field type',
-		'docs_url'         => 'http://brandon-kelly.com/',
+		'docs_url'         => 'https://github.com/brandonkelly/bk.fieldframe.ee_addon/wikis',
 		'versions_xml_url' => 'http://brandon-kelly.com/downloads/versions.xml'
 	);
 
@@ -100,23 +100,8 @@ class Checkbox_group {
 		return $r;
 	}
 
-	/**
-	 * Display Cell
-	 * 
-	 * @param  string  $cell_name      The cell's name
-	 * @param  mixed   $cell_data      The cell's current value
-	 * @param  array   $cell_settings  The cell's settings
-	 * @return string  The cell's HTML
-	 */
-	function display_cell($cell_name, $cell_data, $cell_settings)
-	{
-		// We're not doing anything special for matrix cells,
-		// so we just route this call to display_field()
-		return $this->display_field($cell_name, $cell_data, $cell_settings);
-	}
-
 }
 
 
-/* End of file ft.checkbox_group.php */
-/* Location: ./system/fieldtypes/checkbox_group/ft.checkbox_group.php */
+/* End of file ft.ff_checkbox_group.php */
+/* Location: ./system/fieldtypes/ff_checkbox_group/ft.ff_checkbox_group.php */

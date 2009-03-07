@@ -11,13 +11,13 @@ if ( ! defined('EXT')) exit('Invalid file request');
  * @copyright Copyright (c) 2009 Brandon Kelly
  * @license   http://creativecommons.org/licenses/by-sa/3.0/ Attribution-Share Alike 3.0 Unported
  */
-class Checkbox {
+class Ff_checkbox extends Fieldframe_Fieldtype {
 
 	var $info = array(
-		'name'             => 'Checkbox',
+		'name'             => 'FF Checkbox',
 		'version'          => '1.0.0',
 		'desc'             => 'Provides as single checkbox field type',
-		'docs_url'         => 'http://brandon-kelly.com/',
+		'docs_url'         => 'https://github.com/brandonkelly/bk.fieldframe.ee_addon/wikis',
 		'versions_xml_url' => 'http://brandon-kelly.com/downloads/versions.xml'
 	);
 
@@ -29,7 +29,7 @@ class Checkbox {
 	 * @param  array   $field_settings  The field's settings
 	 * @return string  The field's HTML
 	 */
-	function display_field($field_name, $field_data)
+	function display_field($field_name, $field_data, $field_settings)
 	{
 		global $DSP;
 		return '<label style="display:inline-block; padding:1px; background:#768E9D;">'
@@ -37,23 +37,8 @@ class Checkbox {
 		         . '</label>';
 	}
 
-	/**
-	 * Display Cell
-	 * 
-	 * @param  string  $cell_name      The cell's name
-	 * @param  mixed   $cell_data      The cell's current value
-	 * @param  array   $cell_settings  The cell's settings
-	 * @return string  The cell's HTML
-	 */
-	function display_cell($cell_name, $cell_data)
-	{
-		// We're not doing anything special for matrix cells,
-		// so we just route this call to display_field()
-		return $this->display_field($cell_name, $cell_data);
-	}
-
 }
 
 
-/* End of file ft.checkbox.php */
-/* Location: ./system/fieldtypes/checkbox/ft.checkbox.php */
+/* End of file ft.ff_checkbox.php */
+/* Location: ./system/fieldtypes/ff_checkbox/ft.ff_checkbox.php */
