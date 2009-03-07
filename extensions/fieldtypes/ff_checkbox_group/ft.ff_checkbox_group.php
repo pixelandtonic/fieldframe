@@ -89,12 +89,107 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 			{
 				$checked = in_array($option_name, $field_data) ? 1 : 0;
 				$r .= '<label style="margin-right:15px; white-space:nowrap;">'
-				    . $DSP->input_checkbox("{$field_name}[{$option_name}]", 'y', $checked)
+				    . $DSP->input_checkbox("{$field_name}[]", $option_name, $checked)
 				    . $option_label
 				    . '</label>';
 			}
 		}
 		return $r;
+	}
+
+	/**
+	 * Display Tag
+	 *
+	 * @param  array   $params          Name/value pairs from the opening tag
+	 * @param  string  $tagdata         Chunk of tagdata between field tag pairs
+	 * @param  string  $field_data      Currently saved field value
+	 * @param  array   $field_settings  The field's settings
+	 * @return string  relationship references
+	 */
+	function display_tag($params, $tagdata, $field_data, $field_settings)
+	{
+		global $TMPL;
+
+		$r = '';
+
+		if (isset($field_settings['options']))
+		{
+			// combine default param values with the passed params
+			$params = array_merge(array(
+				'sort'      => '',
+				'backspace' => '0'
+			), $params);
+
+			// define default option template
+			if ( ! $tagdata) $tagdata = '<li>'.LD.'option_label'.RD.'</li>';
+
+			$field_data = $field_data ? unserialize($field_data) : array();
+
+			// optional sorting
+			if ($sort = strtolower($params['sort']))
+			{
+				if ($sort == 'asc')
+				{
+					sort($field_data);
+				}
+				else if ($sort == 'desc')
+				{
+					rsort($field_data);
+				}
+			}
+
+			// replace switch tags with {SWITCH[abcdefgh]SWITCH} markers
+			$this->switches = array();
+			$tagdata = preg_replace_callback('/'.LD.'switch\s*=\s*[\'\"]([^\'\"]+)[\'\"]'.RD.'/sU', array(&$this, '_get_switch_options'), $tagdata);
+
+			$count = 0;
+			foreach($field_data as $option_name)
+			{
+				if (isset($field_settings['options'][$option_name]))
+				{
+					// copy $tagdata
+					$option_tagdata = $tagdata;
+
+					// simple var swaps
+					$option_tagdata = $TMPL->swap_var_single('option', $field_settings['options'][$option_name], $option_tagdata);
+					$option_tagdata = $TMPL->swap_var_single('option_name', $option_name, $option_tagdata);
+					$option_tagdata = $TMPL->swap_var_single('count', $count+1, $option_tagdata);
+
+					// switch tags
+					foreach($this->switches as $i => $switch)
+					{
+						$option = $count % count($switch['options']);
+						$option_tagdata = str_replace($switch['marker'], $switch['options'][$option], $option_tagdata);
+					}
+
+					$r .= $option_tagdata;
+
+					$count++;
+				}
+			}
+		}
+
+		if ($params['backspace'])
+		{
+			$r = substr($r, 0, -$params['backspace']);
+		}
+
+		return $r;
+	}
+
+	/**
+	 * Get Switch Options
+	 *
+	 * @param  array   $matches  array of match chunks
+	 * @return string  marker to be inserted back into tagdata
+	 * @access private
+	 */
+	function _get_switch_options($match)
+	{
+		global $FNS;
+		$marker = LD.'SWITCH['.$FNS->random('alpha', 8).']SWITCH'.RD;
+		$this->switches[] = array('marker' => $marker, 'options' => explode('|', $match[1]));
+		return $marker;
 	}
 
 }

@@ -1258,20 +1258,29 @@ class Fieldframe_Main {
 	{
 		foreach($this->_get_fields() as $field_id => $field)
 		{
-			if (method_exists($field['ftype'], 'save_field'))
-			{
-				$field_name = 'field_id_'.$field_id;
-				$field['ftype']->save_field($field_name);
-			}
+			$field_name = 'field_id_'.$field_id;
 
-			// unset extra FF post vars
-			$prefix = 'field_id_'.$field_id.'_';
-			$length = strlen($prefix);
-			foreach($_POST as $key => $value)
+			if (isset($_POST[$field_name]))
 			{
-				if (substr($key, 0, $length) == $prefix)
+				if (method_exists($field['ftype'], 'save_field'))
 				{
-					unset($_POST[$key]);
+					$field['ftype']->save_field($field_name);
+				}
+
+				if (isset($_POST[$field_name]) AND is_array($_POST[$field_name]))
+				{
+					$_POST[$field_name] = addslashes(serialize($_POST[$field_name]));
+				}
+
+				// unset extra FF post vars
+				$prefix = $field_name.'_';
+				$length = strlen($prefix);
+				foreach($_POST as $key => $value)
+				{
+					if (substr($key, 0, $length) == $prefix)
+					{
+						unset($_POST[$key]);
+					}
 				}
 			}
 		}
