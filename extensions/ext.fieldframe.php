@@ -1309,7 +1309,7 @@ class Fieldframe_Main {
         
 						// get the params
 						$params = array();
-						if (isset($matches[1][$i][0]) AND preg_match_all('/\s+(\w+)\s*=\s*[\'\"]([\w\s]+)[\'\"]/sU', $matches[1][$i][0], $param_matches))
+						if (isset($matches[1][$i][0]) AND preg_match_all('/\s+(\w+)\s*=\s*[\'\"]([^\'\"]+)[\'\"]/sU', $matches[1][$i][0], $param_matches))
 						{
 							for ($j = 0; $j < count($param_matches[0]); $j++)
 							{
