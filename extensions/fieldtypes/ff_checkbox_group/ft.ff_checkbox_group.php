@@ -121,7 +121,7 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 			), $params);
 
 			// define default option template
-			if ( ! $tagdata) $tagdata = '<li>'.LD.'option_label'.RD.'</li>';
+			if ( ! $tagdata) $tagdata = '<li>'.LD.'option'.RD.'</li>';
 
 			$field_data = $field_data ? unserialize($field_data) : array();
 
