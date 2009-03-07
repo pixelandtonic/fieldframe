@@ -427,7 +427,10 @@ class Fieldframe_Main {
 				// is this a directory, and does a ftype file exist inside it?
 				if (is_dir(FT_PATH.$file) AND is_file(FT_PATH.$file.'/ft.'.$file.EXT))
 				{
-					$ftypes[$file] = $this->_init_ftype($file);
+					if (($ftype = $this->_init_ftype($file)) !== FALSE)
+					{
+						$ftypes[$file] = $ftype;
+					}
 				}
 			}
 			closedir($fp);
@@ -504,13 +507,15 @@ class Fieldframe_Main {
 			// skip if the class doesn't exist
 			if ( ! class_exists($class_name))
 			{
-				exit("Couldn't fild class '{$class_name}' - file is ".FT_PATH.$file.'/ft.'.$file.EXT);
 				return FALSE;
 			}
 		}
 
 		// initialize object
 		$OBJ = new $class_name();
+
+		// is this a FieldFrame field type?
+		if ( ! isset($OBJ->_fieldframe)) return FALSE;
 
 		$OBJ->_class_name = $file;
 		$OBJ->_is_new     = FALSE;
@@ -762,33 +767,34 @@ class Fieldframe_Main {
 			foreach($_POST['ftypes'] as $file => $ftype_post)
 			{
 				// Initialize
-				$ftype = $this->_init_ftype($file);
-
-				$data = array('enabled' => $ftype_post['enabled'] == 'y' ? 'y' : 'n');
-
-				// insert a new row if it's new
-				if ($ftype AND $ftype->_is_new)
+				if (($ftype = $this->_init_ftype($file)) !== FALSE)
 				{
-					$data['class'] = $file;
-					$data['version'] = $ftype->info['version'];
-					$DB->query($DB->insert_string('exp_ff_fieldtypes', $data));
+					$data = array('enabled' => $ftype_post['enabled'] == 'y' ? 'y' : 'n');
 
-					// get the fieldtype_id
-					$query = $DB->query("SELECT fieldtype_id FROM exp_ff_fieldtypes WHERE class = '{$file}' LIMIT 1");
-					$ftype->_fieldtype_id = $query->row['fieldtype_id'];
-
-					// insert hooks
-					$this->_insert_ftype_hooks($ftype);
-
-					// call update()
-					if (method_exists($ftype, 'update'))
+					// insert a new row if it's new
+					if ($ftype AND $ftype->_is_new)
 					{
-						$ftype->update(FALSE);
+						$data['class'] = $file;
+						$data['version'] = $ftype->info['version'];
+						$DB->query($DB->insert_string('exp_ff_fieldtypes', $data));
+
+						// get the fieldtype_id
+						$query = $DB->query("SELECT fieldtype_id FROM exp_ff_fieldtypes WHERE class = '{$file}' LIMIT 1");
+						$ftype->_fieldtype_id = $query->row['fieldtype_id'];
+
+						// insert hooks
+						$this->_insert_ftype_hooks($ftype);
+
+						// call update()
+						if (method_exists($ftype, 'update'))
+						{
+							$ftype->update(FALSE);
+						}
 					}
-				}
-				else
-				{
-					$DB->query($DB->update_string('exp_ff_fieldtypes', $data, "class = '{$file}'"));
+					else
+					{
+						$DB->query($DB->update_string('exp_ff_fieldtypes', $data, "class = '{$file}'"));
+					}
 				}
 			}
 		}
@@ -1142,11 +1148,13 @@ class Fieldframe_Main {
 			if ($query->row)
 			{	
 				// let the fieldtype modify the settings
-				$ftype = $this->_init_ftype($query->row);
-				if (method_exists($ftype, 'save_field_settings'))
+				if (($ftype = $this->_init_ftype($query->row)) !== FALSE)
 				{
-					$settings = $ftype->save_field_settings($settings);
-					if ( ! is_array($settings)) $settings = array();
+					if (method_exists($ftype, 'save_field_settings'))
+					{
+						$settings = $ftype->save_field_settings($settings);
+						if ( ! is_array($settings)) $settings = array();
+					}
 				}
 			}
 
@@ -1650,6 +1658,8 @@ class Fieldframe_SettingsDisplay {
  * @author   Brandon Kelly <me@brandon-kelly.com>
  */
 class Fieldframe_Fieldtype {
+
+	var $_fieldframe = TRUE;
 
 	function get_last_call($param=FALSE)
 	{
