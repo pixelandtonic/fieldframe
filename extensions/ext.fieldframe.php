@@ -1278,22 +1278,25 @@ class Fieldframe_Main {
 	 *
 	 * @param  string   $tagdata   The Weblog Entries tag data
 	 * @param  array    $row       Array of data for the current entry
+	 * @param  object   $weblog    The current Weblog object including all data relating to categories and custom fields
 	 * @return string              Modified $tagdata
 	 * @see    http://expressionengine.com/developers/extension_hooks/weblog_entries_tagdata/
 	 */
-	function weblog_entries_tagdata($tagdata, $row)
+	function weblog_entries_tagdata($tagdata, $row, &$weblog)
 	{
 		$this->tagdata = $this->get_last_call($tagdata);
 		$this->row = $row;
+		$this->weblog = &$weblog;
 
 		foreach($this->_get_fields() as $field_id => $field)
 		{
 			if (method_exists($field['ftype'], 'display_tag'))
 			{
 				// find all FF field tags
-				if (preg_match_all('/'.LD.$field['name'].'(\s+.*)?'.RD.'/sU', $tagdata, $matches, PREG_OFFSET_CAPTURE))
+				if (preg_match_all('/'.LD.$field['name'].'(\s+.*)?'.RD.'/sU', $this->tagdata, $matches, PREG_OFFSET_CAPTURE))
 				{
 					$this->field_id = $field_id;
+					$this->field_name = $field['name'];
 
 					for ($i = count($matches[0])-1; $i >= 0; $i--)
 					{
@@ -1306,7 +1309,7 @@ class Fieldframe_Main {
         
 						// get the params
 						$params = array();
-						if (preg_match_all('/\s+(\w+)\s*=\s*[\'\"]([\w\s]+)[\'\"]/sU', $matches[1][$i][0], $param_matches))
+						if (isset($matches[1][$i][0]) AND preg_match_all('/\s+(\w+)\s*=\s*[\'\"]([\w\s]+)[\'\"]/sU', $matches[1][$i][0], $param_matches))
 						{
 							for ($j = 0; $j < count($param_matches[0]); $j++)
 							{
@@ -1321,17 +1324,21 @@ class Fieldframe_Main {
         
 						// let the fieldtype do what it wants with it
 						$this->tagdata = substr($this->tagdata, 0, $tag_pos)
-						               . $field['ftype']->display_tag($field_tagdata, $row['field_id_'.$field_id], $field['settings'], $params)
+						               . $field['ftype']->display_tag($params, $field_tagdata, $row['field_id_'.$field_id], $field['settings'])
 						               . substr($this->tagdata, ($endtag_pos !== FALSE ? $endtag_pos+$endtag_len : $tagdata_pos));
 					}
 				}
 			}
 		}
 
+		// unset temporary field helper vars
 		$tagdata = $this->tagdata;
 		unset($this->tagdata);
 		unset($this->row);
+		unset($this->weblog);
 		if (isset($this->field_id)) unset($this->field_id);
+		if (isset($this->field_name)) unset($this->field_name);
+
 		$args = func_get_args();
 		return $this->forward_ff_hook('weblog_entries_tagdata', $args, $tagdata);
 	}
