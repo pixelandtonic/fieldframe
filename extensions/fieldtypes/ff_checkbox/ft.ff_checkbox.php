@@ -13,6 +13,10 @@ if ( ! defined('EXT')) exit('Invalid file request');
  */
 class Ff_checkbox extends Fieldframe_Fieldtype {
 
+	/**
+	 * Fieldtype Info
+	 * @var array
+	 */
 	var $info = array(
 		'name'             => 'FF Checkbox',
 		'version'          => '1.0.0',

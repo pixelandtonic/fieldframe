@@ -58,6 +58,12 @@ $L = array(
 'fieldtype_enabled' =>
 'Enabled?',
 
+'show' =>
+'Show',
+
+'hide' =>
+'Hide',
+
 
 /* END */
 ''=>''

@@ -111,8 +111,10 @@ class Fieldframe_Base {
 		{
 			$DB->query("CREATE TABLE exp_ff_fieldtypes (
 			              `fieldtype_id` int(10) unsigned NOT NULL auto_increment,
+			              `site_id`      int(4)  unsigned NOT NULL default '1',
 			              `class`        varchar(50)      NOT NULL default '',
 			              `version`      varchar(10)      NOT NULL default '',
+			              `settings`     text             NOT NULL default '',
 			              `enabled`      char(1)          NOT NULL default 'n',
 			              PRIMARY KEY (`fieldtype_id`)
 			            )");
@@ -320,14 +322,9 @@ class Fieldframe_Main {
 		// create a reference to the cache
 		$this->cache = &$SESS->cache[FF_CLASS];
 
-		if ( ! defined('FT_PATH') AND $this->settings['fieldtypes_path'])
-		{
-			define('FT_PATH', $this->settings['fieldtypes_path']);
-		}
-		if ( ! defined('FT_URL') AND $this->settings['fieldtypes_url'])
-		{
-			define('FT_URL', $this->settings['fieldtypes_url']);
-		}
+		// define fieldtype folder constants
+		if ( ! defined('FT_PATH') AND $this->settings['fieldtypes_path']) define('FT_PATH', $this->settings['fieldtypes_path']);
+		if ( ! defined('FT_URL') AND $this->settings['fieldtypes_url']) define('FT_URL', $this->settings['fieldtypes_url']);
 	}
 
 	/**
@@ -342,8 +339,8 @@ class Fieldframe_Main {
 		$query = $DB->query('SELECT settings FROM exp_extensions
 		                       WHERE class = "'.FF_CLASS.'" AND settings != "" LIMIT 1');
 		return $query->num_rows
-		 ? unserialize($query->row['settings'])
-		 : array();
+		  ?  unserialize($query->row['settings'])
+		  :  array();
 	}
 
 	/**
@@ -363,8 +360,8 @@ class Fieldframe_Main {
 		);
 		$site_id = $PREFS->ini('site_id');
 		return isset($settings[$site_id])
-		 ? array_merge($defaults, $settings[$site_id])
-		 : $defaults;
+		  ?  array_merge($defaults, $settings[$site_id])
+		  :  $defaults;
 	}
 
 	/**
@@ -375,13 +372,16 @@ class Fieldframe_Main {
 	 */
 	function _get_ftypes()
 	{
+		global $DB, $PREFS;
+
 		if ( ! isset($this->cache['ftypes']))
 		{
 			$this->cache['ftypes'] = array();
 
 			// get enabled fields from the DB
-			global $DB;
-			$query = $DB->query("SELECT * FROM exp_ff_fieldtypes WHERE enabled = 'y'");
+			$query = $DB->query('SELECT * FROM exp_ff_fieldtypes
+			                       WHERE site_id = "'.$PREFS->ini('site_id').'"
+			                         AND enabled = "y"');
 
 			if ($query->num_rows)
 			{
@@ -494,7 +494,7 @@ class Fieldframe_Main {
 	 */
 	function _init_ftype($ftype)
 	{
-		global $DB;
+		global $DB, $PREFS;
 
 		$file = is_array($ftype) ? $ftype['class'] : $ftype;
 		$class_name = ucfirst($file);
@@ -523,7 +523,9 @@ class Fieldframe_Main {
 		$OBJ->_is_updated = FALSE;
 
 		// settings
-		if ( ! isset($OBJ->settings)) $OBJ->settings = array();
+		$OBJ->site_settings = isset($OBJ->default_site_settings)
+		  ?  $OBJ->default_site_settings
+		  :  array();
 
 		// info
 		if ( ! isset($OBJ->info)) $OBJ->info = array();
@@ -541,17 +543,16 @@ class Fieldframe_Main {
 		// do we already know about this field type?
 		if (is_string($ftype))
 		{
-			$query = $DB->query("SELECT * FROM exp_ff_fieldtypes WHERE class = '{$file}' LIMIT 1");
+			$query = $DB->query('SELECT * FROM exp_ff_fieldtypes
+			                       WHERE site_id = "'.$PREFS->ini('site_id').'"
+			                         AND class = "'.$file.'"');
 			$ftype = $query->row;
 		}
 		if ($ftype)
 		{
-			if ($ftype['enabled'] == 'y')
-			{
-				$OBJ->_is_enabled = TRUE;
-			}
-
 			$OBJ->_fieldtype_id = $ftype['fieldtype_id'];
+			if ($ftype['enabled'] == 'y') $OBJ->_is_enabled = TRUE;
+			if ($ftype['settings']) $OBJ->site_settings = array_merge($OBJ->site_settings, unserialize($ftype['settings']));
 
 			// new version?
 			if ($OBJ->info['version'] != $ftype['version'])
@@ -637,6 +638,24 @@ class Fieldframe_Main {
 	}
 
 	/**
+	 * Group Fieldtype nputs
+	 *
+	 * move inputs into ftype namespace
+	 *
+	 * e.g. name="options"   => name="ftype[ftype_id_1][options]"
+	 *      name="options[]" => name="ftype[ftype_id_1][options][]"
+	 *
+	 * @param  string  $ftype_id  The Fieldtype ID
+	 * @param  string  $settings  The Fieldtype settings
+	 * @return string  The modified settings
+	 * @access private
+	 */
+	function _group_ftype_inputs($ftype_id, $settings)
+	{
+		return preg_replace('/(name=[\'"])([^\'"\[\]]+)([^\'"]*)([\'"])/i', '$1ftype['.$ftype_id.'][$2]$3$4', $settings);
+	}
+
+	/**
 	 * Settings Form
 	 *
 	 * @param array  $current  Current extension settings (not site-specific)
@@ -644,7 +663,7 @@ class Fieldframe_Main {
 	 */
 	function settings_form()
 	{
-		global $DB, $DSP, $LANG, $IN;
+		global $DB, $DSP, $LANG, $IN, $PREFS, $SD;
 
 		// Breadcrumbs
 		$DSP->crumbline = TRUE;
@@ -697,7 +716,7 @@ class Fieldframe_Main {
 		            . $SD->block_c();
 
 		// field type settings
-		$DSP->body .= $SD->block('fieldtype_manager', 4);
+		$DSP->body .= $SD->block('fieldtype_manager', 5);
 
 		// initialize field types
 		$ftypes = $this->_get_all_installed_ftypes();
@@ -706,6 +725,7 @@ class Fieldframe_Main {
 		$DSP->body .= $SD->heading_row(array(
 		                                   $LANG->line('fieldtype'),
 		                                   $LANG->line('fieldtype_enabled'),
+		                                   $LANG->line('settings'),
 		                                   $LANG->line('documentation')
 		                                 ));
 
@@ -714,8 +734,20 @@ class Fieldframe_Main {
 			$DSP->body .= $SD->row(array(
 			                         $SD->label($ftype->info['name'].NBS.$DSP->qspan('xhtmlWrapperLight defaultSmall', $ftype->info['version']), $ftype->info['desc']),
 			                         $SD->radio_group('ftypes['.$class_name.'][enabled]', ($ftype->_is_enabled ? 'y' : 'n'), array('y'=>'yes', 'n'=>'no')),
+			                         (($ftype->_is_enabled AND method_exists($ftype, 'display_site_settings'))
+			                            ?  '<a id="ft'.$ftype->_fieldtype_id.'show" href="javascript:void();" style="display:block;" onclick="this.style.display=\'none\'; document.getElementById(\'ft'.$ftype->_fieldtype_id.'hide\').style.display=\'block\'; document.getElementById(\'ft'.$ftype->_fieldtype_id.'settings\').style.display=\'table-row\';"><img src="'.$PREFS->ini('theme_folder_url', 1).'cp_global_images/expand.gif">  '.$LANG->line('show').'</a>'
+			                             . '<a id="ft'.$ftype->_fieldtype_id.'hide" href="javascript:void();" style="display:none;" onclick="this.style.display=\'none\'; document.getElementById(\'ft'.$ftype->_fieldtype_id.'show\').style.display=\'block\'; document.getElementById(\'ft'.$ftype->_fieldtype_id.'settings\').style.display=\'none\';"><img src="'.$PREFS->ini('theme_folder_url', 1).'cp_global_images/collapse.gif">  '.$LANG->line('hide').'</a>'
+			                            :  '--'),
 			                         ($ftype->info['docs_url'] ? '<a href="'.stripslashes($ftype->info['docs_url']).'">'.$LANG->line('documentation').'</a>' : '--')
 			                       ));
+
+			if ($ftype->_is_enabled AND method_exists($ftype, 'display_site_settings'))
+			{
+				$data = '<div style="margin:-6px 8px 12px 12px;">'
+				      . $this->_group_ftype_inputs($ftype->_fieldtype_id, $ftype->display_site_settings())
+				      . $DSP->div_c();
+				$DSP->body .= $SD->row(array($data), $SD->row_class, array('id' => 'ft'.$ftype->_fieldtype_id.'settings', 'style' => 'display:none;'));
+			}
 		}
 
 		$DSP->body .= $SD->block_c();
@@ -772,14 +804,17 @@ class Fieldframe_Main {
 					$data = array('enabled' => $ftype_post['enabled'] == 'y' ? 'y' : 'n');
 
 					// insert a new row if it's new
-					if ($ftype AND $ftype->_is_new)
+					if ($ftype->_is_new)
 					{
+						$data['site_id'] = $PREFS->ini('site_id');
 						$data['class'] = $file;
 						$data['version'] = $ftype->info['version'];
 						$DB->query($DB->insert_string('exp_ff_fieldtypes', $data));
 
 						// get the fieldtype_id
-						$query = $DB->query("SELECT fieldtype_id FROM exp_ff_fieldtypes WHERE class = '{$file}' LIMIT 1");
+						$query = $DB->query('SELECT fieldtype_id FROM exp_ff_fieldtypes
+						                       WHERE site_id = "'.$PREFS->ini('site_id').'"
+						                         AND class = "'.$file.'"');
 						$ftype->_fieldtype_id = $query->row['fieldtype_id'];
 
 						// insert hooks
@@ -793,7 +828,21 @@ class Fieldframe_Main {
 					}
 					else
 					{
-						$DB->query($DB->update_string('exp_ff_fieldtypes', $data, "class = '{$file}'"));
+						// site settings
+						$settings = (isset($_POST['ftype']) AND isset($_POST['ftype'][$ftype->_fieldtype_id]))
+						  ?  $_POST['ftype'][$ftype->_fieldtype_id]
+						  :  array();
+
+						// let the fieldtype do what it wants with them
+						if (method_exists($ftype, 'save_site_settings'))
+						{
+							$settings = $ftype->save_site_settings($settings);
+							if ( ! is_array($settings)) $settings = array();
+						}
+						$data['settings'] = addslashes(serialize($settings));
+
+						// update the row
+						$DB->query($DB->update_string('exp_ff_fieldtypes', $data, 'fieldtype_id = "'.$ftype->_fieldtype_id.'"'));
 					}
 				}
 			}
@@ -1020,10 +1069,7 @@ class Fieldframe_Main {
 			$ftype_id = 'ftype_id_'.$ftype->_fieldtype_id;
 			$selected = ($data['field_type'] == $ftype_id);
 
-			// move inputs into ftype namespace
-			// e.g. name="options"   => name="ftype[ftype_id_1][options]"
-			//      name="options[]" => name="ftype[ftype_id_1][options][]"
-			$field_settings = preg_replace('/(name=[\'"])([^\'"\[\]]+)([^\'"]*)([\'"])/i', '$1ftype['.$ftype_id.'][$2]$3$4', $ftype->_field_settings['cell'.$index]);
+			$field_settings = $this->_group_ftype_inputs($ftype_id, $ftype->_field_settings['cell'.$index]);
 
 			$r .= '<div id="'.$ftype_id.'_cell'.$index.'" style="margin-top:5px; display:'.($selected ? 'block' : 'none').';">'
 			    . $field_settings
@@ -1116,7 +1162,7 @@ class Fieldframe_Main {
 				       . $DSP->tr_c();
 			}
 		}
-		$rows = preg_replace('/(name=[\'"])([^\'"\[\]]+)([^\'"]*)([\'"])/i', '$1ftype['.$ftype_id.'][$2]$3$4', $rows);
+		$rows = $this->_group_ftype_inputs($ftype_id, $rows);
 
 		$r = $this->get_last_call($r);
 		$r = preg_replace('/(<tr>\s*<td[^>]*>\s*<div[^>]*>\s*'.$LANG->line('deft_field_formatting').'\s*<\/div>)/is', $rows.'$1', $r);
@@ -1144,7 +1190,7 @@ class Fieldframe_Main {
 			  :  array();
 
 			// initialize the fieldtype
-			$query = $DB->query("SELECT * FROM exp_ff_fieldtypes WHERE fieldtype_id = '{$ftype_id}'");
+			$query = $DB->query('SELECT * FROM exp_ff_fieldtypes WHERE fieldtype_id = "'.$ftype_id.'"');
 			if ($query->row)
 			{	
 				// let the fieldtype modify the settings
@@ -1452,18 +1498,24 @@ class Fieldframe_SettingsDisplay {
 	 * @param  string  $title_line  The block's title
 	 * @return string  The block's head
 	 */
-	function block($title_line, $num_cols=2)
+	function block($title_line=FALSE, $num_cols=2)
 	{
+		global $DSP;
+
 		$this->row_count = 0;
 		$this->num_cols = $num_cols;
 
-		global $DSP;
-		return $DSP->table_open(array(
-		                          'class'  => 'tableBorder',
-		                          'border' => '0',
-		                          'style' => 'margin-top:18px; width:100%'
-		                        ))
-		     . $this->row(array($this->get_line($title_line)), 'tableHeading');
+		$r = $DSP->table_open(array(
+		                        'class'  => 'tableBorder',
+		                        'border' => '0',
+		                        'style' => 'margin-top:18px; width:100%;'.($title_line ? '' : ' border-top:1px solid #CACFD4;')
+		                      ));
+		if ($title_line)
+		{
+			$r .= $this->row(array($this->get_line($title_line)), 'tableHeading');
+		}
+
+		return $r;
 	}
 
 	/**
@@ -1480,27 +1532,37 @@ class Fieldframe_SettingsDisplay {
 	 *
 	 * @param  array   $col_data   Each column's contents
 	 * @param  string  $row_class  CSS class to be added to each cell
+	 * @param  array   $attr       HTML attributes to add onto the <tr>
 	 * @return string  The settings row
 	 */
-	function row($col_data, $row_class=NULL)
+	function row($col_data, $row_class=NULL, $attr=array())
 	{
+		global $DSP;
+
 		// get the alternating row class
 		if ($row_class === NULL)
 		{
 			$this->row_count++;
-			$row_class = ($this->row_count % 2)
+			$this->row_class = ($this->row_count % 2)
 			 ? 'tableCellOne'
 			 : 'tableCellTwo';
 		}
+		else
+		{
+			$this->row_class = $row_class;
+		}
 
-		global $DSP;
-		$r = $DSP->tr();
+		$r = '<tr';
+		foreach($attr as $key => $value) $r .= ' '.$key.'="'.$value.'"';
+		$r .= '>';
 		$num_cols = count($col_data);
 		foreach($col_data as $i => $col)
 		{
-			$width = ($i == 0) ? 55 : floor(45/($num_cols-1));
+			$width = ($i == 0)
+			  ?  '50%'
+			  :  ($i < $num_cols-1 ? floor(50/($num_cols-1)).'%' : '');
 			$colspan = ($i == $num_cols-1) ? $this->num_cols - $i : NULL;
-			$r .= $DSP->td($row_class, $width.'%', $colspan)
+			$r .= $DSP->td($this->row_class, $width, $colspan)
 			    . $col
 			    . $DSP->td_c();
 		}
