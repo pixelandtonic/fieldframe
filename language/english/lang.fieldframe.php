@@ -38,7 +38,7 @@ $L = array(
 'Check for updates?',
 
 'check_for_updates_info' =>
-'FieldFrame can periodically phone home to see if any updates are available for itself and your enabled field types.',
+'FieldFrame can periodically phone home to see if any updates are available for itself and your enabled fieldtypes.',
 
 'check_for_updates_label' =>
 'Should this extension to check for updates and display them on your CP homepage?',
@@ -50,10 +50,10 @@ $L = array(
 // Field Manager
 
 'fieldtype_manager' =>
-'Field Type Manager',
+'Fieldtypes Manager',
 
 'fieldtype' =>
-'Field type',
+'Fieldtype',
 
 'fieldtype_enabled' =>
 'Enabled?',
