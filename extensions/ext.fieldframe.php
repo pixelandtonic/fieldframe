@@ -448,7 +448,7 @@ class Fieldframe_Main {
 	 */
 	function _get_fields()
 	{
-		global $DB;
+		global $DB, $REGX;
 
 		if ( ! isset($this->cache['ftypes_by_field_id']))
 		{
@@ -475,7 +475,7 @@ class Fieldframe_Main {
 						$this->cache['ftypes_by_field_id'][$row['field_id']] = array(
 							'name' => $row['field_name'],
 							'ftype' => $ftypes_by_id[$ftype_id],
-							'settings' => $row['ff_settings'] ? unserialize($row['ff_settings']) : array()
+							'settings' => $row['ff_settings'] ? $REGX->array_stripslashes(unserialize($row['ff_settings'])) : array()
 						);
 					}
 				}
@@ -494,7 +494,7 @@ class Fieldframe_Main {
 	 */
 	function _init_ftype($ftype)
 	{
-		global $DB, $PREFS;
+		global $DB, $PREFS, $REGX;
 
 		$file = is_array($ftype) ? $ftype['class'] : $ftype;
 		$class_name = ucfirst($file);
@@ -552,7 +552,7 @@ class Fieldframe_Main {
 		{
 			$OBJ->_fieldtype_id = $ftype['fieldtype_id'];
 			if ($ftype['enabled'] == 'y') $OBJ->_is_enabled = TRUE;
-			if ($ftype['settings']) $OBJ->site_settings = array_merge($OBJ->site_settings, unserialize($ftype['settings']));
+			if ($ftype['settings']) $OBJ->site_settings = array_merge($OBJ->site_settings, $REGX->array_stripslashes(unserialize($ftype['settings'])));
 
 			// new version?
 			if ($OBJ->info['version'] != $ftype['version'])
@@ -977,7 +977,7 @@ class Fieldframe_Main {
 	 */
 	function publish_admin_edit_field_js($data, $js)
 	{
-		global $LANG;
+		global $LANG, $REGX;
 
 		// Prepare fieldtypes for following Publish Admin hooks
 		$field_settings_tmpl = array(
@@ -995,7 +995,7 @@ class Fieldframe_Main {
 				// Load the language file
 				$LANG->fetch_language_file($class_name);
 
-				$ftype->_field_settings = array_merge($field_settings_tmpl, $ftype->display_field_settings($selected ? unserialize($data['ff_settings']) : array()));
+				$ftype->_field_settings = array_merge($field_settings_tmpl, $ftype->display_field_settings($selected ? $REGX->array_stripslashes(unserialize($data['ff_settings'])) : array()));
 			}
 			else
 			{
