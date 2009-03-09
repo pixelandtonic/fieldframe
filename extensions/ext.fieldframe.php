@@ -8,7 +8,7 @@ if ( ! defined('FF_CLASS'))
 {
 	define('FF_CLASS',   'Fieldframe');
 	define('FF_NAME',    'FieldFrame');
-	define('FF_VERSION', '0.1.1');
+	define('FF_VERSION', '0.2.0');
 }
 
 
@@ -523,9 +523,7 @@ class Fieldframe_Main {
 		$OBJ->_is_updated = FALSE;
 
 		// settings
-		$OBJ->site_settings = isset($OBJ->default_site_settings)
-		  ?  $OBJ->default_site_settings
-		  :  array();
+		$OBJ->site_settings = array();
 
 		// info
 		if ( ! isset($OBJ->info)) $OBJ->info = array();
@@ -552,7 +550,7 @@ class Fieldframe_Main {
 		{
 			$OBJ->_fieldtype_id = $ftype['fieldtype_id'];
 			if ($ftype['enabled'] == 'y') $OBJ->_is_enabled = TRUE;
-			if ($ftype['settings']) $OBJ->site_settings = array_merge($OBJ->site_settings, $REGX->array_stripslashes(unserialize($ftype['settings'])));
+			if ($ftype['settings']) $OBJ->site_settings = $REGX->array_stripslashes(unserialize($ftype['settings']));
 
 			// new version?
 			if ($OBJ->info['version'] != $ftype['version'])

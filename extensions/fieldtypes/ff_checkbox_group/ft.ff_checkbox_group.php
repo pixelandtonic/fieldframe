@@ -26,20 +26,6 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 	);
 
 	/**
-	 * FF Checkbox Group constructor
-	 *
-	 * Normally this shouldn't be necessary --
-	 * only defining default_site_settings here rather than below $info
-	 * because you can's access constants (LD, RD) from a class var
-	 */
-	function Ff_checkbox_group()
-	{
-		$this->default_site_settings = array(
-			'option_tmpl' => '<li>'.LD.'option'.RD.'</li>'
-		);
-	}
-
-	/**
 	 * Display Site Settings
 	 */
 	function display_site_settings()
@@ -49,7 +35,7 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 		$r = $SD->block()
 		   . $SD->row(array(
 		                $SD->label('Default Option Template', 'Available tags: <code>{option}</code>, <code>{option_name}</code>, <code>{count}</code>, and <code>{switch="odd|even"}</code>'),
-		                $SD->textarea('option_tmpl', $this->site_settings['option_tmpl'], array('rows' => '2'))
+		                $SD->textarea('option_tmpl', (isset($this->site_settings['option_tmpl']) ? $this->site_settings['option_tmpl'] : ''), array('rows' => '2'))
 		              ))
 		   . $SD->block_c();
 
@@ -155,8 +141,8 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 				'backspace' => '0'
 			), $params);
 
-			// define default option template
-			if ( ! $tagdata) $tagdata = $this->site_settings['option_tmpl'];
+			// option template
+			if ( ! $tagdata AND isset($this->site_settings['option_tmpl'])) $tagdata = $this->site_settings['option_tmpl'];
 
 			$field_data = $field_data ? unserialize($field_data) : array();
 
