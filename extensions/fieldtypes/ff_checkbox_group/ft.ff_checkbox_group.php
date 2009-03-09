@@ -30,11 +30,13 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 	 */
 	function display_site_settings()
 	{
+		global $LANG;
+
 		$SD = new Fieldframe_SettingsDisplay();
 
 		$r = $SD->block()
 		   . $SD->row(array(
-		                $SD->label('Default Option Template', 'Available tags: <code>{option}</code>, <code>{option_name}</code>, <code>{count}</code>, and <code>{switch="odd|even"}</code>'),
+		                $SD->label('option_tmpl_label', $LANG->line('option_tmpl_subtext').' <code>{option}</code>, <code>{option_name}</code>, <code>{count}</code>, and <code>{switch="odd|even"}</code>'),
 		                $SD->textarea('option_tmpl', (isset($this->site_settings['option_tmpl']) ? $this->site_settings['option_tmpl'] : ''), array('rows' => '2'))
 		              ))
 		   . $SD->block_c();
@@ -50,7 +52,7 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 	 */
 	function display_field_settings($settings)
 	{
-		global $DSP;
+		global $DSP, $LANG;
 
 		$options = '';
 		if (isset($settings['options']))
@@ -62,8 +64,8 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 			}
 		}
 
-		$cell2 = $DSP->qdiv('defaultBold', 'Checkbox Options')
-		       . $DSP->qdiv('default', 'Put each item on a single line')
+		$cell2 = $DSP->qdiv('defaultBold', $LANG->line('options_label'))
+		       . $DSP->qdiv('default', $LANG->line('options_subtext'))
 		       . $DSP->input_textarea('options', $options, '6', 'textarea', '99%');
 
 		return array('cell2' => $cell2);

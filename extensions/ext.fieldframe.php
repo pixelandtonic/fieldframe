@@ -741,6 +741,8 @@ class Fieldframe_Main {
 
 			if ($ftype->_is_enabled AND method_exists($ftype, 'display_site_settings'))
 			{
+				$LANG->fetch_language_file($class_name);
+
 				$data = '<div style="margin:-6px 8px 12px 12px;">'
 				      . $this->_group_ftype_inputs($ftype->_fieldtype_id, $ftype->display_site_settings())
 				      . $DSP->div_c();
