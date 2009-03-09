@@ -20,7 +20,7 @@ class Ff_checkbox extends Fieldframe_Fieldtype {
 	var $info = array(
 		'name'             => 'FF Checkbox',
 		'version'          => '0.9.0',
-		'desc'             => 'Provides as single checkbox field type',
+		'desc'             => 'Provides as single checkbox fieldtype',
 		'docs_url'         => 'https://github.com/brandonkelly/bk.fieldframe.ee_addon/wikis',
 		'versions_xml_url' => 'http://brandon-kelly.com/downloads/versions.xml'
 	);

@@ -15,7 +15,7 @@ if ( ! defined('FF_CLASS'))
 /**
  * FieldFrame Class
  *
- * This extension provides a framework for ExpressionEngine field type development.
+ * This extension provides a framework for ExpressionEngine fieldtype development.
  *
  * @package   FieldFrame
  * @author    Brandon Kelly <me@brandon-kelly.com>
@@ -26,7 +26,7 @@ class Fieldframe_Base {
 
 	var $name           = FF_NAME;
 	var $version        = FF_VERSION;
-	var $description    = 'Field Type Framework';
+	var $description    = 'Fieldtype Framework';
 	var $settings_exist = 'y';
 	var $docs_url       = 'http://eefields.com/';
 
@@ -365,9 +365,9 @@ class Fieldframe_Main {
 	}
 
 	/**
-	 * Get Field Types
+	 * Get Fieldtypes
 	 *
-	 * @return array  All enabled FF field types, indexed by class name
+	 * @return array  All enabled FF fieldtypes, indexed by class name
 	 * @access private
 	 */
 	function _get_ftypes()
@@ -407,9 +407,9 @@ class Fieldframe_Main {
 	}
 
 	/**
-	 * Get All Installed Field Types
+	 * Get All Installed Fieldtypes
 	 *
-	 * @return array  All installed FF field types, indexed by class name
+	 * @return array  All installed FF fieldtypes, indexed by class name
 	 * @access private
 	 */
 	function _get_all_installed_ftypes()
@@ -439,10 +439,10 @@ class Fieldframe_Main {
 	}
 
 	/**
-	 * Get Field Types Indexed By Field ID
+	 * Get Fieldtypes Indexed By Field ID
 	 *
-	 * @return array  All enabled FF field types, indexed by the weblog field ID they're used in.
-	 *                Strong possibility that there will be duplicate field types in here,
+	 * @return array  All enabled FF fieldtypes, indexed by the weblog field ID they're used in.
+	 *                Strong possibility that there will be duplicate fieldtypes in here,
 	 *                but it's not a big deal because they're just object references
 	 * @access private
 	 */
@@ -454,7 +454,7 @@ class Fieldframe_Main {
 		{
 			$this->cache['ftypes_by_field_id'] = array();
 
-			// get the field types
+			// get the fieldtypes
 			if ($ftypes = $this->_get_ftypes())
 			{
 				// sort them by ID rather than class
@@ -486,10 +486,10 @@ class Fieldframe_Main {
 	}
 
 	/**
-	 * Initialize Field Type
+	 * Initialize Fieldtype
 	 *
-	 * @param  mixed   $ftype  field type's class name or its row in exp_ff_fieldtypes
-	 * @return object  Initialized field type object
+	 * @param  mixed   $ftype  fieldtype's class name or its row in exp_ff_fieldtypes
+	 * @return object  Initialized fieldtype object
 	 * @access private
 	 */
 	function _init_ftype($ftype)
@@ -514,7 +514,7 @@ class Fieldframe_Main {
 		// initialize object
 		$OBJ = new $class_name();
 
-		// is this a FieldFrame field type?
+		// is this a FieldFrame fieldtype?
 		if ( ! isset($OBJ->_fieldframe)) return FALSE;
 
 		$OBJ->_class_name = $file;
@@ -538,7 +538,7 @@ class Fieldframe_Main {
 		// hooks
 		if ( ! isset($OBJ->hooks)) $OBJ->hooks = array();
 
-		// do we already know about this field type?
+		// do we already know about this fieldtype?
 		if (is_string($ftype))
 		{
 			$query = $DB->query('SELECT * FROM exp_ff_fieldtypes
@@ -713,10 +713,10 @@ class Fieldframe_Main {
 		                         ))
 		            . $SD->block_c();
 
-		// field type settings
+		// fieldtype settings
 		$DSP->body .= $SD->block('fieldtype_manager', 5);
 
-		// initialize field types
+		// initialize fieldtypes
 		$ftypes = $this->_get_all_installed_ftypes();
 
 		// add the headers
@@ -793,7 +793,7 @@ class Fieldframe_Main {
 		$DB->query($DB->update_string('exp_extensions', array('settings' => addslashes(serialize($settings))), 'class = "'.FF_CLASS.'"'));
 
 
-		// field type settings
+		// fieldtype settings
 		if (isset($_POST['ftypes']))
 		{
 			foreach($_POST['ftypes'] as $file => $ftype_post)
@@ -939,9 +939,9 @@ class Fieldframe_Main {
 	}
 
 	/**
-	 * Publish Admin - Edit Field Form - Field Type Menu
+	 * Publish Admin - Edit Field Form - Fieldtype Menu
 	 *
-	 * Allows modifying or adding onto Custom Weblog Field Type Pulldown
+	 * Allows modifying or adding onto Custom Weblog Fieldtype Pulldown
 	 *
 	 * @param  array   $data  The data about this field from the database
 	 * @param  string  $typemenu  The contents of the type menu
@@ -1082,7 +1082,7 @@ class Fieldframe_Main {
 	/**
 	 * Publish Admin - Edit Field Form - Cell One
 	 *
-	 * Allows modifying or adding onto Custom Weblog Field Type - First Table Cell
+	 * Allows modifying or adding onto Custom Weblog Fieldtype - First Table Cell
 	 *
 	 * @param  array   $data  The data about this field from the database
 	 * @param  string  $cell  The contents of the cell
@@ -1099,7 +1099,7 @@ class Fieldframe_Main {
 	/**
 	 * Publish Admin - Edit Field Form - Cell Two
 	 *
-	 * Allows modifying or adding onto Custom Weblog Field Type - Second Table Cell
+	 * Allows modifying or adding onto Custom Weblog Fieldtype - Second Table Cell
 	 *
 	 * @param  array   $data  The data about this field from the database
 	 * @param  string  $cell  The contents of the cell

@@ -20,7 +20,7 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 	var $info = array(
 		'name'             => 'FF Checkbox Group',
 		'version'          => '0.9.0',
-		'desc'             => 'Provides as checkbox group field type',
+		'desc'             => 'Provides as checkbox group fieldtype',
 		'docs_url'         => 'https://github.com/brandonkelly/bk.fieldframe.ee_addon/wikis',
 		'versions_xml_url' => 'http://brandon-kelly.com/downloads/versions.xml'
 	);
