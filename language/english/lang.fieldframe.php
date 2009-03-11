@@ -6,18 +6,21 @@ $L = array(
 // errors
 
 'no_fieldtypes_path' =>
-'You haven&rsquo;t set your Fieldtypes Folder Path setting yet.',
+'You haven&rsquo;t set your fieldtypes folder path setting yet.',
 
 'bad_fieldtypes_path' =>
-'The directory specified by your Fields Folder Path doesn&rsquo;t exist.',
+'Your fieldtypes folder path is invalid.',
 
 'no_fieldtypes' =>
-'FieldFrame couldn&rsquo;t find any Field files. Make sure your Fields Folder Path setting is correct.',
+'FieldFrame couldn&rsquo;t find any fieldtypes within your fieldtypes folder. Make sure your fieldtypes folder path setting is correct.',
 
 
 // Fields Folder settings
 'fieldtypes_folder_title' =>
 'Fieldtypes Folder',
+
+'fieldtypes_folder_info' =>
+'Before FieldFrame can load your installed fieldtypes, you need to specify where you uploaded your &ldquo;fieldtypes&rdquo; folder.',
 
 'fieldtypes_url_label' =>
 'URL to your &ldquo;fieldtypes&rdquo; folder',
@@ -49,7 +52,7 @@ $L = array(
 
 // Field Manager
 
-'fieldtype_manager' =>
+'fieldtypes_manager' =>
 'Fieldtypes Manager',
 
 'fieldtype' =>

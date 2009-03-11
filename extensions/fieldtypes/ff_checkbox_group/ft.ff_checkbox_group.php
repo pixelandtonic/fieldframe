@@ -19,10 +19,9 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 	 */
 	var $info = array(
 		'name'             => 'FF Checkbox Group',
-		'version'          => '0.9.0',
-		'desc'             => 'Provides as checkbox group fieldtype',
-		'docs_url'         => 'https://github.com/brandonkelly/bk.fieldframe.ee_addon/wikis',
-		'versions_xml_url' => 'http://brandon-kelly.com/downloads/versions.xml'
+		'version'          => FF_VERSION,
+		'desc'             => 'Provides a checkbox group fieldtype',
+		'docs_url'         => 'http://wiki.github.com/brandonkelly/bk.fieldframe.ee_addon/ff-checkbox-group'
 	);
 
 	/**
@@ -32,15 +31,24 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 	{
 		global $LANG;
 
+		// Initialize a new instance of SettingsDisplay
 		$SD = new Fieldframe_SettingsDisplay();
 
-		$r = $SD->block()
-		   . $SD->row(array(
-		                $SD->label('option_tmpl_label', $LANG->line('option_tmpl_subtext').' <code>{option}</code>, <code>{option_name}</code>, <code>{count}</code>, and <code>{switch="odd|even"}</code>'),
-		                $SD->textarea('option_tmpl', (isset($this->site_settings['option_tmpl']) ? $this->site_settings['option_tmpl'] : ''), array('rows' => '2'))
-		              ))
-		   . $SD->block_c();
+		// Open the settings block
+		$r = $SD->block('FF Checkbox Group');
 
+		// Add the Default Option Template setting
+		$option_tmpl = isset($this->site_settings['option_tmpl']) ? $this->site_settings['option_tmpl'] : '';
+		$r .= $SD->row(array(
+		                 $SD->label('checkbox_option_tmpl_label', 'checkbox_option_tmpl_subtext'),
+		                 $SD->textarea('option_tmpl', $option_tmpl, array('rows' => '2'))
+		                   . '<p>'.$LANG->line('checkbox_option_tmpl_tags').'</p>'
+		               ));
+
+		// Close the settings block
+		$r .= $SD->block_c();
+
+		// Return the settings block
 		return $r;
 	}
 
@@ -48,7 +56,7 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 	 * Display Field Settings
 	 * 
 	 * @param  array  $settings  The field's settings
-	 * @return array  Settings HTML (col1, col2, rows)
+	 * @return array  Settings HTML (cell1, cell2, rows)
 	 */
 	function display_field_settings($settings)
 	{
@@ -60,13 +68,14 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 			foreach($settings['options'] as $name => $label)
 			{
 				if ($options) $options .= "\n";
-				$options .= $name.' : '.$label;
+				$options .= $name . ($name != $label ? ' : '.$label : '');
 			}
 		}
 
-		$cell2 = $DSP->qdiv('defaultBold', $LANG->line('options_label'))
-		       . $DSP->qdiv('default', $LANG->line('options_subtext'))
-		       . $DSP->input_textarea('options', $options, '6', 'textarea', '99%');
+		$cell2 = $DSP->qdiv('defaultBold', $LANG->line('checkbox_options_label'))
+		       . $DSP->qdiv('default', $LANG->line('checkbox_options_subtext'))
+		       . $DSP->input_textarea('options', $options, '6', 'textarea', '99%')
+		       . $DSP->qdiv('default', $LANG->line('checkbox_option_examples'));
 
 		return array('cell2' => $cell2);
 	}

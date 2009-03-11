@@ -8,7 +8,7 @@ if ( ! defined('FF_CLASS'))
 {
 	define('FF_CLASS',   'Fieldframe');
 	define('FF_NAME',    'FieldFrame');
-	define('FF_VERSION', '0.9.0');
+	define('FF_VERSION', '0.9.1');
 }
 
 
@@ -315,6 +315,7 @@ class Fieldframe_Main {
 		global $SESS, $DB;
 
 		$this->hooks = $hooks;
+		$this->errors = array();
 
 		// get the site-specific settings
 		$this->settings = $this->_get_settings($settings);
@@ -381,7 +382,8 @@ class Fieldframe_Main {
 			// get enabled fields from the DB
 			$query = $DB->query('SELECT * FROM exp_ff_fieldtypes
 			                       WHERE site_id = "'.$PREFS->ini('site_id').'"
-			                         AND enabled = "y"');
+			                         AND enabled = "y"
+			                       ORDER BY class');
 
 			if ($query->num_rows)
 			{
@@ -416,25 +418,33 @@ class Fieldframe_Main {
 	{
 		$ftypes = array();
 
-		if ( $fp = @opendir(FT_PATH))
+		if (defined('FT_PATH'))
 		{
-			// iterate through the field folder contents
-			while (($file = readdir($fp)) !== FALSE)
+			if ( $fp = @opendir(FT_PATH))
 			{
-				// skip hidden/navigational files
-				if (substr($file, 0, 1) == '.') continue;
-
-				// is this a directory, and does a ftype file exist inside it?
-				if (is_dir(FT_PATH.$file) AND is_file(FT_PATH.$file.'/ft.'.$file.EXT))
+				// iterate through the field folder contents
+				while (($file = readdir($fp)) !== FALSE)
 				{
-					if (($ftype = $this->_init_ftype($file)) !== FALSE)
+					// skip hidden/navigational files
+					if (substr($file, 0, 1) == '.') continue;
+
+					// is this a directory, and does a ftype file exist inside it?
+					if (is_dir(FT_PATH.$file) AND is_file(FT_PATH.$file.'/ft.'.$file.EXT))
 					{
-						$ftypes[$file] = $ftype;
+						if (($ftype = $this->_init_ftype($file)) !== FALSE)
+						{
+							$ftypes[$file] = $ftype;
+						}
 					}
 				}
+				closedir($fp);
 			}
-			closedir($fp);
+			else
+			{
+				$this->errors[] = 'bad_ft_path';
+			}
 		}
+
 		return $ftypes;
 	}
 
@@ -672,7 +682,7 @@ class Fieldframe_Main {
 		$DSP->right_crumb($LANG->line('disable_extension'), BASE.AMP.'C=admin'.AMP.'M=utilities'.AMP.'P=toggle_extension_confirm'.AMP.'which=disable'.AMP.'name='.$IN->GBL('name'));
 
 		// open form
-		$DSP->body .= '<h1>'.FF_NAME.' <small>'.FF_VERSION.'</small></h1>'
+		$DSP->body .= '<h1 style="margin-bottom:18px;">'.FF_NAME.' <small>'.FF_VERSION.'</small></h1>'
 		            . $DSP->form_open(
 		                  array(
 		                    'action' => 'C=admin'.AMP.'M=utilities'.AMP.'P=save_extension_settings',
@@ -691,6 +701,7 @@ class Fieldframe_Main {
 
 		// fieldtypes folder
 		$DSP->body .= $SD->block('fieldtypes_folder_title')
+		            . $SD->info_row('fieldtypes_folder_info')
 		            . $SD->row(array(
 		                           $SD->label('fieldtypes_url_label', 'fieldtypes_url_subtext'),
 		                           $SD->text('fieldtypes_url', $this->settings['fieldtypes_url'])
@@ -714,40 +725,55 @@ class Fieldframe_Main {
 		            . $SD->block_c();
 
 		// fieldtype settings
-		$DSP->body .= $SD->block('fieldtype_manager', 5);
+		$DSP->body .= $SD->block('fieldtypes_manager', 5);
 
 		// initialize fieldtypes
-		$ftypes = $this->_get_all_installed_ftypes();
-
-		// add the headers
-		$DSP->body .= $SD->heading_row(array(
-		                                   $LANG->line('fieldtype'),
-		                                   $LANG->line('fieldtype_enabled'),
-		                                   $LANG->line('settings'),
-		                                   $LANG->line('documentation')
-		                                 ));
-
-		foreach($ftypes as $class_name => $ftype)
+		if ($ftypes = $this->_get_all_installed_ftypes())
 		{
-			$DSP->body .= $SD->row(array(
-			                         $SD->label($ftype->info['name'].NBS.$DSP->qspan('xhtmlWrapperLight defaultSmall', $ftype->info['version']), $ftype->info['desc']),
-			                         $SD->radio_group('ftypes['.$class_name.'][enabled]', ($ftype->_is_enabled ? 'y' : 'n'), array('y'=>'yes', 'n'=>'no')),
-			                         (($ftype->_is_enabled AND method_exists($ftype, 'display_site_settings'))
-			                            ?  '<a id="ft'.$ftype->_fieldtype_id.'show" style="display:block; cursor:pointer;" onclick="this.style.display=\'none\'; document.getElementById(\'ft'.$ftype->_fieldtype_id.'hide\').style.display=\'block\'; document.getElementById(\'ft'.$ftype->_fieldtype_id.'settings\').style.display=\'table-row\';"><img src="'.$PREFS->ini('theme_folder_url', 1).'cp_global_images/expand.gif" border="0">  '.$LANG->line('show').'</a>'
-			                             . '<a id="ft'.$ftype->_fieldtype_id.'hide" style="display:none; cursor:pointer;" onclick="javascript: this.style.display=\'none\'; document.getElementById(\'ft'.$ftype->_fieldtype_id.'show\').style.display=\'block\'; document.getElementById(\'ft'.$ftype->_fieldtype_id.'settings\').style.display=\'none\';"><img src="'.$PREFS->ini('theme_folder_url', 1).'cp_global_images/collapse.gif" border="0">  '.$LANG->line('hide').'</a>'
-			                            :  '--'),
-			                         ($ftype->info['docs_url'] ? '<a href="'.stripslashes($ftype->info['docs_url']).'">'.$LANG->line('documentation').'</a>' : '--')
-			                       ));
+			// add the headers
+			$DSP->body .= $SD->heading_row(array(
+			                                   $LANG->line('fieldtype'),
+			                                   $LANG->line('fieldtype_enabled'),
+			                                   $LANG->line('settings'),
+			                                   $LANG->line('documentation')
+			                                 ));
 
-			if ($ftype->_is_enabled AND method_exists($ftype, 'display_site_settings'))
+			foreach($ftypes as $class_name => $ftype)
 			{
-				$LANG->fetch_language_file($class_name);
+				$DSP->body .= $SD->row(array(
+				                         $SD->label($ftype->info['name'].NBS.$DSP->qspan('xhtmlWrapperLight defaultSmall', $ftype->info['version']), $ftype->info['desc']),
+				                         $SD->radio_group('ftypes['.$class_name.'][enabled]', ($ftype->_is_enabled ? 'y' : 'n'), array('y'=>'yes', 'n'=>'no')),
+				                         (($ftype->_is_enabled AND method_exists($ftype, 'display_site_settings'))
+				                            ?  '<a id="ft'.$ftype->_fieldtype_id.'show" style="display:block; cursor:pointer;" onclick="this.style.display=\'none\'; document.getElementById(\'ft'.$ftype->_fieldtype_id.'hide\').style.display=\'block\'; document.getElementById(\'ft'.$ftype->_fieldtype_id.'settings\').style.display=\'table-row\';"><img src="'.$PREFS->ini('theme_folder_url', 1).'cp_global_images/expand.gif" border="0">  '.$LANG->line('show').'</a>'
+				                             . '<a id="ft'.$ftype->_fieldtype_id.'hide" style="display:none; cursor:pointer;" onclick="javascript: this.style.display=\'none\'; document.getElementById(\'ft'.$ftype->_fieldtype_id.'show\').style.display=\'block\'; document.getElementById(\'ft'.$ftype->_fieldtype_id.'settings\').style.display=\'none\';"><img src="'.$PREFS->ini('theme_folder_url', 1).'cp_global_images/collapse.gif" border="0">  '.$LANG->line('hide').'</a>'
+				                            :  '--'),
+				                         ($ftype->info['docs_url'] ? '<a href="'.stripslashes($ftype->info['docs_url']).'">'.$LANG->line('documentation').'</a>' : '--')
+				                       ));
 
-				$data = '<div style="margin:-6px 8px 12px 12px;">'
-				      . $this->_group_ftype_inputs($ftype->_fieldtype_id, $ftype->display_site_settings())
-				      . $DSP->div_c();
-				$DSP->body .= $SD->row(array($data), $SD->row_class, array('id' => 'ft'.$ftype->_fieldtype_id.'settings', 'style' => 'display:none;'));
+				if ($ftype->_is_enabled AND method_exists($ftype, 'display_site_settings'))
+				{
+					$LANG->fetch_language_file($class_name);
+
+					$data = '<div style="margin:-2px 0 -1px; border:solid #b1b6d2; border-width:1px 0; padding:7px 7px 6px; background:#cad0d5;">'
+					      . '<div style="background:#fff;">'
+					      . $this->_group_ftype_inputs($ftype->_fieldtype_id, $ftype->display_site_settings())
+					      . $DSP->div_c()
+					      . $DSP->div_c();
+					$DSP->body .= $SD->row(array($data), '', array('id' => 'ft'.$ftype->_fieldtype_id.'settings', 'style' => 'display:none;'));
+				}
 			}
+		}
+		else if ( ! defined('FT_PATH'))
+		{
+			$DSP->body .= $SD->info_row('no_fieldtypes_path');
+		}
+		else if (in_array('bad_ft_path', $this->errors))
+		{
+			$DSP->body .= $SD->info_row('bad_fieldtypes_path');
+		}
+		else
+		{
+			$DSP->body .= $SD->info_row('no_fieldtypes');
 		}
 
 		$DSP->body .= $SD->block_c();
@@ -983,9 +1009,15 @@ class Fieldframe_Main {
 		$field_settings_tmpl = array(
 			'cell1' => '',
 			'cell2' => '',
-			'rows' => array()
+			'rows' => array(),
+			'formatting_available' => 'n',
+			'direction_available' => 'n'
 		);
+
+		$formatting_available = array();
+		$direction_available = array();
 		$prev_ftype_id = '';
+
 		foreach($this->_get_ftypes() as $class_name => $ftype)
 		{
 			$ftype_id = 'ftype_id_'.$ftype->_fieldtype_id;
@@ -1001,6 +1033,10 @@ class Fieldframe_Main {
 			{
 				$ftype->_field_settings = $field_settings_tmpl;
 			}
+
+			if ($ftype->_field_settings['formatting_available'] == 'y') $formatting_available[] = $ftype->_fieldtype_id;
+			if ($ftype->_field_settings['direction_available'] == 'y') $direction_available[] = $ftype->_fieldtype_id;
+
 			if ($selected) $prev_ftype_id = $ftype_id;
 		}
 
@@ -1028,6 +1064,8 @@ class Fieldframe_Main {
 			if (id.match(/^ftype_id_\d+$/))
 			{
 				var c=1, r=1;
+
+				// show cells
 				while(cell = document.getElementById(id+'_cell'+c))
 				{
 					//var showDiv = document.getElementById(id+'_cell'+c);
@@ -1040,11 +1078,38 @@ class Fieldframe_Main {
 					}
 					c++;
 				}
+
+				// show rows
 				while(row = document.getElementById(id+'_row'+r))
 				{
 					row.style.display = 'table-row';
 					r++;
 				}
+
+				// show/hide formatting
+				if ([".implode(',', $formatting_available)."].indexOf(id) != -1)
+				{
+					document.getElementById('formatting_block').style.display = 'block';
+					document.getElementById('formatting_unavailable').style.display = 'none';
+				}
+				else
+				{
+					document.getElementById('formatting_block').style.display = 'none';
+					document.getElementById('formatting_unavailable').style.display = 'block';
+				}
+
+				// show/hide direction
+				if ([".implode(',', $direction_available)."].indexOf(id) != -1)
+				{
+					document.getElementById('direction_available').style.display = 'block';
+					document.getElementById('direction_unavailable').style.display = 'none';
+				}
+				else
+				{
+					document.getElementById('direction_available').style.display = 'none';
+					document.getElementById('direction_unavailable').style.display = 'block';
+				}
+
 				prev_ftype_id = id;
 			}\n", $r);
 
@@ -1161,6 +1226,38 @@ class Fieldframe_Main {
 				       . $DSP->td_c()
 				       . $DSP->tr_c();
 			}
+
+			if ($selected)
+			{
+				// show/hide formatting
+				if ($ftype->_field_settings['formatting_available'] == 'y')
+				{
+					$formatting_search = 'none';
+					$formatting_replace = 'block';
+				}
+				else
+				{
+					$formatting_search = 'block';
+					$formatting_replace = 'none';
+				}
+				//$this->log($formatting_search, $formatting_replace); die();
+				$r = preg_replace('/(\sid\s*=\s*[\'\"]formatting_block[\'\"].*display\s*:\s*)'.$formatting_search.'(\s*;)/isU', '$1'.$formatting_replace.'$2', $r);
+				$r = preg_replace('/(\sid\s*=\s*[\'\"]formatting_unavailable[\'\"].*display\s*:\s*)'.$formatting_replace.'(\s*;)/isU', '$1'.$formatting_search.'$2', $r);
+
+				// show/hide direction
+				if ($ftype->_field_settings['direction_available'] == 'y')
+				{
+					$direction_search = 'none';
+					$direction_replace = 'block';
+				}
+				else
+				{
+					$direction_search = 'block';
+					$direction_replace = 'none';
+				}
+				$r = preg_replace('/(\sid\s*=\s*[\'\"]direction_available[\'\"].*display\s*:\s*)'.$direction_search.'(\s*;)/isU', '$1'.$direction_replace.'$2', $r);
+				$r = preg_replace('/(\sid\s*=\s*[\'\"]direction_unavailable[\'\"].*display\s*:\s*)'.$direction_replace.'(\s*;)/isU', '$1'.$direction_search.'$2', $r);
+			}
 		}
 		$rows = $this->_group_ftype_inputs($ftype_id, $rows);
 
@@ -1234,7 +1331,7 @@ class Fieldframe_Main {
 		global $IN, $DB, $REGX;
 
 		// if we are displaying the custom field list
-		if($IN->GBL('M', 'GET') == 'blog_admin' AND in_array($IN->GBL('P', 'GET'), array('field_editor', 'update_weblog_fields', 'delete_field')))
+		if($IN->GBL('M', 'GET') == 'blog_admin' AND in_array($IN->GBL('P', 'GET'), array('field_editor', 'update_weblog_fields', 'delete_field', 'update_field_order')))
 		{
 			// get the FF fieldtypes
 			foreach($this->_get_fields() as $field_id => $field)
@@ -1407,7 +1504,7 @@ class Fieldframe_Main {
 	}
 
 	/**
-	 * LG Data Matrix - Register a New Addon Source
+	 * LG Addon Updater - Register a New Addon Source
 	 *
 	 * @param  array  $sources  The existing sources
 	 * @return array  The new source list
@@ -1439,7 +1536,7 @@ class Fieldframe_Main {
 	}
 
 	/**
-	 * LG Data Matrix - Register a New Addon ID
+	 * LG Addon Updater - Register a New Addon ID
 	 *
 	 * @param  array  $addons  The existing sources
 	 * @return array  The new addon list
@@ -1490,6 +1587,8 @@ class Fieldframe_SettingsDisplay {
 			}
 			$DSP = new Display();
 		}
+
+		$this->block_count = 0;
 	}
 
 	/**
@@ -1508,12 +1607,14 @@ class Fieldframe_SettingsDisplay {
 		$r = $DSP->table_open(array(
 		                        'class'  => 'tableBorder',
 		                        'border' => '0',
-		                        'style' => 'margin-top:18px; width:100%;'.($title_line ? '' : ' border-top:1px solid #CACFD4;')
+		                        'style' => 'margin:'.($this->block_count ? '18px' : '0').' 0 0 0; width:100%;'.($title_line ? '' : ' border-top:1px solid #CACFD4;')
 		                      ));
 		if ($title_line)
 		{
 			$r .= $this->row(array($this->get_line($title_line)), 'tableHeading');
 		}
+
+		$this->block_count++;
 
 		return $r;
 	}
@@ -1616,14 +1717,14 @@ class Fieldframe_SettingsDisplay {
 	 *
 	 * @param  string  $name   Name of the text field
 	 * @param  string  $value  Initial value
-	 * @param  array   $vars   Input variables
+	 * @param  array   $attr   Input variables
 	 * @return string  The text field
 	 */
-	function text($name, $value, $vars=array())
+	function text($name, $value, $attr=array())
 	{
 		global $DSP;
-		$vars = array_merge(array('size'=>'','maxlength'=>'','style'=>'input','width'=>'90%','extras'=>'','convert'=>FALSE), $vars);
-		return $DSP->input_text($name, $value, $vars['size'], $vars['maxlength'], $vars['style'], $vars['width'], $vars['extras'], $vars['convert']);
+		$attr = array_merge(array('size'=>'','maxlength'=>'','style'=>'input','width'=>'90%','extras'=>'','convert'=>FALSE), $attr);
+		return $DSP->input_text($name, $value, $attr['size'], $attr['maxlength'], $attr['style'], $attr['width'], $attr['extras'], $attr['convert']);
 	}
 
 	/**
@@ -1631,14 +1732,14 @@ class Fieldframe_SettingsDisplay {
 	 *
 	 * @param  string  $name   Name of the textarea
 	 * @param  string  $value  Initial value
-	 * @param  array   $vars   Input variables
+	 * @param  array   $attr   Input variables
 	 * @return string  The textarea
 	 */
-	function textarea($name, $value, $vars=array())
+	function textarea($name, $value, $attr=array())
 	{
 		global $DSP;
-		$vars = array_merge(array('rows'=>'3','style'=>'textarea','width'=>'91%','extras'=>'','convert'=>FALSE), $vars);
-		return $DSP->input_textarea($name, $value, $vars['rows'], $vars['style'], $vars['width'], $vars['extras'], $vars['convert']);
+		$attr = array_merge(array('rows'=>'3','style'=>'textarea','width'=>'91%','extras'=>'','convert'=>FALSE), $attr);
+		return $DSP->input_textarea($name, $value, $attr['rows'], $attr['style'], $attr['width'], $attr['extras'], $attr['convert']);
 	}
 
 	/**
@@ -1647,14 +1748,14 @@ class Fieldframe_SettingsDisplay {
 	 * @param  string  $name     Name of the select
 	 * @param  mixed   $value    Initial selected value(s)
 	 * @param  array   $options  List of the options
-	 * @param  array   $vars     Input variables
+	 * @param  array   $attr     Input variables
 	 * @return string  The select input
 	 */
-	function select($name, $value, $options, $vars=array())
+	function select($name, $value, $options, $attr=array())
 	{
 		global $DSP;
-		$vars = array_merge(array('multi'=>0, 'size'=>0, 'width'=>''), $vars);
-		$r = $DSP->input_select_header($name, $vars['multi'], $vars['size'], $vars['width']);
+		$attr = array_merge(array('multi'=>0, 'size'=>0, 'width'=>''), $attr);
+		$r = $DSP->input_select_header($name, $attr['multi'], $attr['size'], $attr['width']);
 		foreach($options as $option_value => $option_line)
 		{
 			$selected = is_array($value)
@@ -1672,13 +1773,13 @@ class Fieldframe_SettingsDisplay {
 	 * @param  string  $name     Name of the textfield
 	 * @param  array   $values   Initial selected values
 	 * @param  array   $options  List of the options
-	 * @param  array   $vars     Input variables
+	 * @param  array   $attr     Input variables
 	 * @return string  The multiselect input
 	 */
-	function multiselect($name, $values, $options, $vars=array())
+	function multiselect($name, $values, $options, $attr=array())
 	{
-		$vars = array_merge($vars, array('multi'=>1));
-		return $this->select($name, $values, $options, $vars);
+		$attr = array_merge($attr, array('multi'=>1));
+		return $this->select($name, $values, $options, $attr);
 	}
 
 	/**
@@ -1687,19 +1788,19 @@ class Fieldframe_SettingsDisplay {
 	 * @param  string  $name     Name of the radio inputs
 	 * @param  string  $value    Initial selected value
 	 * @param  array   $options  List of the options
-	 * @param  array   $vars     Input variables
+	 * @param  array   $attr     Input variables
 	 * @return string  The text input
 	 */
-	function radio_group($name, $value, $options, $vars=array())
+	function radio_group($name, $value, $options, $attr=array())
 	{
 		global $DSP;
-		$vars = array_merge($vars, array('extras'=>''));
+		$attr = array_merge($attr, array('extras'=>''));
 		$r = '';
 		foreach($options as $option_value => $option_name)
 		{
 			if ($r) $r .= NBS.NBS.' ';
 			$r .= '<label style="white-space:nowrap;">'
-			    . $DSP->input_radio($name, $option_value, ($option_value == $value) ? 1 : 0, $vars['extras'])
+			    . $DSP->input_radio($name, $option_value, ($option_value == $value) ? 1 : 0, $attr['extras'])
 			    . ' '.$this->get_line($option_name)
 			    . '</label>';
 		}
