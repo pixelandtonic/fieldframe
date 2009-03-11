@@ -1209,6 +1209,8 @@ class Fieldframe_Main {
 	{
 		global $DSP, $LANG;
 
+		$r = $this->get_last_call($r);
+
 		$rows = '';
 		foreach($this->_get_ftypes() as $class_name => $ftype)
 		{
@@ -1240,7 +1242,6 @@ class Fieldframe_Main {
 					$formatting_search = 'block';
 					$formatting_replace = 'none';
 				}
-				//$this->log($formatting_search, $formatting_replace); die();
 				$r = preg_replace('/(\sid\s*=\s*[\'\"]formatting_block[\'\"].*display\s*:\s*)'.$formatting_search.'(\s*;)/isU', '$1'.$formatting_replace.'$2', $r);
 				$r = preg_replace('/(\sid\s*=\s*[\'\"]formatting_unavailable[\'\"].*display\s*:\s*)'.$formatting_replace.'(\s*;)/isU', '$1'.$formatting_search.'$2', $r);
 
@@ -1261,7 +1262,6 @@ class Fieldframe_Main {
 		}
 		$rows = $this->_group_ftype_inputs($ftype_id, $rows);
 
-		$r = $this->get_last_call($r);
 		$r = preg_replace('/(<tr>\s*<td[^>]*>\s*<div[^>]*>\s*'.$LANG->line('deft_field_formatting').'\s*<\/div>)/is', $rows.'$1', $r);
 
 		$args = func_get_args();
