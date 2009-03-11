@@ -1010,8 +1010,8 @@ class Fieldframe_Main {
 			'cell1' => '',
 			'cell2' => '',
 			'rows' => array(),
-			'formatting_available' => 'n',
-			'direction_available' => 'n'
+			'formatting_available' => FALSE,
+			'direction_available' => FALSE
 		);
 
 		$formatting_available = array();
@@ -1034,8 +1034,8 @@ class Fieldframe_Main {
 				$ftype->_field_settings = $field_settings_tmpl;
 			}
 
-			if ($ftype->_field_settings['formatting_available'] == 'y') $formatting_available[] = $ftype->_fieldtype_id;
-			if ($ftype->_field_settings['direction_available'] == 'y') $direction_available[] = $ftype->_fieldtype_id;
+			if ($ftype->_field_settings['formatting_available']) $formatting_available[] = $ftype->_fieldtype_id;
+			if ($ftype->_field_settings['direction_available']) $direction_available[] = $ftype->_fieldtype_id;
 
 			if ($selected) $prev_ftype_id = $ftype_id;
 		}
@@ -1230,7 +1230,7 @@ class Fieldframe_Main {
 			if ($selected)
 			{
 				// show/hide formatting
-				if ($ftype->_field_settings['formatting_available'] == 'y')
+				if ($ftype->_field_settings['formatting_available'])
 				{
 					$formatting_search = 'none';
 					$formatting_replace = 'block';
@@ -1245,7 +1245,7 @@ class Fieldframe_Main {
 				$r = preg_replace('/(\sid\s*=\s*[\'\"]formatting_unavailable[\'\"].*display\s*:\s*)'.$formatting_replace.'(\s*;)/isU', '$1'.$formatting_search.'$2', $r);
 
 				// show/hide direction
-				if ($ftype->_field_settings['direction_available'] == 'y')
+				if ($ftype->_field_settings['direction_available'])
 				{
 					$direction_search = 'none';
 					$direction_replace = 'block';
