@@ -8,7 +8,7 @@ if ( ! defined('FF_CLASS'))
 {
 	define('FF_CLASS',   'Fieldframe');
 	define('FF_NAME',    'FieldFrame');
-	define('FF_VERSION', '0.9.1');
+	define('FF_VERSION', '0.9.2');
 }
 
 
@@ -431,7 +431,7 @@ class Fieldframe_Main {
 					// is this a directory, and does a ftype file exist inside it?
 					if (is_dir(FT_PATH.$file) AND is_file(FT_PATH.$file.'/ft.'.$file.EXT))
 					{
-						if (($ftype = $this->_init_ftype($file)) !== FALSE)
+						if (($ftype = $this->_init_ftype($file, FALSE)) !== FALSE)
 						{
 							$ftypes[$file] = $ftype;
 						}
@@ -485,7 +485,10 @@ class Fieldframe_Main {
 						$this->cache['ftypes_by_field_id'][$row['field_id']] = array(
 							'name' => $row['field_name'],
 							'ftype' => $ftypes_by_id[$ftype_id],
-							'settings' => $row['ff_settings'] ? $REGX->array_stripslashes(unserialize($row['ff_settings'])) : array()
+							'settings' => array_merge(
+							                           (isset($ftypes_by_id[$ftype_id]->default_field_settings) ? $ftypes_by_id[$ftype_id]->default_field_settings : array()),
+							                           ($row['ff_settings'] ? $REGX->array_stripslashes(unserialize($row['ff_settings'])) : array())
+							                          )
 						);
 					}
 				}
@@ -502,9 +505,9 @@ class Fieldframe_Main {
 	 * @return object  Initialized fieldtype object
 	 * @access private
 	 */
-	function _init_ftype($ftype)
+	function _init_ftype($ftype, $req_strict=TRUE)
 	{
-		global $DB, $PREFS, $REGX;
+		global $DB, $PREFS, $REGX, $LANG;
 
 		$file = is_array($ftype) ? $ftype['class'] : $ftype;
 		$class_name = ucfirst($file);
@@ -533,10 +536,95 @@ class Fieldframe_Main {
 		$OBJ->_is_updated = FALSE;
 
 		// settings
-		$OBJ->site_settings = array();
+		$OBJ->site_settings = isset($OBJ->default_site_settings)
+		  ?  $OBJ->default_site_settings
+		  :  array();
 
 		// info
 		if ( ! isset($OBJ->info)) $OBJ->info = array();
+
+		// requirements
+		if ( ! isset($OBJ->_requires)) $OBJ->_requires = array();
+		if (isset($OBJ->requires))
+		{
+			// PHP
+			if (isset($OBJ->requires['php']) AND phpversion() < $OBJ->requires['php'])
+			{
+				if ($req_strict) return FALSE;
+				else $OBJ->_requires['PHP'] = $OBJ->requires['php'];
+			}
+
+			// ExpressionEngine
+			if (isset($OBJ->requires['ee']) AND APP_VER < $OBJ->requires['ee'])
+			{
+				if ($req_strict) return FALSE;
+				else $OBJ->_requires['ExpressionEngine'] = $OBJ->requires['ee'];
+			}
+
+			// ExpressionEngine Build
+			if (isset($OBJ->requires['ee_build']) AND APP_BUILD < $OBJ->requires['ee_build'])
+			{
+				if ($req_strict) return FALSE;
+				else
+				{
+					$req = substr(strtolower($LANG->line('build')), 0, -1).' '.$OBJ->requires['ee_build'];
+					if (isset($OBJ->_requires['ExpressionEngine'])) $OBJ->_requires['ExpressionEngine'] .= ' '.$req;
+					else $OBJ->_requires['ExpressionEngine'] = $req;
+				}
+			}
+
+			// FieldFrame
+			if (isset($OBJ->requires['ff']) AND FF_VERSION < $OBJ->requires['ff'])
+			{
+				if ($req_strict) return FALSE;
+				else $OBJ->_requires[FF_NAME] = $OBJ->requires['ff'];
+			}
+
+			// CP jQuery
+			if (isset($OBJ->requires['cp_jquery']))
+			{
+				if ( ! isset($OBJ->requires['ext']))
+				{
+					$OBJ->requires['ext'] = array();
+				}
+				$OBJ->requires['ext'][] = array('class' => 'Cp_jquery', 'name' => 'CP jQuery', 'url' => 'http://www.ngenworks.com/software/ee/cp_jquery/', 'version' => $OBJ->requires['cp_jquery']);
+			}
+
+			// Extensions
+			if (isset($OBJ->requires['ext']))
+			{
+				if ( ! isset($this->cache['req_ext_versions']))
+				{
+					$this->cache['req_ext_versions'] = array();
+				}
+				foreach($OBJ->requires['ext'] as $ext)
+				{
+					if ( ! isset($this->cache['req_ext_versions'][$ext['class']]))
+					{
+						$ext_query = $DB->query('SELECT version FROM exp_extensions
+						                           WHERE class="'.$ext['class'].'"'
+						                           . (isset($ext['version']) ? ' AND version >= "'.$ext['version'].'"' : '')
+						                           . ' AND enabled = "y"
+						                           ORDER BY version DESC
+						                           LIMIT 1');
+						$this->cache['req_ext_versions'][$ext['class']] = $ext_query->row
+						  ?  $ext_query->row['version']
+						  :  '';
+					}
+					if ($this->cache['req_ext_versions'][$ext['class']] < $ext['version'])
+					{
+						if ($req_strict) return FALSE;
+						else
+						{
+							$name = isset($ext['name']) ? $ext['name'] : ucfirst($ext['class']);
+							if ($ext['url']) $name = '<a href="'.$ext['url'].'">'.$name.'</a>';
+							$OBJ->_requires[$name] = $ext['version'];
+						}
+					}
+				}
+			}
+		}
+
 		if ( ! isset($OBJ->info['name'])) $OBJ->info['name'] = ucwords(str_replace('_', ' ', $class_name));
 		if ( ! isset($OBJ->info['version'])) $OBJ->info['version'] = '';
 		if ( ! isset($OBJ->info['desc'])) $OBJ->info['desc'] = '';
@@ -560,7 +648,7 @@ class Fieldframe_Main {
 		{
 			$OBJ->_fieldtype_id = $ftype['fieldtype_id'];
 			if ($ftype['enabled'] == 'y') $OBJ->_is_enabled = TRUE;
-			if ($ftype['settings']) $OBJ->site_settings = $REGX->array_stripslashes(unserialize($ftype['settings']));
+			if ($ftype['settings']) $OBJ->site_settings = array_merge($OBJ->site_settings, $REGX->array_stripslashes(unserialize($ftype['settings'])));
 
 			// new version?
 			if ($OBJ->info['version'] != $ftype['version'])
@@ -742,7 +830,9 @@ class Fieldframe_Main {
 			{
 				$DSP->body .= $SD->row(array(
 				                         $SD->label($ftype->info['name'].NBS.$DSP->qspan('xhtmlWrapperLight defaultSmall', $ftype->info['version']), $ftype->info['desc']),
-				                         $SD->radio_group('ftypes['.$class_name.'][enabled]', ($ftype->_is_enabled ? 'y' : 'n'), array('y'=>'yes', 'n'=>'no')),
+				                         ($ftype->_requires
+				                            ?  '--'
+				                            :  $SD->radio_group('ftypes['.$class_name.'][enabled]', ($ftype->_is_enabled ? 'y' : 'n'), array('y'=>'yes', 'n'=>'no'))),
 				                         (($ftype->_is_enabled AND method_exists($ftype, 'display_site_settings'))
 				                            ?  '<a id="ft'.$ftype->_fieldtype_id.'show" style="display:block; cursor:pointer;" onclick="this.style.display=\'none\'; document.getElementById(\'ft'.$ftype->_fieldtype_id.'hide\').style.display=\'block\'; document.getElementById(\'ft'.$ftype->_fieldtype_id.'settings\').style.display=\'table-row\';"><img src="'.$PREFS->ini('theme_folder_url', 1).'cp_global_images/expand.gif" border="0">  '.$LANG->line('show').'</a>'
 				                             . '<a id="ft'.$ftype->_fieldtype_id.'hide" style="display:none; cursor:pointer;" onclick="javascript: this.style.display=\'none\'; document.getElementById(\'ft'.$ftype->_fieldtype_id.'show\').style.display=\'block\'; document.getElementById(\'ft'.$ftype->_fieldtype_id.'settings\').style.display=\'none\';"><img src="'.$PREFS->ini('theme_folder_url', 1).'cp_global_images/collapse.gif" border="0">  '.$LANG->line('hide').'</a>'
@@ -750,7 +840,18 @@ class Fieldframe_Main {
 				                         ($ftype->info['docs_url'] ? '<a href="'.stripslashes($ftype->info['docs_url']).'">'.$LANG->line('documentation').'</a>' : '--')
 				                       ));
 
-				if ($ftype->_is_enabled AND method_exists($ftype, 'display_site_settings'))
+				if ($ftype->_requires)
+				{
+					$data = '<p>'.$ftype->info['name'].' '.$LANG->line('requires').':</p>'
+					      . '<ul>';
+					foreach($ftype->_requires as $dependency => $version)
+					{
+						$data .= '<li class="default">'.$dependency.' '.$version.' '.$LANG->line('or_later').'</li>';
+					}
+					$data .= '</ul>';
+					$DSP->body .= $SD->row(array('', $data), $SD->row_class);
+				}
+				else if ($ftype->_is_enabled AND method_exists($ftype, 'display_site_settings'))
 				{
 					$LANG->fetch_language_file($class_name);
 
@@ -1407,7 +1508,7 @@ class Fieldframe_Main {
 			{
 				if (method_exists($field['ftype'], 'save_field'))
 				{
-					$field['ftype']->save_field($field_name);
+					$field['ftype']->save_field($field_name, $field['settings']);
 				}
 
 				if (isset($_POST[$field_name]) AND is_array($_POST[$field_name]))
@@ -1468,7 +1569,9 @@ class Fieldframe_Main {
 						$endtag_pos = strpos($this->tagdata, $endtag, $tagdata_pos);
         
 						// get the params
-						$params = array();
+						$params = isset($field['ftype']->default_tag_params)
+						  ?  $field['ftype']->default_tag_params
+						  :  array();
 						if (isset($matches[1][$i][0]) AND preg_match_all('/\s+(\w+)\s*=\s*[\'\"]([^\'\"]*)[\'\"]/sU', $matches[1][$i][0], $param_matches))
 						{
 							for ($j = 0; $j < count($param_matches[0]); $j++)

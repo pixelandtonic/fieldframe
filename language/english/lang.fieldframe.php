@@ -67,6 +67,12 @@ $L = array(
 'hide' =>
 'Hide',
 
+'requires' =>
+'requires',
+
+'or_later' =>
+'or later',
+
 
 /* END */
 ''=>''

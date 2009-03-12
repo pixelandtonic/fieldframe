@@ -18,10 +18,35 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 	 * @var array
 	 */
 	var $info = array(
-		'name'             => 'FF Checkbox Group',
-		'version'          => FF_VERSION,
-		'desc'             => 'Provides a checkbox group fieldtype',
-		'docs_url'         => 'http://wiki.github.com/brandonkelly/bk.fieldframe.ee_addon/ff-checkbox-group'
+		'name'        => 'FF Checkbox Group',
+		'version'     => FF_VERSION,
+		'desc'        => 'Provides a checkbox group fieldtype',
+		'docs_url'    => 'http://wiki.github.com/brandonkelly/bk.fieldframe.ee_addon/ff-checkbox-group'
+	);
+
+	/**
+	 * Requirements
+	 * @var array
+	 */
+	var $requires = array(
+		'ff' => '0.9.2'
+	);
+
+	/**
+	 * Default Site Settings
+	 * @var array
+	 */
+	var $default_site_settings = array(
+		'option_tmpl' => '<li>{option}</li>'
+	);
+
+	/**
+	 * Default Tag Params
+	 * @var array
+	 */
+	var $default_tag_params = array(
+		'sort'      => '',
+		'backspace' => '0'
 	);
 
 	/**
@@ -38,10 +63,9 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 		$r = $SD->block('FF Checkbox Group');
 
 		// Add the Default Option Template setting
-		$option_tmpl = isset($this->site_settings['option_tmpl']) ? $this->site_settings['option_tmpl'] : '';
 		$r .= $SD->row(array(
 		                 $SD->label('checkbox_option_tmpl_label', 'checkbox_option_tmpl_subtext'),
-		                 $SD->textarea('option_tmpl', $option_tmpl, array('rows' => '2'))
+		                 $SD->textarea('option_tmpl', $this->site_settings['option_tmpl'], array('rows' => '2'))
 		                   . '<p>'.$LANG->line('checkbox_option_tmpl_tags').'</p>'
 		               ));
 
@@ -146,12 +170,6 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 
 		if (isset($field_settings['options']))
 		{
-			// combine default param values with the passed params
-			$params = array_merge(array(
-				'sort'      => '',
-				'backspace' => '0'
-			), $params);
-
 			// option template
 			if ( ! $tagdata AND isset($this->site_settings['option_tmpl'])) $tagdata = $this->site_settings['option_tmpl'];
 
