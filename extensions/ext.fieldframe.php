@@ -1109,8 +1109,12 @@ class Fieldframe_Main {
 		$ftypes = $this->_get_ftypes();
 		foreach($ftypes as $class_name => $ftype)
 		{
-			$field_type = 'ftype_id_'.$ftype->_fieldtype_id;
-			$r .= $DSP->input_select_option($field_type, $ftype->info['name'], ($data['field_type'] == $field_type ? 1 : 0));
+			// only list normal fieldtypes
+			if (method_exists($ftype, 'display_field'))
+			{
+				$field_type = 'ftype_id_'.$ftype->_fieldtype_id;
+				$r .= $DSP->input_select_option($field_type, $ftype->info['name'], ($data['field_type'] == $field_type ? 1 : 0));
+			}
 		}
 
 		$args = func_get_args();
