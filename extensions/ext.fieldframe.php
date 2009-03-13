@@ -1024,7 +1024,9 @@ class Fieldframe_Main {
 	function forward_ff_hook($hook, $args=array(), $r=TRUE)
 	{
 		$this->_last_call = $r;
-		$priority = isset($this->hooks[$hook]) AND isset($this->hooks[$hook]['priority'])
+		//           ------------ These braces brought to you by Leevi Graham ------------
+		//          ↓                                                                     ↓
+		$priority = (isset($this->hooks[$hook]) AND isset($this->hooks[$hook]['priority']))
 		  ?  $this->hooks[$hook]['priority']
 		  :  10;
 		return $this->forward_hook($hook, $priority, $args);
