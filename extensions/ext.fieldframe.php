@@ -1440,7 +1440,7 @@ class Fieldframe_Main {
 			foreach($this->_get_fields() as $field_id => $field)
 			{
 				// add fieldtype name to this field
-				$out = preg_replace("/(C=admin&amp;M=blog_admin&amp;P=edit_field&amp;field_id={$field_id}.*?<\/td>.*?<td.*?>.*?<\/td>.*?)<\/td>/is",
+				$out = preg_replace("/(C=admin&amp;M=blog_admin&amp;P=edit_field&amp;field_id={$field_id}[\'\"].*?<\/td>.*?<td.*?>.*?<\/td>.*?)<\/td>/is",
 				                      '$1'.$REGX->form_prep($field['ftype']->info['name']).'</td>', $out);
 			}
 		}
