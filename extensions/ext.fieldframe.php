@@ -382,8 +382,7 @@ class Fieldframe_Main {
 			// get enabled fields from the DB
 			$query = $DB->query('SELECT * FROM exp_ff_fieldtypes
 			                       WHERE site_id = "'.$PREFS->ini('site_id').'"
-			                         AND enabled = "y"
-			                       ORDER BY class');
+			                         AND enabled = "y"');
 
 			if ($query->num_rows)
 			{
@@ -391,9 +390,11 @@ class Fieldframe_Main {
 				{
 					if (($ftype = $this->_init_ftype($row)) !== FALSE)
 					{
-						$this->cache['ftypes'][$row['class']] = $ftype;
+						$this->cache['ftypes'][] = $ftype;
 					}
 				}
+
+				$this->_sort_ftypes($this->cache['ftypes']);
 			}
 		}
 
@@ -433,11 +434,13 @@ class Fieldframe_Main {
 					{
 						if (($ftype = $this->_init_ftype($file, FALSE)) !== FALSE)
 						{
-							$ftypes[$file] = $ftype;
+							$ftypes[] = $ftype;
 						}
 					}
 				}
 				closedir($fp);
+
+				$this->_sort_ftypes($ftypes);
 			}
 			else
 			{
@@ -446,6 +449,26 @@ class Fieldframe_Main {
 		}
 
 		return $ftypes;
+	}
+
+	/**
+	 * Sort Fieldtypes
+	 *
+	 * @param  array  $ftypes  the array of fieldtypes
+	 * @access private
+	 */
+	function _sort_ftypes(&$ftypes)
+	{
+		$ftypes_by_name = array();
+		while($ftype = array_shift($ftypes))
+		{
+			$ftypes_by_name[$ftype->info['name']] = $ftype;
+		}
+		ksort($ftypes_by_name);
+		foreach($ftypes_by_name as $ftype)
+		{
+			$ftypes[$ftype->_class_name] = $ftype;
+		}
 	}
 
 	/**
