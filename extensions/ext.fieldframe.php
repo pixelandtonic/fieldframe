@@ -1499,7 +1499,9 @@ class Fieldframe_Main {
 
 			if (method_exists($field['ftype'], 'display_field'))
 			{
+				$this->row = $row;
 				$r = $field['ftype']->display_field($field_name, $field_data, $field['settings']);
+				unset($this->row);
 			}
 		}
 
@@ -1511,7 +1513,8 @@ class Fieldframe_Main {
 			$r = $DSP->input_textarea($field_name, $field_data, 1, 'textarea', '100%');
 		}
 
-		$r = '<div style="padding:5px 27px 17px 17px;">'.$r.'</div>';
+		$r = '<input type="hidden" name="field_ft_'.$row['field_id'].'" value="none" />'.$r;
+
 		$args = func_get_args();
 		return $this->forward_ff_hook('publish_form_field_unique', $args, $r);
 	}
