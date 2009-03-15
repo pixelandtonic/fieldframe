@@ -30,38 +30,41 @@ class Ff_radio_group extends Fieldframe_Fieldtype {
 	 */
 	var $default_field_settings = array(
 		'options' => array(
-			'Option 1' => 'Option 1',
-			'Option 2' => 'Option 2',
-			'Option 3' => 'Option 3'
+			'opt_1' => 'Option 1',
+			'opt_2' => 'Option 2',
+			'opt_3' => 'Option 3'
 		)
 	);
 
 	var $default_cell_settings = array(
 		'options' => array(
-			'Option 1' => 'Opt 1',
-			'Option 2' => 'Opt 2'
+			'opt_1' => 'Opt 1',
+			'opt_2' => 'Opt 2'
 		)
 	);
+
+	function _options_setting($options_setting=array())
+	{
+		$options = '';
+		foreach($options_setting as $name => $label)
+		{
+			if ($options) $options .= "\n";
+			$options .= $name . ($name != $label ? ' : '.$label : '');
+		}
+		return $options;
+	}
 
 	/**
 	 * Display Field Settings
 	 * 
-	 * @param  array  $settings  The field's settings
-	 * @return array  Settings HTML (cell1, cell2, rows)
+	 * @param  array  $field_settings  The field's settings
+	 * @return array  Settings HTML    (cell1, cell2, rows)
 	 */
-	function display_field_settings($settings)
+	function display_field_settings($field_settings)
 	{
 		global $DSP, $LANG;
 
-		$options = '';
-		if (isset($settings['options']))
-		{
-			foreach($settings['options'] as $name => $label)
-			{
-				if ($options) $options .= "\n";
-				$options .= $name . ($name != $label ? ' : '.$label : '');
-			}
-		}
+		$options = $this->_options_setting($field_settings['options']);
 
 		$cell2 = $DSP->qdiv('defaultBold', $LANG->line('radio_options_label'))
 		       . $DSP->qdiv('default', $LANG->line('radio_options_subtext'))
@@ -72,17 +75,37 @@ class Ff_radio_group extends Fieldframe_Fieldtype {
 	}
 
 	/**
+	 * Display Field Settings
+	 * 
+	 * @param  array  $cell_settings  The cell's settings
+	 * @return string  Settings HTML
+	 */
+	function display_cell_settings($cell_settings)
+	{
+		global $DSP, $LANG;
+
+		$options = $this->_options_setting($cell_settings['options']);
+
+		$r = '<label class="itemWrapper">'
+		   . $DSP->qdiv('defaultBold', $LANG->line('radio_options_label'))
+		   . $DSP->input_textarea('options', $options, '3', 'textarea', '140px')
+		   . '</label>';
+
+		return $r;
+	}
+
+	/**
 	 * Save Field Settings
 	 *
 	 * Turn the options textarea value into an array of option names and labels
 	 * 
-	 * @param  array  $settings  The user-submitted settings, pulled from $_POST
-	 * @return array  Modified $settings
+	 * @param  array  $field_settings  The user-submitted settings, pulled from $_POST
+	 * @return array  Modified $field_settings
 	 */
-	function save_field_settings($settings)
+	function save_field_settings($field_settings)
 	{
 		$r = array('options' => array());
-		$options = preg_split('/[\r\n]+/', $settings['options']);
+		$options = preg_split('/[\r\n]+/', $field_settings['options']);
 		foreach($options as $option)
 		{
 			$option = explode(':', $option);
