@@ -35,9 +35,12 @@ class Ff_checkbox extends Fieldframe_Fieldtype {
 	function display_field($field_name, $field_data, $field_settings)
 	{
 		global $DSP;
-		return '<label style="display:inline-block; padding:1px; background:#768E9D;">'
-		         . $DSP->input_checkbox($field_name, 'y', $field_data == 'y' ? 1 : 0)
-		         . '</label>';
+		return $DSP->input_checkbox($field_name, 'y', $field_data == 'y' ? 1 : 0);
+	}
+
+	function display_cell($cell_name, $cell_data, $cell_settings)
+	{
+		return $this->display_field($cell_name, $cell_data, $cell_settings);
 	}
 
 }

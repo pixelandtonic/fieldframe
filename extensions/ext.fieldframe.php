@@ -1157,7 +1157,11 @@ class Fieldframe_Main {
 				// Load the language file
 				$LANG->fetch_language_file($class_name);
 
-				$ftype->_field_settings = array_merge($field_settings_tmpl, $ftype->display_field_settings($selected ? $REGX->array_stripslashes(unserialize($data['ff_settings'])) : array()));
+				$field_settings = array_merge(
+					(isset($ftype->default_field_settings) ? $ftype->default_field_settings : array()),
+					($selected ? $REGX->array_stripslashes(unserialize($data['ff_settings'])) : array())
+				);
+				$ftype->_field_settings = array_merge($field_settings_tmpl, $ftype->display_field_settings($field_settings));
 			}
 			else
 			{
@@ -1350,13 +1354,15 @@ class Fieldframe_Main {
 			foreach($ftype->_field_settings['rows'] as $index => $row)
 			{
 				$rows .= '<tr id="'.$ftype_id.'_row'.($index+1).'"' . ($selected ? '' : ' style="display:none;"') . '>'
-				       . $DSP->td('tableCellOne')
+				       . '<td class="tableCellOne"'.(isset($row[1]) ? '' : ' colspan="2"').'>'
 				       . $row[0]
 				       . $DSP->td_c()
-				       . $DSP->td('tableCellOne')
-				       . $row[1]
-				       . $DSP->td_c()
-				       . $DSP->tr_c();
+				       . (isset($row[1])
+				            ?  $DSP->td('tableCellOne')
+				             . $row[1]
+				             . $DSP->td_c()
+				             . $DSP->tr_c()
+				            : '');
 			}
 
 			if ($selected)
@@ -1972,6 +1978,32 @@ class Fieldframe_Fieldtype {
 	{
 		global $FF;
 		return $FF->get_last_call($param);
+	}
+
+	function insert($html, &$to, $at)
+	{
+		$at = '</'.$at.'>';
+		$to = str_replace($at, NL.$html.NL.$at, $to);
+	}
+
+	function insert_css($css, &$to)
+	{
+		$this->insert('<style type="text/css" charset="utf-8">'.NL.$css.NL.'</style>', $to, 'head');
+	}
+
+	function insert_js($js, &$to)
+	{
+		$this->insert('<script type="text/javascript">'.NL.$js.NL.'</script>', $to, 'body');
+	}
+
+	function include_css($filename, &$to)
+	{
+		$this->insert('<link rel="stylesheet" type="text/css" href="'.FT_URL.$this->_class_name.'/'.$filename.'" charset="utf-8" />', $to, 'head');
+	}
+
+	function include_js($filename, &$to)
+	{
+		$this->insert('<script type="text/javascript" src="'.FT_URL.$this->_class_name.'/'.$filename.'" charset="utf-8"></script>', $to, 'body');
 	}
 
 }
