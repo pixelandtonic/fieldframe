@@ -91,6 +91,11 @@ class Ff_radio_group extends Fieldframe_Fieldtype {
 		}
 	}
 
+	function display_cell($cell_name, $cell_data, $cell_settings)
+	{
+		$this->display_field($cell_name, $cell_data, $cell_settings);
+	}
+
 }
 
 
