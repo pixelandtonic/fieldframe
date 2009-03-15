@@ -40,21 +40,26 @@ $.fn.ffMatrixConf = function(id, cols) {
 				+ '</label>')
 				.appendTo(obj.dom.$trColConf);
 
-			var select = '';
+			var typeSelect = '';
 			$.each($.fn.ffMatrixConf.cellTypes, function(className) {
-				select += '<option value="'+className+'"'
-				        + (className == col.type ? ' selected="selected"' : '')
-				        + '>'+this.name+'</option>';
+				typeSelect += '<option value="'+className+'"'
+				            + (className == col.type ? ' selected="selected"' : '')
+				            + '>'+this.name+'</option>';
 			});
 			col.$cellConf = $('<td>').html(
 				  '<label class="itemWrapper">'
 				+   '<div class="defaultBold">'+$.fn.ffMatrixConf.lang.cellType+'</div>'
 				+   '<select name="'+obj.namespace+'[cols]['+colId+'][type]">'
-				+     select
+				+     typeSelect
 				+   '</select>'
 				+ '</label>'
 				)
 				.appendTo(obj.dom.$trCellConf);
+
+			col.$typeSelect = col.$cellConf.find('select').change(function() {
+				col.type = this.value;
+				col.$preview.html($.fn.ffMatrixConf.cellTypes[col.type].preview);
+			});
 
 			obj.cols[colId] = col;
 		}

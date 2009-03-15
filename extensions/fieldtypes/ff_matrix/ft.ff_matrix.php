@@ -144,10 +144,12 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 			$cell_types = '';
 			foreach($this->_get_ftypes() as $class_name => $ftype)
 			{
+				$cell_settings = isset($ftype->default_cell_settings) ? $ftype->default_cell_settings : array();
+				$preview = addslashes(preg_replace('/[\n\r]/', ' ', $ftype->display_cell('', '', $cell_settings)));
 				$cell_types .= ($cell_types ? ','.NL : '')
 				             . '"'.$class_name.'": {' . NL
 				             .    '"name": "'.$ftype->info['name'].'",' . NL
-				             .    '"preview": "'.addslashes(preg_replace('/[\n\r]/', ' ', $ftype->display_cell('', '', array()))).'"' . NL
+				             .    '"preview": "'.$preview.'"' . NL
 				             . '}';
 			}
 
