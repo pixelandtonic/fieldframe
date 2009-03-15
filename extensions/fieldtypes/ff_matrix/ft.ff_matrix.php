@@ -99,7 +99,8 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		         .     '<tr class="tableHeading"></tr>'
 		         .     '<tr class="preview"></tr>'
 		         .     '<tr class="conf col"></tr>'
-		         .     '<tr class="conf cell"></tr>'
+		         .     '<tr class="conf celltype"></tr>'
+		         .     '<tr class="conf cellsettings"></tr>'
 		         .   '</table>'
 		         . $DSP->div_c();
 
@@ -145,11 +146,13 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 			foreach($this->_get_ftypes() as $class_name => $ftype)
 			{
 				$cell_settings = isset($ftype->default_cell_settings) ? $ftype->default_cell_settings : array();
-				$preview = addslashes(preg_replace('/[\n\r]/', ' ', $ftype->display_cell('', '', $cell_settings)));
+				$preview = $ftype->display_cell('', '', $cell_settings);
+				$settings_display = method_exists($ftype, 'display_cell_settings') ? $ftype->display_cell_settings($cell_settings) : '';
 				$cell_types .= ($cell_types ? ','.NL : '')
 				             . '"'.$class_name.'": {' . NL
-				             .    '"name": "'.$ftype->info['name'].'",' . NL
-				             .    '"preview": "'.$preview.'"' . NL
+				             .    'name: "'.$ftype->info['name'].'",' . NL
+				             .    'preview: "'.preg_replace('/[\n\r]/', ' ', addslashes($preview)).'",' . NL
+				             .    'settings: "'.preg_replace('/[\n\r]/', "\\n", addslashes($settings_display)).'"' . NL
 				             . '}';
 			}
 

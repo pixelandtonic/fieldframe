@@ -18,15 +18,31 @@ $.fn.ffMatrixConf = function(id, cols) {
 		obj.dom.$trHeaders = obj.dom.$container.find('tr.tableHeading');
 		obj.dom.$trPreviews = obj.dom.$container.find('tr.preview');
 		obj.dom.$trColConf = obj.dom.$container.find('tr.conf.col');
-		obj.dom.$trCellConf = obj.dom.$container.find('tr.conf.cell');
+		obj.dom.$trCellType = obj.dom.$container.find('tr.conf.celltype');
+		obj.dom.$trCellSettings = obj.dom.$container.find('tr.conf.cellsettings');
+
+		var toggleCellSettings = function() {
+			var showCellSettings = false;
+			$.each(obj.cols, function(colId) {
+				if ($.fn.ffMatrixConf.cellTypes[this.type].settings)
+				{
+					showCellSettings = true;
+					return false;
+				}
+			});
+			if (showCellSettings) obj.dom.$trCellSettings.show();
+			else obj.dom.$trCellSettings.hide();
+		}
 
 		var addCol = function(colId, col) {
 			if (colId >= obj.nextColId) obj.nextColId = colId + 1;
 
+			var cellType = $.fn.ffMatrixConf.cellTypes[col.type];
+
 			col.$header = $('<th>').html(col.label)
 				.appendTo(obj.dom.$trHeaders);
 
-			col.$preview = $('<td>').html($.fn.ffMatrixConf.cellTypes[col.type].preview)
+			col.$preview = $('<td>').html(cellType.preview)
 				.appendTo(obj.dom.$trPreviews);
 
 			col.$colConf = $('<td>').html(
@@ -40,25 +56,33 @@ $.fn.ffMatrixConf = function(id, cols) {
 				+ '</label>')
 				.appendTo(obj.dom.$trColConf);
 
-			var typeSelect = '';
+			var select = '';
+			var settings = '';
 			$.each($.fn.ffMatrixConf.cellTypes, function(className) {
-				typeSelect += '<option value="'+className+'"'
-				            + (className == col.type ? ' selected="selected"' : '')
-				            + '>'+this.name+'</option>';
+				select += '<option value="'+className+'"'
+				        + (className == col.type ? ' selected="selected"' : '')
+				        + '>'+this.name+'</option>';
 			});
-			col.$cellConf = $('<td>').html(
+			col.$cellType = $('<td>').html(
 				  '<label class="itemWrapper">'
 				+   '<div class="defaultBold">'+$.fn.ffMatrixConf.lang.cellType+'</div>'
 				+   '<select name="'+obj.namespace+'[cols]['+colId+'][type]">'
-				+     typeSelect
+				+     select
 				+   '</select>'
 				+ '</label>'
 				)
-				.appendTo(obj.dom.$trCellConf);
+				.appendTo(obj.dom.$trCellType);
 
-			col.$typeSelect = col.$cellConf.find('select').change(function() {
+			col.$cellSettings = $('<td>').html(cellType.settings)
+				.appendTo(obj.dom.$trCellSettings)
+
+			col.$typeSettings = col.$cellType.find('.settings');
+			col.$typeSelect = col.$cellType.find('select').change(function() {
 				col.type = this.value;
-				col.$preview.html($.fn.ffMatrixConf.cellTypes[col.type].preview);
+				var cellType = $.fn.ffMatrixConf.cellTypes[col.type];
+				col.$preview.html(cellType.preview);
+				col.$cellSettings.html(cellType.settings);
+				toggleCellSettings();
 			});
 
 			obj.cols[colId] = col;
@@ -67,6 +91,7 @@ $.fn.ffMatrixConf = function(id, cols) {
 		$.each(cols, function(colId) {
 			addCol(colId, this);
 		});
+		toggleCellSettings();
 
 		// add new column
 		obj.dom.$add.click(function() {
@@ -76,6 +101,7 @@ $.fn.ffMatrixConf = function(id, cols) {
 				name:  $.fn.ffMatrixConf.lang.cell.toLowerCase().replace(' ', '_')+'_'+cellNum,
 				type:  $.fn.ffMatrixConf.options.initialCellType
 			});
+			toggleCellSettings();
 		});
 	});
 };

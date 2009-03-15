@@ -18,8 +18,9 @@
 .ff_matrix_conf table tr.conf td label .defaultBold { color:#999; }
 .ff_matrix_conf table tr.conf td label input { width:98%; max-width:140px; }
 
+.ff_matrix_conf table tr.conf td { border-top:1px solid #21272b; }
 .ff_matrix_conf table tr.conf.col td { border-top:1px solid #1d2326; background-image:url(../images/stripes.png); }
-.ff_matrix_conf table tr.conf.cell td { border-top:1px solid #21272b; }
+.ff_matrix_conf table tr.conf.cellsettings { display:none; }
 
 
 /* FF Matrix cell types */
