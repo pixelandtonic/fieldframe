@@ -25,6 +25,25 @@ class Ff_radio_group extends Fieldframe_Fieldtype {
 	);
 
 	/**
+	 * Fieldtype Info
+	 * @var array
+	 */
+	var $default_field_settings = array(
+		'options' => array(
+			'Option 1' => 'Option 1',
+			'Option 2' => 'Option 2',
+			'Option 3' => 'Option 3'
+		)
+	);
+
+	var $default_cell_settings = array(
+		'options' => array(
+			'Option 1' => 'Opt 1',
+			'Option 2' => 'Opt 2'
+		)
+	);
+
+	/**
 	 * Display Field Settings
 	 * 
 	 * @param  array  $settings  The field's settings
@@ -84,16 +103,21 @@ class Ff_radio_group extends Fieldframe_Fieldtype {
 	 */
 	function display_field($field_name, $field_data, $field_settings)
 	{
-		if (isset($field_settings['options']))
-		{
-			$SD = new Fieldframe_SettingsDisplay();
-			return $SD->radio_group($field_name, $field_data, $field_settings['options']);
-		}
+		$SD = new Fieldframe_SettingsDisplay();
+		return $SD->radio_group($field_name, $field_data, $field_settings['options']);
 	}
 
+	/**
+	 * Display Cell
+	 * 
+	 * @param  string  $cell_name      The cell's name
+	 * @param  mixed   $cell_data      The cell's current value
+	 * @param  array   $cell_settings  The cell's settings
+	 * @return string  The cell's HTML
+	 */
 	function display_cell($cell_name, $cell_data, $cell_settings)
 	{
-		$this->display_field($cell_name, $cell_data, $cell_settings);
+		return $this->display_field($cell_name, $cell_data, $cell_settings);
 	}
 
 }
