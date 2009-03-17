@@ -109,6 +109,30 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 	}
 
 	/**
+	 * Save Field Settings
+	 *
+	 * Turn the options textarea value into an array of option names and labels
+	 * 
+	 * @param  array  $settings  The user-submitted settings, pulled from $_POST
+	 * @return array  Modified $settings
+	 */
+	function save_field_settings($field_settings)
+	{
+		$ftypes = $this->_get_ftypes();
+
+		foreach($field_settings['cols'] as $col_id => &$col)
+		{
+			$ftype = $ftypes[$col['type']];
+			if (method_exists($ftype, 'save_cell_settings'))
+			{
+				$col['settings'] = $ftype->save_cell_settings($col['settings']);
+			}
+		}
+
+		return $field_settings;
+	}
+
+	/**
 	 * Display Field
 	 * 
 	 * @param  string  $field_name      The field's name
@@ -136,6 +160,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		global $LANG;
 
 		$out = $this->get_last_call($out);
+		$ftypes = $this->_get_ftypes();
 
 		// are we displaying the field settings?
 		if (isset($this->field_settings))
@@ -144,7 +169,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 			$this->include_js('scripts/jquery.ff_matrix_conf.js', $out);
 
 			$cell_types = '';
-			foreach($this->_get_ftypes() as $class_name => $ftype)
+			foreach($ftypes as $class_name => $ftype)
 			{
 				$cell_settings = isset($ftype->default_cell_settings) ? $ftype->default_cell_settings : array();
 				$preview = $ftype->display_cell('', '', $cell_settings);
@@ -160,11 +185,21 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 			$cols = '';
 			foreach($this->field_settings['cols'] as $col_id => $col)
 			{
+				$ftype = $ftypes[$col['type']];
+				$cell_settings = array_merge(
+					(isset($ftype->default_cell_settings) ? $ftype->default_cell_settings : array()),
+					(isset($col['settings']) ? $col['settings'] : array())
+				);
+				$preview = $ftype->display_cell('', '', $cell_settings);
+				$settings_display = method_exists($ftype, 'display_cell_settings') ? $ftype->display_cell_settings($cell_settings) : '';
+
 				$cols .= ($cols ? ','.NL : '')
 				       . $col_id.': {'. NL
 				       .   'name: "'.$col['name'].'",' . NL
 				       .   'label: "'.$col['label'].'",' . NL
-				       .   'type: "'.$col['type'].'"' . NL
+				       .   'type: "'.$col['type'].'",' . NL
+				       .   'preview: "'.preg_replace('/[\n\r]/', ' ', addslashes($preview)).'",' . NL
+				       .   'settings: "'.preg_replace('/[\n\r]/', "\\n", addslashes($settings_display)).'"' . NL
 				       . '}';
 			}
 

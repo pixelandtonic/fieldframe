@@ -2,7 +2,7 @@
 /* FF Matrix Configuration */
 .ff_matrix_conf { position:relative; margin:15px 18px 0 15px; }
 .ff_matrix_conf a.button { display:block; width:16px; height:16px; background:no-repeat 50% 50%; cursor:pointer; }
-.ff_matrix_conf a.button.add { position:absolute; top:4px; right:-22px; background-image:url(../images/add.png); }
+.ff_matrix_conf a.button.add { position:absolute; bottom:26px; right:-21px; background-image:url(../images/add.png); }
 .ff_matrix_conf .helper { position:absolute; top:-2px; }
 
 .ff_matrix_conf table { width:100%; height:75px; }
