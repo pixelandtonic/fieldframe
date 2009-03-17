@@ -15,6 +15,7 @@ $.fn.ffMatrixConf = function(id, cols) {
 
 		obj.dom.$add = obj.dom.$container.find('a.add');
 
+		obj.dom.$table = obj.dom.$container.find('table');
 		obj.dom.$trHeaders = obj.dom.$container.find('tr.tableHeading');
 		obj.dom.$trPreviews = obj.dom.$container.find('tr.preview');
 		obj.dom.$trColConf = obj.dom.$container.find('tr.conf.col');
@@ -42,7 +43,6 @@ $.fn.ffMatrixConf = function(id, cols) {
 
 			col.$header = $('<th id="ffMatrixCol'+colId+'">')
 				.appendTo(obj.dom.$trHeaders);
-			//col.$handle = $('<a class="button handle">').appendTo(col.$header);
 			col.$headerText = $('<span>').html(col.label).appendTo(col.$header);
 
 			col.$preview = $('<td>').html(cellType.preview)
@@ -119,58 +119,8 @@ $.fn.ffMatrixConf = function(id, cols) {
 			addCol(colId, this);
 		});
 		toggleCellSettings();
-		obj.dom.$trHeaders.sortable({
-			axis: 'x',
-			helper: function(event, item) {
-				var colId = item.attr('id').substring(11),
-					col = obj.cols[colId];
 
-				return $('<table>')
-					.width(item.width()+24)
-					.append($('<tr class="tableHeading">').append(col.$header.clone(true)))
-					.append($('<tr class="preview">').append(col.$preview.clone(true)))
-					.append($('<tr class="conf col">').append(col.$colConf.clone(true)))
-					.append($('<tr class="conf celltype">').append(col.$cellType.clone(true)))
-					.append($('<tr class="conf cellsettings">').append(col.$cellSettings.clone(true)))
-					.append($('<tr class="delete">').append(col.$delete.clone(true)))
-					.appendTo(obj.dom.$container);
-			},
-			start: function(event, ui) {
-				var colId = ui.item.attr('id').substring(11),
-					col = obj.cols[colId];
-
-				// hide the other column cells
-				col.$preview.css('visibility', 'hidden');
-				col.$colConf.css('visibility', 'hidden');
-				col.$cellType.css('visibility', 'hidden');
-				col.$cellSettings.css('visibility', 'hidden');
-				col.$delete.css('visibility', 'hidden');
-			},
-			stop: function(event, ui) {
-				var colId = ui.item.attr('id').substring(11),
-					col = obj.cols[colId];
-
-				// hide the other column cells
-				col.$preview.css('visibility', 'visible');
-				col.$colConf.css('visibility', 'visible');
-				col.$cellType.css('visibility', 'visible');
-				col.$cellSettings.css('visibility', 'visible');
-				col.$delete.css('visibility', 'visible');
-			},
-			change: function(event, ui) {
-				var colId = ui.item.attr('id').substring(11),
-					col = obj.cols[colId],
-					oldCellIndex = col.$preview.attr('cellIndex'),
-				 	newCellIndex = ui.item.attr('cellIndex'),
-					method = newCellIndex > oldCellIndex ? 'insertAfter' : 'insertBefore';
-
-				col.$preview[method](obj.dom.$trPreviews.attr('cells')[newCellIndex]);
-				col.$colConf[method](obj.dom.$trColConf.attr('cells')[newCellIndex]);
-				col.$cellType[method](obj.dom.$trCellType.attr('cells')[newCellIndex]);
-				col.$cellSettings[method](obj.dom.$trCellSettings.attr('cells')[newCellIndex]);
-				col.$delete[method](obj.dom.$trDeletes.attr('cells')[newCellIndex]);
-			}
-		});
+		obj.dom.$table.sortableTable({ axis: 'x' });
 
 		// add new column
 		obj.dom.$add.click(function() {

@@ -141,6 +141,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		if (isset($this->field_settings))
 		{
 			$this->include_css('styles/ff_matrix.css', $out);
+			$this->include_js('scripts/jquery.sortable_table.js', $out);
 			$this->include_js('scripts/jquery.ff_matrix_conf.js', $out);
 
 			$cell_types = '';
