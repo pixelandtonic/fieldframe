@@ -23,6 +23,15 @@ $L = array(
 'cell' =>
 'Cell',
 
+'add_column' =>
+'Add Column',
+
+'delete_column' =>
+'Delete Column',
+
+'confirm_delete_column' =>
+'Delete this column?',
+
 
 ''=>''
 );

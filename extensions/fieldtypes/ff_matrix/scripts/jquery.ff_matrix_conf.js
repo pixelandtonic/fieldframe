@@ -20,6 +20,7 @@ $.fn.ffMatrixConf = function(id, cols) {
 		obj.dom.$trColConf = obj.dom.$container.find('tr.conf.col');
 		obj.dom.$trCellType = obj.dom.$container.find('tr.conf.celltype');
 		obj.dom.$trCellSettings = obj.dom.$container.find('tr.conf.cellsettings');
+		obj.dom.$trDeletes = obj.dom.$container.find('tr.delete');
 
 		var toggleCellSettings = function() {
 			var showCellSettings = false;
@@ -39,8 +40,10 @@ $.fn.ffMatrixConf = function(id, cols) {
 
 			var cellType = $.fn.ffMatrixConf.cellTypes[col.type];
 
-			col.$header = $('<th>').html(col.label)
+			col.$header = $('<th id="ffMatrixCol'+colId+'">')
 				.appendTo(obj.dom.$trHeaders);
+			//col.$handle = $('<a class="button handle">').appendTo(col.$header);
+			col.$headerText = $('<span>').html(col.label).appendTo(col.$header);
 
 			col.$preview = $('<td>').html(cellType.preview)
 				.appendTo(obj.dom.$trPreviews);
@@ -52,12 +55,17 @@ $.fn.ffMatrixConf = function(id, cols) {
 				+ '</label>'
 				+ '<label class="itemWrapper">'
 				+   '<div class="defaultBold">'+$.fn.ffMatrixConf.lang.colLabel+'</div>'
-				+   '<input type="text" name="'+obj.namespace+'[cols]['+colId+'][label]" value="'+col.label+'" />'
+				+   '<input type="text" class="label" name="'+obj.namespace+'[cols]['+colId+'][label]" value="'+col.label+'" />'
 				+ '</label>')
 				.appendTo(obj.dom.$trColConf);
+			col.$labelInput = col.$colConf.find('input.label')
+				.keydown(function(event) {
+					setTimeout(function() {
+						col.$headerText.html(col.$labelInput.val());
+					}, 1);
+				});
 
 			var select = '';
-			var settings = '';
 			$.each($.fn.ffMatrixConf.cellTypes, function(className) {
 				select += '<option value="'+className+'"'
 				        + (className == col.type ? ' selected="selected"' : '')
@@ -76,14 +84,33 @@ $.fn.ffMatrixConf = function(id, cols) {
 			col.$cellSettings = $('<td>').html(cellType.settings)
 				.appendTo(obj.dom.$trCellSettings)
 
+			col.$delete = $('<td>').appendTo(obj.dom.$trDeletes);
+			col.$deleteBtn = $('<a class="button delete">')
+				.appendTo(col.$delete)
+				.attr('title', $.fn.ffMatrixConf.lang.deleteColumn)
+				.click(function() {
+					if (confirm($.fn.ffMatrixConf.lang.confirmDeleteColumn)) {
+						col.$header.remove();
+						col.$preview.remove();
+						col.$colConf.remove();
+						col.$cellType.remove();
+						col.$cellSettings.remove();
+						col.$delete.remove();
+						delete(obj.cols[colId]);
+						console.log(obj.cols);
+						toggleCellSettings();
+					}
+				});
+
 			col.$typeSettings = col.$cellType.find('.settings');
-			col.$typeSelect = col.$cellType.find('select').change(function() {
-				col.type = this.value;
-				var cellType = $.fn.ffMatrixConf.cellTypes[col.type];
-				col.$preview.html(cellType.preview);
-				col.$cellSettings.html(cellType.settings);
-				toggleCellSettings();
-			});
+			col.$typeSelect = col.$cellType.find('select')
+				.change(function() {
+					col.type = this.value;
+					var cellType = $.fn.ffMatrixConf.cellTypes[col.type];
+					col.$preview.html(cellType.preview);
+					col.$cellSettings.html(cellType.settings);
+					toggleCellSettings();
+				});
 
 			obj.cols[colId] = col;
 		}
@@ -92,6 +119,58 @@ $.fn.ffMatrixConf = function(id, cols) {
 			addCol(colId, this);
 		});
 		toggleCellSettings();
+		obj.dom.$trHeaders.sortable({
+			axis: 'x',
+			helper: function(event, item) {
+				var colId = item.attr('id').substring(11),
+					col = obj.cols[colId];
+
+				return $('<table>')
+					.width(item.width()+24)
+					.append($('<tr class="tableHeading">').append(col.$header.clone(true)))
+					.append($('<tr class="preview">').append(col.$preview.clone(true)))
+					.append($('<tr class="conf col">').append(col.$colConf.clone(true)))
+					.append($('<tr class="conf celltype">').append(col.$cellType.clone(true)))
+					.append($('<tr class="conf cellsettings">').append(col.$cellSettings.clone(true)))
+					.append($('<tr class="delete">').append(col.$delete.clone(true)))
+					.appendTo(obj.dom.$container);
+			},
+			start: function(event, ui) {
+				var colId = ui.item.attr('id').substring(11),
+					col = obj.cols[colId];
+
+				// hide the other column cells
+				col.$preview.css('visibility', 'hidden');
+				col.$colConf.css('visibility', 'hidden');
+				col.$cellType.css('visibility', 'hidden');
+				col.$cellSettings.css('visibility', 'hidden');
+				col.$delete.css('visibility', 'hidden');
+			},
+			stop: function(event, ui) {
+				var colId = ui.item.attr('id').substring(11),
+					col = obj.cols[colId];
+
+				// hide the other column cells
+				col.$preview.css('visibility', 'visible');
+				col.$colConf.css('visibility', 'visible');
+				col.$cellType.css('visibility', 'visible');
+				col.$cellSettings.css('visibility', 'visible');
+				col.$delete.css('visibility', 'visible');
+			},
+			change: function(event, ui) {
+				var colId = ui.item.attr('id').substring(11),
+					col = obj.cols[colId],
+					oldCellIndex = col.$preview.attr('cellIndex'),
+				 	newCellIndex = ui.item.attr('cellIndex'),
+					method = newCellIndex > oldCellIndex ? 'insertAfter' : 'insertBefore';
+
+				col.$preview[method](obj.dom.$trPreviews.attr('cells')[newCellIndex]);
+				col.$colConf[method](obj.dom.$trColConf.attr('cells')[newCellIndex]);
+				col.$cellType[method](obj.dom.$trCellType.attr('cells')[newCellIndex]);
+				col.$cellSettings[method](obj.dom.$trCellSettings.attr('cells')[newCellIndex]);
+				col.$delete[method](obj.dom.$trDeletes.attr('cells')[newCellIndex]);
+			}
+		});
 
 		// add new column
 		obj.dom.$add.click(function() {
@@ -109,10 +188,12 @@ $.fn.ffMatrixConf = function(id, cols) {
 
 // Language
 $.fn.ffMatrixConf.lang = {
-	'colName':  'Col Name',
-	'colLabel': 'Col Label',
-	'cellType': 'Cell Type',
-	'cell':     'Cell'
+	colName: 'Col Name',
+	colLabel: 'Col Label',
+	cellType: 'Cell Type',
+	cell: 'Cell',
+	deleteColumn: 'Delete Column',
+	confirmDeleteColumn: 'Delete this column?'
 };
 
 

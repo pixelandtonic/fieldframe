@@ -94,13 +94,14 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		$preview = $DSP->qdiv('defaultBold', $LANG->line('conf_label'))
                  . $DSP->qdiv('itemWrapper', $LANG->line('conf_subtext'))
 		         . $DSP->div('ff_matrix_conf')
-		         .   '<a class="add" title="Add Column"></a>'
+		         .   '<a class="button add" title="'.$LANG->line('add_column').'"></a>'
 		         .   '<table cellspacing="0">'
 		         .     '<tr class="tableHeading"></tr>'
 		         .     '<tr class="preview"></tr>'
 		         .     '<tr class="conf col"></tr>'
 		         .     '<tr class="conf celltype"></tr>'
 		         .     '<tr class="conf cellsettings"></tr>'
+		         .     '<tr class="delete"></tr>'
 		         .   '</table>'
 		         . $DSP->div_c();
 
@@ -168,10 +169,12 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 			}
 
 			$js = 'jQuery(window).bind("load", function() {' . NL
-			    . '  jQuery.fn.ffMatrixConf.lang.colName  = "'.$LANG->line('col_name').'";' . NL
+			    . '  jQuery.fn.ffMatrixConf.lang.colName = "'.$LANG->line('col_name').'";' . NL
 			    . '  jQuery.fn.ffMatrixConf.lang.colLabel = "'.$LANG->line('col_label').'";' . NL
 			    . '  jQuery.fn.ffMatrixConf.lang.cellType = "'.$LANG->line('cell_type').'";' . NL
-			    . '  jQuery.fn.ffMatrixConf.lang.cell     = "'.$LANG->line('cell').'";' . NL
+			    . '  jQuery.fn.ffMatrixConf.lang.cell = "'.$LANG->line('cell').'";' . NL
+			    . '  jQuery.fn.ffMatrixConf.lang.deleteColumn = "'.$LANG->line('delete_column').'";' . NL
+			    . '  jQuery.fn.ffMatrixConf.lang.confirmDeleteColumn = "'.$LANG->line('confirm_delete_column').'";' . NL
 			    . NL
 			    . '  jQuery.fn.ffMatrixConf.cellTypes = {' . NL
 			    .      $cell_types . NL
@@ -181,7 +184,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 			    .      $cols . NL
 			    .   '});' . NL
 			    . '});';
-        
+
 			$this->insert_js($js, $out);
 		}
 
