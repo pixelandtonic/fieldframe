@@ -75,19 +75,6 @@ class Ff_radio_group extends Fieldframe_Fieldtype {
 	}
 
 	/**
-	 * Save Cell Settings
-	 *
-	 * Turn the options textarea value into an array of option names and labels
-	 * 
-	 * @param  array  $settings  The user-submitted settings, pulled from $_POST
-	 * @return array  Modified $settings
-	 */
-	function save_cell_settings($settings)
-	{
-		return $this->save_field_settings($settings);
-	}
-
-	/**
 	 * Display Field Settings
 	 * 
 	 * @param  array  $cell_settings  The cell's settings
@@ -127,6 +114,19 @@ class Ff_radio_group extends Fieldframe_Fieldtype {
 			$r['options'][$option_name] = $option_value;
 		}
 		return $r;
+	}
+
+	/**
+	 * Save Cell Settings
+	 *
+	 * Turn the options textarea value into an array of option names and labels
+	 * 
+	 * @param  array  $settings  The user-submitted settings, pulled from $_POST
+	 * @return array  Modified $settings
+	 */
+	function save_cell_settings($settings)
+	{
+		return $this->save_field_settings($settings);
 	}
 
 	/**
