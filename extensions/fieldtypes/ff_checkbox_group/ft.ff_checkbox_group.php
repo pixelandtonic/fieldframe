@@ -91,6 +91,17 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 		return $r;
 	}
 
+	function _options_setting($options_setting=array())
+	{
+		$options = '';
+		foreach($options_setting as $name => $label)
+		{
+			if ($options) $options .= "\n";
+			$options .= $name . ($name != $label ? ' : '.$label : '');
+		}
+		return $options;
+	}
+
 	/**
 	 * Display Field Settings
 	 * 
@@ -101,12 +112,7 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 	{
 		global $DSP, $LANG;
 
-		$options = '';
-		foreach($field_settings['options'] as $name => $label)
-		{
-			if ($options) $options .= "\n";
-			$options .= $name . ($name != $label ? ' : '.$label : '');
-		}
+		$options = $this->_options_setting($field_settings['options']);
 
 		$cell2 = $DSP->qdiv('defaultBold', $LANG->line('checkbox_options_label'))
 		       . $DSP->qdiv('default', $LANG->line('checkbox_options_subtext'))
@@ -114,6 +120,26 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 		       . $DSP->qdiv('default', $LANG->line('checkbox_option_examples'));
 
 		return array('cell2' => $cell2);
+	}
+
+	/**
+	 * Display Field Settings
+	 * 
+	 * @param  array  $cell_settings  The cell's settings
+	 * @return string  Settings HTML
+	 */
+	function display_cell_settings($cell_settings)
+	{
+		global $DSP, $LANG;
+
+		$options = $this->_options_setting($cell_settings['options']);
+
+		$r = '<label class="itemWrapper">'
+		   . $DSP->qdiv('defaultBold', $LANG->line('radio_options_label'))
+		   . $DSP->input_textarea('options', $options, '3', 'textarea', '140px')
+		   . '</label>';
+
+		return $r;
 	}
 
 	/**
@@ -160,6 +186,19 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 			    . '</label>';
 		}
 		return $r;
+	}
+
+	/**
+	 * Display Cell
+	 * 
+	 * @param  string  $cell_name      The cell's name
+	 * @param  mixed   $cell_data      The cell's current value
+	 * @param  array   $cell_settings  The cell's settings
+	 * @return string  The cell's HTML
+	 */
+	function display_cell($cell_name, $cell_data, $cell_settings)
+	{
+		return $this->display_field($cell_name, $cell_data, $cell_settings);
 	}
 
 	/**
