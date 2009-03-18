@@ -45,7 +45,7 @@ $.fn.ffMatrixConf = function(id, cols) {
 				.appendTo(obj.dom.$trHeaders);
 			col.$headerText = $('<span>').html(col.label).appendTo(col.$header);
 
-			col.$preview = $('<td>').html(cellType.preview)
+			col.$preview = $('<td>').html(col.preview)
 				.appendTo(obj.dom.$trPreviews);
 
 			col.$colConf = $('<td>').html(
@@ -81,7 +81,7 @@ $.fn.ffMatrixConf = function(id, cols) {
 				)
 				.appendTo(obj.dom.$trCellType);
 
-			col.$cellSettings = $('<td>').html(cellType.settings)
+			col.$cellSettings = $('<td>').html(groupCellSettings(obj, col.settings, colId))
 				.appendTo(obj.dom.$trCellSettings)
 
 			col.$delete = $('<td>').appendTo(obj.dom.$trDeletes);
@@ -108,7 +108,7 @@ $.fn.ffMatrixConf = function(id, cols) {
 					col.type = this.value;
 					var cellType = $.fn.ffMatrixConf.cellTypes[col.type];
 					col.$preview.html(cellType.preview);
-					col.$cellSettings.html(cellType.settings);
+					col.$cellSettings.html(groupCellSettings(obj, cellType.settings, colId));
 					toggleCellSettings();
 				});
 
@@ -124,11 +124,14 @@ $.fn.ffMatrixConf = function(id, cols) {
 
 		// add new column
 		obj.dom.$add.click(function() {
-			var cellNum = obj.dom.$trHeaders.attr('cells').length + 1;
+			var cellNum = obj.dom.$trHeaders.attr('cells').length + 1,
+				cellType = $.fn.ffMatrixConf.options.initialCellType;
 			addCol(obj.nextColId, {
-				label: $.fn.ffMatrixConf.lang.cell+' '+cellNum,
-				name:  $.fn.ffMatrixConf.lang.cell.toLowerCase().replace(' ', '_')+'_'+cellNum,
-				type:  $.fn.ffMatrixConf.options.initialCellType
+				label:    $.fn.ffMatrixConf.lang.cell+' '+cellNum,
+				name:     $.fn.ffMatrixConf.lang.cell.toLowerCase().replace(' ', '_')+'_'+cellNum,
+				type:     cellType,
+				preview:  $.fn.ffMatrixConf.cellTypes[cellType].preview,
+				settings: $.fn.ffMatrixConf.cellTypes[cellType].settings
 			});
 			toggleCellSettings();
 		});
@@ -154,6 +157,11 @@ $.fn.ffMatrixConf.cellTypes = { };
 $.fn.ffMatrixConf.options = {
 	initialCellType: 'ff_matrix_text'
 };
+
+
+function groupCellSettings(obj, cellSettings, colId) {
+	return cellSettings.replace(/(name=['"])([^'"\[\]]+)([^'"]*)(['"])/i, '$1'+obj.namespace+'[cols]['+colId+'][settings][$2]$3$4');
+}
 
 
 })(jQuery);

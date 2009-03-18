@@ -19,18 +19,9 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 	 */
 	var $info = array(
 		'name'     => 'FF Matrix',
-		'version'  => '0.0.3',
+		'version'  => '0.0.4',
 		'desc'     => 'Provides a tabular data fieldtype',
 		'docs_url' => 'http://wiki.github.com/brandonkelly/bk.fieldframe.ee_addon/ff-checkbox'
-	);
-
-	/**
-	 * Fieldtype Hooks
-	 * @var array
-	 */
-	var $hooks = array(
-		'sessions_start' => array('priority' => '1'),
-		'show_full_control_panel_end'
 	);
 
 	/**
@@ -87,15 +78,71 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 	{
 		global $DSP, $LANG;
 
-		// save field settings for show_full_control_panel_end
-		$this->field_settings = $field_settings;
+		$this->include_css('styles/ff_matrix.css');
+		$this->include_js('scripts/jquery.ff_matrix_conf.js');
+
+		$ftypes = $this->_get_ftypes();
+
+		$cell_types = '';
+		foreach($ftypes as $class_name => $ftype)
+		{
+			$cell_settings = isset($ftype->default_cell_settings) ? $ftype->default_cell_settings : array();
+			$preview = $ftype->display_cell('', '', $cell_settings);
+			$settings_display = method_exists($ftype, 'display_cell_settings') ? $ftype->display_cell_settings($cell_settings) : '';
+			$cell_types .= ($cell_types ? ','.NL : '')
+			             . '"'.$class_name.'": {' . NL
+			             .    'name: "'.$ftype->info['name'].'",' . NL
+			             .    'preview: "'.preg_replace('/[\n\r]/', ' ', addslashes($preview)).'",' . NL
+			             .    'settings: "'.preg_replace('/[\n\r]/', "\\n", addslashes($settings_display)).'"' . NL
+			             . '}';
+		}
+
+		$cols = '';
+		foreach($field_settings['cols'] as $col_id => $col)
+		{
+			$ftype = $ftypes[$col['type']];
+			$cell_settings = array_merge(
+				(isset($ftype->default_cell_settings) ? $ftype->default_cell_settings : array()),
+				(isset($col['settings']) ? $col['settings'] : array())
+			);
+			$preview = $ftype->display_cell('', '', $cell_settings);
+			$settings_display = method_exists($ftype, 'display_cell_settings') ? $ftype->display_cell_settings($cell_settings) : '';
+
+			$cols .= ($cols ? ','.NL : '')
+			       . $col_id.': {'. NL
+			       .   'name: "'.$col['name'].'",' . NL
+			       .   'label: "'.$col['label'].'",' . NL
+			       .   'type: "'.$col['type'].'",' . NL
+			       .   'preview: "'.preg_replace('/[\n\r]/', ' ', addslashes($preview)).'",' . NL
+			       .   'settings: "'.preg_replace('/[\n\r]/', "\\n", addslashes($settings_display)).'"' . NL
+			       . '}';
+		}
+
+		$js = 'jQuery(window).bind("load", function() {' . NL
+		    . '  jQuery.fn.ffMatrixConf.lang.colName = "'.$LANG->line('col_name').'";' . NL
+		    . '  jQuery.fn.ffMatrixConf.lang.colLabel = "'.$LANG->line('col_label').'";' . NL
+		    . '  jQuery.fn.ffMatrixConf.lang.cellType = "'.$LANG->line('cell_type').'";' . NL
+		    . '  jQuery.fn.ffMatrixConf.lang.cell = "'.$LANG->line('cell').'";' . NL
+		    . '  jQuery.fn.ffMatrixConf.lang.deleteColumn = "'.$LANG->line('delete_column').'";' . NL
+		    . '  jQuery.fn.ffMatrixConf.lang.confirmDeleteColumn = "'.$LANG->line('confirm_delete_column').'";' . NL
+		    . NL
+		    . '  jQuery.fn.ffMatrixConf.cellTypes = {' . NL
+		    .      $cell_types . NL
+		    . '  };' . NL
+		    . NL
+		    . '  jQuery(".ff_matrix_conf").ffMatrixConf('.$this->_fieldtype_id.', {' . NL
+		    .      $cols . NL
+		    .   '});' . NL
+		    . '});';
+
+		$this->insert_js($js);
 
 		// display the config skeleton
 		$preview = $DSP->qdiv('defaultBold', $LANG->line('conf_label'))
                  . $DSP->qdiv('itemWrapper', $LANG->line('conf_subtext'))
-		         . $DSP->div('ff_matrix_conf')
+		         . $DSP->div('ff_matrix ff_matrix_conf')
 		         .   '<a class="button add" title="'.$LANG->line('add_column').'"></a>'
-		         .   '<table cellspacing="0">'
+		         .   '<table cellspacing="0" cellpadding="0">'
 		         .     '<tr class="tableHeading"></tr>'
 		         .     '<tr class="preview"></tr>'
 		         .     '<tr class="conf col"></tr>'
@@ -109,6 +156,30 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 	}
 
 	/**
+	 * Save Field Settings
+	 *
+	 * Turn the options textarea value into an array of option names and labels
+	 * 
+	 * @param  array  $settings  The user-submitted settings, pulled from $_POST
+	 * @return array  Modified $settings
+	 */
+	function save_field_settings($field_settings)
+	{
+		$ftypes = $this->_get_ftypes();
+
+		foreach($field_settings['cols'] as $col_id => &$col)
+		{
+			$ftype = $ftypes[$col['type']];
+			if (method_exists($ftype, 'save_cell_settings'))
+			{
+				$col['settings'] = $ftype->save_cell_settings($col['settings']);
+			}
+		}
+
+		return $field_settings;
+	}
+
+	/**
 	 * Display Field
 	 * 
 	 * @param  string  $field_name      The field's name
@@ -118,78 +189,34 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 	 */
 	function display_field($field_name, $field_data, $field_settings)
 	{
-		
-	}
+		global $DSP, $REGX;
 
-	/**
-	 * Display - Show Full Control Panel - End
-	 *
-	 * - Rewrite CP's HTML
-	 * - Find/Replace stuff, etc.
-	 *
-	 * @param  string  $end  The content of the admin page to be outputted
-	 * @return string  The modified $out
-	 * @see    http://expressionengine.com/developers/extension_hooks/show_full_control_panel_end/
-	 */
-	function show_full_control_panel_end($out)
-	{
-		global $LANG;
-
-		$out = $this->get_last_call($out);
-
-		// are we displaying the field settings?
-		if (isset($this->field_settings))
+		$r = $DSP->div('ff_matrix')
+		   .   '<table cellspacing="0" cellpadding="0">'
+		   .     '<thead>'
+		   .       '<tr class="tableHeading">';
+		foreach($field_settings['cols'] as $col_id => $col)
 		{
-			$this->include_css('styles/ff_matrix.css', $out);
-			$this->include_js('scripts/jquery.sortable_table.js', $out);
-			$this->include_js('scripts/jquery.ff_matrix_conf.js', $out);
+			$r .=   '<th scope="col">'
+			    .     $col['label']
+			    .   '</th>';
+		}
+		$r .=     '</tr>'
+		    .   '</thead>';
 
-			$cell_types = '';
-			foreach($this->_get_ftypes() as $class_name => $ftype)
-			{
-				$cell_settings = isset($ftype->default_cell_settings) ? $ftype->default_cell_settings : array();
-				$preview = $ftype->display_cell('', '', $cell_settings);
-				$settings_display = method_exists($ftype, 'display_cell_settings') ? $ftype->display_cell_settings($cell_settings) : '';
-				$cell_types .= ($cell_types ? ','.NL : '')
-				             . '"'.$class_name.'": {' . NL
-				             .    'name: "'.$ftype->info['name'].'",' . NL
-				             .    'preview: "'.preg_replace('/[\n\r]/', ' ', addslashes($preview)).'",' . NL
-				             .    'settings: "'.preg_replace('/[\n\r]/', "\\n", addslashes($settings_display)).'"' . NL
-				             . '}';
-			}
+		$field_data = $field_data
+		  ?  $REGX->array_stripslashes(unserialize($field_data))
+		  :  array(array());
 
-			$cols = '';
-			foreach($this->field_settings['cols'] as $col_id => $col)
-			{
-				$cols .= ($cols ? ','.NL : '')
-				       . $col_id.': {'. NL
-				       .   'name: "'.$col['name'].'",' . NL
-				       .   'label: "'.$col['label'].'",' . NL
-				       .   'type: "'.$col['type'].'"' . NL
-				       . '}';
-			}
-
-			$js = 'jQuery(window).bind("load", function() {' . NL
-			    . '  jQuery.fn.ffMatrixConf.lang.colName = "'.$LANG->line('col_name').'";' . NL
-			    . '  jQuery.fn.ffMatrixConf.lang.colLabel = "'.$LANG->line('col_label').'";' . NL
-			    . '  jQuery.fn.ffMatrixConf.lang.cellType = "'.$LANG->line('cell_type').'";' . NL
-			    . '  jQuery.fn.ffMatrixConf.lang.cell = "'.$LANG->line('cell').'";' . NL
-			    . '  jQuery.fn.ffMatrixConf.lang.deleteColumn = "'.$LANG->line('delete_column').'";' . NL
-			    . '  jQuery.fn.ffMatrixConf.lang.confirmDeleteColumn = "'.$LANG->line('confirm_delete_column').'";' . NL
-			    . NL
-			    . '  jQuery.fn.ffMatrixConf.cellTypes = {' . NL
-			    .      $cell_types . NL
-			    . '  };' . NL
-			    . NL
-			    . '  jQuery(".ff_matrix_conf").ffMatrixConf('.$this->_fieldtype_id.', {' . NL
-			    .      $cols . NL
-			    .   '});' . NL
-			    . '});';
-
-			$this->insert_js($js, $out);
+		foreach($field_data as $row)
+		{
+			
 		}
 
-		return $out;
+		$r .=   '</table>'
+		    . $DSP->div_c();
+
+		return $r;
 	}
 
 }

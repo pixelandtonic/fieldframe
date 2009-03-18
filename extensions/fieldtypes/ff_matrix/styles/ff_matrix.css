@@ -1,24 +1,26 @@
+/*--- FF Matrix generic table styles ---*/
+.ff_matrix { position:relative; margin:5px 27px 0 17px; }
+.ff_matrix a.button { display:block; width:16px; height:16px; background:no-repeat 50% 50%; cursor:pointer; }
 
-/* FF Matrix Configuration */
-.ff_matrix_conf { position:relative; margin:15px 18px 0 15px; }
-.ff_matrix_conf a.button { display:block; width:16px; height:16px; background:no-repeat 50% 50%; cursor:pointer; }
-.ff_matrix_conf a.button.add { position:absolute; top:4px; right:-22px; background-image:url(../images/add.png); }
-.ff_matrix_conf .helper { position:absolute; top:-2px; }
-
-.ff_matrix_conf table { width:100%; height:75px; }
-.ff_matrix_conf table tr th,
-.ff_matrix_conf table tr td { padding:6px 10px; vertical-align:top; text-align:left; }
+.ff_matrix table { width:100%; }
+.ff_matrix table tr th,
+.ff_matrix table tr td { padding:6px 10px; vertical-align:top; text-align:left; }
 
 /* headers */
-.ff_matrix_conf table th { border-top:1px solid #5f7888; border-right:1px dotted #556e7f; cursor:move; }
-.ff_matrix_conf table th:first-child { border-left:1px solid #6c8494; }
-.ff_matrix_conf table th:last-child { border-right:1px solid #6c8494; }
-.ff_matrix_conf table th a.button.handle { float:right; margin:-6px -10px 0 0; background-image:url(../images/handle.gif); cursor:move; }
+.ff_matrix table th { border-top:1px solid #5f7888; border-right:1px dotted #556e7f; cursor:move; }
+.ff_matrix table th:first-child { border-left:1px solid #6c8494; }
+.ff_matrix table th:last-child { border-right:1px solid #6c8494; }
 
-/* previews */
-.ff_matrix_conf table tr.preview td { border-right:1px dotted #c5cfda; padding:15px 10px; background:#f5faff; }
-.ff_matrix_conf table tr.preview td:first-child { border-left:1px solid #c5cfda; }
-.ff_matrix_conf table tr.preview td:last-child { border-right-style:solid; }
+/* data cells */
+.ff_matrix table td { border-right:1px dotted #c5cfda; padding:15px 10px; background:#f5faff; }
+.ff_matrix table td:first-child { border-left:1px solid #c5cfda; }
+.ff_matrix table td:last-child { border-right-style:solid; }
+
+
+/*--- FF Matrix Configuration ---*/
+.ff_matrix_conf { position:relative; margin:15px 18px 0 15px; }
+.ff_matrix_conf a.button.add { position:absolute; bottom:26px; right:-21px; background-image:url(../images/add.png); }
+.ff_matrix_conf .helper { position:absolute; top:-2px; }
 
 /* confs */
 .ff_matrix_conf table tr.conf td { border-right:1px solid #1d2326; border-top:1px dotted #1d2326; background:#262e33 repeat-x 0 0; }
@@ -31,11 +33,11 @@
 .ff_matrix_conf table tr.conf td label .defaultBold { color:#999; }
 .ff_matrix_conf table tr.conf td label input { width:98%; max-width:140px; }
 
-.ff_matrix_conf table tr.delete td { border-top:1px solid #1d2326; padding:0; }
+.ff_matrix_conf table tr.delete td { border:none; border-top:1px solid #1d2326; padding:0; }
 .ff_matrix_conf table tr.delete td a.button.delete { margin:5px 0 0 auto; background-image:url(../images/delete.png); }
 
 
-/* FF Matrix cell types */
+/*--- FF Matrix cell types ---*/
 td.ff_matrix_text input { width:95%; }
 td.ff_matrix_textarea textarea { width:95%; }
 td.ff_matrix_date input { width:150px; text-align:center; }
