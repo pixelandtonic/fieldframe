@@ -25,21 +25,25 @@ class Ff_radio_group extends Fieldframe_Fieldtype {
 	);
 
 	/**
-	 * Fieldtype Info
+	 * Default Field Settings
 	 * @var array
 	 */
 	var $default_field_settings = array(
 		'options' => array(
-			'opt_1' => 'Option 1',
-			'opt_2' => 'Option 2',
-			'opt_3' => 'Option 3'
+			'Option 1' => 'Option 1',
+			'Option 2' => 'Option 2',
+			'Option 3' => 'Option 3'
 		)
 	);
 
+	/**
+	 * Default Cell Settings
+	 * @var array
+	 */
 	var $default_cell_settings = array(
 		'options' => array(
-			'opt_1' => 'Opt 1',
-			'opt_2' => 'Opt 2'
+			'Opt 1' => 'Opt 1',
+			'Opt 2' => 'Opt 2'
 		)
 	);
 
@@ -114,6 +118,19 @@ class Ff_radio_group extends Fieldframe_Fieldtype {
 			$r['options'][$option_name] = $option_value;
 		}
 		return $r;
+	}
+
+	/**
+	 * Save Cell Settings
+	 *
+	 * Turn the options textarea value into an array of option names and labels
+	 * 
+	 * @param  array  $cell_settings  The user-submitted settings, pulled from $_POST
+	 * @return array  Modified $cell_settings
+	 */
+	function save_cell_settings($cell_settings)
+	{
+		return $this->save_field_settings($cell_settings);
 	}
 
 	/**
