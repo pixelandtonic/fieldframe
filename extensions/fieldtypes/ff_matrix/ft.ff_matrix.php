@@ -183,30 +183,61 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 	{
 		global $DSP, $REGX;
 
+		$ftypes = $this->_get_ftypes();
+
+		$this->include_css('styles/ff_matrix.css');
+		$this->include_js('scripts/jquery.sortable_table.js');
+		$this->include_js('scripts/jquery.ff_matrix.js');
+
 		$r = $DSP->div('ff_matrix')
 		   .   '<table cellspacing="0" cellpadding="0">'
-		   .     '<thead>'
-		   .       '<tr class="tableHeading">';
+		   .     '<tr class="tableHeading">';
 		foreach($field_settings['cols'] as $col_id => $col)
 		{
-			$r .=   '<th scope="col">'
-			    .     $col['label']
-			    .   '</th>';
+			$r .=  '<th>'.$col['label'].'</th>';
 		}
-		$r .=     '</tr>'
-		    .   '</thead>';
+		$r .=    '</tr>';
 
-		$field_data = $field_data
-		  ?  $REGX->array_stripslashes(unserialize($field_data))
-		  :  array(array());
-
-		foreach($field_data as $row)
+		$field_data = $field_data ? $REGX->array_stripslashes(unserialize($field_data)) : array();
+		if ( ! isset($field_data['data']))
 		{
-			
+			$field_data['data'] = array('1' => array());
 		}
 
-		$r .=   '</table>'
-		    . $DSP->div_c();
+		//$data = array();
+		$row_count = 1;
+		foreach($field_data['data'] as $row_id => $row)
+		{
+			$r .= '<tr>';
+			//$row = array();
+			foreach($field_settings['cols'] as $col_id => $col)
+			{
+				$ftype = $ftypes[$col['type']];
+				$cell_name = $field_name.'['.$row_id.']['.$col_id.']';
+				$cell_settings = array_merge(
+					(isset($ftype->default_cell_settings) ? $ftype->default_cell_settings : array()),
+					(isset($col['settings']) ? $col['settings'] : array())
+				);
+				$cell_data = isset($row[$col_id]) ? $row[$col_id] : '';
+				//$row[$col_id] = $ftype->display_cell($cell_name, $cell_data, $cell_settings);
+				$class = ($row_count % 2) ? 'tableCellOne' : 'tableCellTwo';
+				$r .= '<td class="'.$class.'">'.$ftype->display_cell($cell_name, $cell_data, $cell_settings).'</td>';
+			}
+			$r .= '</tr>';
+			$row_count++;
+			//$data[$row_id] = $row;
+		}
+
+		$r .= '</table>'
+		    . '</div>';
+
+		//$js = 'jQuery(window).bind("load", function() {' . NL
+		//    . '  jQuery("#'.$field_name.'").ffMatrix('.json_encode($field_settings['cols']).', '.json_encode($data).');' . NL
+		//    . '});';
+        //
+		//$this->insert_js($js);
+
+		
 
 		return $r;
 	}

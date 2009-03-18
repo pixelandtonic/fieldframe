@@ -1,18 +1,18 @@
 /*--- FF Matrix generic table styles ---*/
-.ff_matrix { position:relative; margin:5px 27px 0 17px; }
+.ff_matrix { position:relative; margin:5px 27px 20px 17px; }
 .ff_matrix a.button { display:block; width:16px; height:16px; background:no-repeat 50% 50%; cursor:pointer; }
 
 .ff_matrix table { width:100%; }
-.ff_matrix table tr th,
-.ff_matrix table tr td { padding:6px 10px; vertical-align:top; text-align:left; }
+.ff_matrix table th,
+.ff_matrix table td { padding:6px 10px; vertical-align:top; text-align:left; }
 
 /* headers */
-.ff_matrix table th { border-top:1px solid #5f7888; border-right:1px dotted #556e7f; cursor:move; }
+.ff_matrix table th { border-top:1px solid #5f7888; border-right:1px dotted #556e7f; }
 .ff_matrix table th:first-child { border-left:1px solid #6c8494; }
 .ff_matrix table th:last-child { border-right:1px solid #6c8494; }
 
 /* data cells */
-.ff_matrix table td { border-right:1px dotted #c5cfda; padding:15px 10px; background:#f5faff; }
+.ff_matrix table td { border-right:1px dotted #c5cfda; padding:10px; }
 .ff_matrix table td:first-child { border-left:1px solid #c5cfda; }
 .ff_matrix table td:last-child { border-right-style:solid; }
 
@@ -21,6 +21,9 @@
 .ff_matrix_conf { position:relative; margin:15px 18px 0 15px; }
 .ff_matrix_conf a.button.add { position:absolute; bottom:26px; right:-21px; background-image:url(../images/add.png); }
 .ff_matrix_conf .helper { position:absolute; top:-2px; }
+
+.ff_matrix_conf table th { cursor:move; }
+.ff_matrix_conf table td { background:#f5faff; }
 
 /* confs */
 .ff_matrix_conf table tr.conf td { border-right:1px solid #1d2326; border-top:1px dotted #1d2326; background:#262e33 repeat-x 0 0; }
