@@ -303,9 +303,6 @@ class Fieldframe_Main {
 		}
 	}
 
-	var $ftype_hooks = array();
-	var $snippets = array();
-
 	/**
 	 * FieldFrame_Main Class Initialization
 	 *
@@ -317,6 +314,7 @@ class Fieldframe_Main {
 
 		$this->hooks = $hooks;
 		$this->errors = array();
+		$this->snippets = array();
 
 		// get the site-specific settings
 		$this->settings = $this->_get_settings($settings);
@@ -326,7 +324,11 @@ class Fieldframe_Main {
 
 		// define fieldtype folder constants
 		if ( ! defined('FT_PATH') AND $this->settings['fieldtypes_path']) define('FT_PATH', $this->settings['fieldtypes_path']);
-		if ( ! defined('FT_URL') AND $this->settings['fieldtypes_url']) define('FT_URL', $this->settings['fieldtypes_url']);
+		if ( ! defined('FT_URL') AND $this->settings['fieldtypes_url']) 
+		{
+			define('FT_URL', $this->settings['fieldtypes_url']);
+			$this->snippets[] = array('</body>', '<script type="text/javascript">FT_URL = "'.FT_URL.'";</script>');
+		}
 	}
 
 	/**
@@ -1481,7 +1483,7 @@ class Fieldframe_Main {
 
 		foreach($this->snippets as $snippet)
 		{
-			$out = str_replace($snippet[0], NL.$snippet[1].NL.$snippet[0], $out);
+			$out = str_replace($snippet[0], $snippet[1].NL.$snippet[0], $out);
 		}
 
 		$args = func_get_args();

@@ -165,6 +165,19 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 	}
 
 	/**
+	 * Save Cell Settings
+	 *
+	 * Turn the options textarea value into an array of option names and labels
+	 * 
+	 * @param  array  $cell_settings  The user-submitted settings, pulled from $_POST
+	 * @return array  Modified $cell_settings
+	 */
+	function save_cell_settings($cell_settings)
+	{
+		return $this->save_field_settings($cell_settings);
+	}
+
+	/**
 	 * Display Field
 	 * 
 	 * @param  string  $field_name      The field's name
