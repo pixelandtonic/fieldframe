@@ -79,25 +79,24 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		global $DSP, $LANG;
 
 		$this->include_css('styles/ff_matrix.css');
+		$this->include_js('scripts/jquery.sortable_table.js');
 		$this->include_js('scripts/jquery.ff_matrix_conf.js');
 
 		$ftypes = $this->_get_ftypes();
 
-		$cell_types = '';
+		$cell_types = array();
 		foreach($ftypes as $class_name => $ftype)
 		{
 			$cell_settings = isset($ftype->default_cell_settings) ? $ftype->default_cell_settings : array();
-			$preview = $ftype->display_cell('', '', $cell_settings);
-			$settings_display = method_exists($ftype, 'display_cell_settings') ? $ftype->display_cell_settings($cell_settings) : '';
-			$cell_types .= ($cell_types ? ','.NL : '')
-			             . '"'.$class_name.'": {' . NL
-			             .    'name: "'.$ftype->info['name'].'",' . NL
-			             .    'preview: "'.preg_replace('/[\n\r]/', ' ', addslashes($preview)).'",' . NL
-			             .    'settings: "'.preg_replace('/[\n\r]/', "\\n", addslashes($settings_display)).'"' . NL
-			             . '}';
+
+			$cell_types[$class_name] = array(
+				'name' => $ftype->info['name'],
+				'preview' => $ftype->display_cell('', '', $cell_settings),
+				'settings' => (method_exists($ftype, 'display_cell_settings') ? $ftype->display_cell_settings($cell_settings) : '')
+			);
 		}
 
-		$cols = '';
+		$cols = array();
 		foreach($field_settings['cols'] as $col_id => $col)
 		{
 			$ftype = $ftypes[$col['type']];
@@ -105,17 +104,14 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 				(isset($ftype->default_cell_settings) ? $ftype->default_cell_settings : array()),
 				(isset($col['settings']) ? $col['settings'] : array())
 			);
-			$preview = $ftype->display_cell('', '', $cell_settings);
-			$settings_display = method_exists($ftype, 'display_cell_settings') ? $ftype->display_cell_settings($cell_settings) : '';
 
-			$cols .= ($cols ? ','.NL : '')
-			       . $col_id.': {'. NL
-			       .   'name: "'.$col['name'].'",' . NL
-			       .   'label: "'.$col['label'].'",' . NL
-			       .   'type: "'.$col['type'].'",' . NL
-			       .   'preview: "'.preg_replace('/[\n\r]/', ' ', addslashes($preview)).'",' . NL
-			       .   'settings: "'.preg_replace('/[\n\r]/', "\\n", addslashes($settings_display)).'"' . NL
-			       . '}';
+			$cols[$col_id] = array(
+				'name' => $col['name'],
+				'label' => $col['label'],
+				'type' => $col['type'],
+				'preview' => $ftype->display_cell('', '', $cell_settings),
+				'settings' => (method_exists($ftype, 'display_cell_settings') ? $ftype->display_cell_settings($cell_settings) : '')
+			);
 		}
 
 		$js = 'jQuery(window).bind("load", function() {' . NL
@@ -126,13 +122,9 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		    . '  jQuery.fn.ffMatrixConf.lang.deleteColumn = "'.$LANG->line('delete_column').'";' . NL
 		    . '  jQuery.fn.ffMatrixConf.lang.confirmDeleteColumn = "'.$LANG->line('confirm_delete_column').'";' . NL
 		    . NL
-		    . '  jQuery.fn.ffMatrixConf.cellTypes = {' . NL
-		    .      $cell_types . NL
-		    . '  };' . NL
+		    . '  jQuery.fn.ffMatrixConf.cellTypes = '.json_encode($cell_types).';' . NL
 		    . NL
-		    . '  jQuery(".ff_matrix_conf").ffMatrixConf('.$this->_fieldtype_id.', {' . NL
-		    .      $cols . NL
-		    .   '});' . NL
+		    . '  jQuery(".ff_matrix_conf").ffMatrixConf('.$this->_fieldtype_id.', '.json_encode($cols).');' . NL
 		    . '});';
 
 		$this->insert_js($js);
