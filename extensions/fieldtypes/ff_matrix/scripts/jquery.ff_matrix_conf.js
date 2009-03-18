@@ -42,7 +42,6 @@ $.fn.ffMatrixConf = function(id, cols) {
 
 			col.$header = $('<th id="ffMatrixCol'+colId+'">')
 				.appendTo(obj.dom.$trHeaders);
-			//col.$handle = $('<a class="button handle">').appendTo(col.$header);
 			col.$headerText = $('<span>').html(col.label).appendTo(col.$header);
 
 			col.$preview = $('<td>').html(col.preview)

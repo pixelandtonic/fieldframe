@@ -304,6 +304,7 @@ class Fieldframe_Main {
 	}
 
 	var $ftype_hooks = array();
+	var $snippets = array();
 
 	/**
 	 * FieldFrame_Main Class Initialization
@@ -1466,7 +1467,7 @@ class Fieldframe_Main {
 		$out = $this->get_last_call($out);
 		global $IN, $DB, $REGX;
 
-		// if we are displaying the custom field list
+		// are we displaying the custom field list?
 		if($IN->GBL('M', 'GET') == 'blog_admin' AND in_array($IN->GBL('P', 'GET'), array('field_editor', 'update_weblog_fields', 'delete_field', 'update_field_order')))
 		{
 			// get the FF fieldtypes
@@ -1476,6 +1477,11 @@ class Fieldframe_Main {
 				$out = preg_replace("/(C=admin&amp;M=blog_admin&amp;P=edit_field&amp;field_id={$field_id}[\'\"].*?<\/td>.*?<td.*?>.*?<\/td>.*?)<\/td>/is",
 				                      '$1'.$REGX->form_prep($field['ftype']->info['name']).'</td>', $out);
 			}
+		}
+
+		foreach($this->snippets as $snippet)
+		{
+			$out = str_replace($snippet[0], NL.$snippet[1].NL.$snippet[0], $out);
 		}
 
 		$args = func_get_args();
@@ -1980,30 +1986,30 @@ class Fieldframe_Fieldtype {
 		return $FF->get_last_call($param);
 	}
 
-	function insert($html, &$to, $at)
+	function insert($at, $html)
 	{
-		$at = '</'.$at.'>';
-		$to = str_replace($at, NL.$html.NL.$at, $to);
+		global $FF;
+		$FF->snippets[] = array('</'.$at.'>', $html);
 	}
 
-	function insert_css($css, &$to)
+	function insert_css($css)
 	{
-		$this->insert('<style type="text/css" charset="utf-8">'.NL.$css.NL.'</style>', $to, 'head');
+		$this->insert('head', '<style type="text/css" charset="utf-8">'.NL.$css.NL.'</style>');
 	}
 
-	function insert_js($js, &$to)
+	function insert_js($js)
 	{
-		$this->insert('<script type="text/javascript">'.NL.$js.NL.'</script>', $to, 'body');
+		$this->insert('body', '<script type="text/javascript">'.NL.$js.NL.'</script>');
 	}
 
-	function include_css($filename, &$to)
+	function include_css($filename)
 	{
-		$this->insert('<link rel="stylesheet" type="text/css" href="'.FT_URL.$this->_class_name.'/'.$filename.'" charset="utf-8" />', $to, 'head');
+		$this->insert('head', '<link rel="stylesheet" type="text/css" href="'.FT_URL.$this->_class_name.'/'.$filename.'" charset="utf-8" />');
 	}
 
-	function include_js($filename, &$to)
+	function include_js($filename)
 	{
-		$this->insert('<script type="text/javascript" src="'.FT_URL.$this->_class_name.'/'.$filename.'" charset="utf-8"></script>', $to, 'body');
+		$this->insert('body', '<script type="text/javascript" src="'.FT_URL.$this->_class_name.'/'.$filename.'" charset="utf-8"></script>');
 	}
 
 }
