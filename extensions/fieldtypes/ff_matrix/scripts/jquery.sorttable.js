@@ -1,8 +1,8 @@
 (function($){
 
 
-$.fn.sortableTable = function(options) {	
-	var options = $.extend($.fn.sortableTable.defaults, options);
+$.fn.sorttable = function(options) {	
+	var options = $.extend($.fn.sorttable.defaults, options);
 
 	return this.each(function() {
 
@@ -49,7 +49,7 @@ $.fn.sortableTable = function(options) {
 };
 
 
-$.fn.sortableTable.defaults = {
+$.fn.sorttable.defaults = {
 	axis: 'y',
 	opacity: .9
 }

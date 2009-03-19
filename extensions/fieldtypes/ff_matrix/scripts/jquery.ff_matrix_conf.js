@@ -120,7 +120,7 @@ $.fn.ffMatrixConf = function(id, cols) {
 		});
 		toggleCellSettings();
 
-		obj.dom.$table.sortableTable({ axis: 'x' });
+		obj.dom.$table.sorttable({ axis: 'x' });
 
 		// add new column
 		obj.dom.$add.click(function() {

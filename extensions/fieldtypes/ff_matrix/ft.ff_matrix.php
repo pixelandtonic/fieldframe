@@ -79,7 +79,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		global $DSP, $LANG;
 
 		$this->include_css('styles/ff_matrix.css');
-		$this->include_js('scripts/jquery.sortable_table.js');
+		$this->include_js('scripts/jquery.sorttable.js');
 		$this->include_js('scripts/jquery.ff_matrix_conf.js');
 
 		$ftypes = $this->_get_ftypes();
@@ -186,7 +186,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		$ftypes = $this->_get_ftypes();
 
 		$this->include_css('styles/ff_matrix.css');
-		$this->include_js('scripts/jquery.sortable_table.js');
+		$this->include_js('scripts/jquery.sorttable.js');
 		$this->include_js('scripts/jquery.ff_matrix.js');
 
 		$cell_defaults = array();
@@ -264,6 +264,7 @@ class Ff_matrix_text {
 	}
 
 }
+
 
 class Ff_matrix_textarea {
 
