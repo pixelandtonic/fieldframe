@@ -1,41 +1,55 @@
 (function($){
 
 
-$.fn.ffMatrix = function(field_name, cellDefaults) {
+$.fn.ffMatrix = function(fieldName, cellDefaults) {
 	return this.each(function() {
 
 		// Initialize obj
 		var obj = {
+			fieldName: fieldName,
 			dom: { $container: $(this) }
 		};
 
 		obj.dom.$table = obj.dom.$container.find('table');
 
-		var addDeleteButton = function($tr) {
+		var addButtons = function($tr) {
+			$tr.find('td:first-child').prepend(
+				$('<a class="button sort">').attr('title', 'Sort row')
+			);
 			$tr.find('td:last-child').prepend(
 				$('<a class="button delete">').attr('title', 'Delete row')
 					.click(function() {
-						$tr.remove();
+						if (confirm('Delete this row?')) {
+							$tr.remove();
+						}
 					})
 			);
 		}
 
 		// add deletes
 		obj.dom.$table.find('tr:not(.tableHeading)').each(function() {
-			addDeleteButton($(this));
+			addButtons($(this));
 		});
 
-		var resetCellClasses = function() {
-			obj.dom.$table.find('tr:odd td').attr('className', 'tableCellOne');
-			obj.dom.$table.find('tr:even td').attr('className', 'tableCellTwo');
+		var resetRows = function() {
+			obj.dom.$table.find('tr:not(.tableHeading)').each(function(rowIndex) {
+				$(this).find('td').each(function(cellIndex) {
+					$(this)
+						.attr('className', rowIndex % 2 ? 'tableCellTwo' : 'tableCellOne')
+						.find('*[name]').each(function() {
+							this.name = obj.fieldName+'['+rowIndex+']' + this.name.substring(this.name.indexOf(']')+1);
+						});
+				});
+			});
 		};
 
 		obj.dom.$table.sortable({
 			items: 'tr:not(.tableHeading)',
 			axis: 'y',
 			handle: '.sort',
+			opacity: 0.8,
 			change: function(event, ui) {
-				resetCellClasses();
+				resetRows();
 				ui.helper.find('td').attr('className', ui.item.find('td').attr('className'));
 			}
 		});
@@ -47,10 +61,9 @@ $.fn.ffMatrix = function(field_name, cellDefaults) {
 				$tr = $('<tr>').appendTo(obj.dom.$table);
 				$.each(cellDefaults, function(cellIndex) {
 					$td = $('<td>').appendTo($tr).html(cellDefaults[cellIndex]);
-					if (cellIndex == 0) $td.prepend($('<a class="button sort">').attr('title', 'Sort row'));
-				})
-				addDeleteButton($tr);
-				resetCellClasses();
+				});
+				addButtons($tr);
+				resetRows();
 			});
 
 	});

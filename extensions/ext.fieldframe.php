@@ -760,12 +760,20 @@ class Fieldframe_Main {
 	}
 
 	/**
-	 * Group Fieldtype nputs
+	 * Group Inputs
 	 *
-	 * move inputs into ftype namespace
-	 *
-	 * e.g. name="options"   => name="ftype[ftype_id_1][options]"
-	 *      name="options[]" => name="ftype[ftype_id_1][options][]"
+	 * @param  string  $name_prefix  The Fieldtype ID
+	 * @param  string  $settings     The Fieldtype settings
+	 * @return string  The modified settings
+	 * @access private
+	 */
+	function _group_inputs($name_prefix, $settings)
+	{
+		return preg_replace('/(name=[\'"])([^\'"\[\]]+)([^\'"]*)([\'"])/i', '$1'.$name_prefix.'[$2]$3$4', $settings);
+	}
+
+	/**
+	 * Group Fieldtype Inputs
 	 *
 	 * @param  string  $ftype_id  The Fieldtype ID
 	 * @param  string  $settings  The Fieldtype settings
@@ -774,7 +782,7 @@ class Fieldframe_Main {
 	 */
 	function _group_ftype_inputs($ftype_id, $settings)
 	{
-		return preg_replace('/(name=[\'"])([^\'"\[\]]+)([^\'"]*)([\'"])/i', '$1ftype['.$ftype_id.'][$2]$3$4', $settings);
+		return $this->_group_inputs('ftype['.$ftype_id.']', $settings);
 	}
 
 	/**

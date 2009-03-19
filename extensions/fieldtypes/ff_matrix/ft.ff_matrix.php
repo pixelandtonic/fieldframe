@@ -181,7 +181,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 	 */
 	function display_field($field_name, $field_data, $field_settings)
 	{
-		global $DSP, $REGX;
+		global $DSP, $REGX, $FF;
 
 		$ftypes = $this->_get_ftypes();
 
@@ -203,40 +203,36 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 				(isset($ftype->default_cell_settings) ? $ftype->default_cell_settings : array()),
 				(isset($col['settings']) ? $col['settings'] : array())
 			);
-			$cell_defaults[] = $ftype->display_cell('', '', $cell_settings);
+			$cell_defaults[] = $ftype->display_cell($field_name.'[0][0]', '', $cell_settings);
 		}
 		$r .=    '</tr>';
 
 		$field_data = $field_data ? $REGX->array_stripslashes(unserialize($field_data)) : array();
 		if ( ! isset($field_data['data']))
 		{
-			$field_data['data'] = array('1' => array());
+			$field_data['data'] = array(array(), array(), array());
 		}
 
-		$row_count = 1;
 		$num_cols = count($field_settings['cols']);
-		foreach($field_data['data'] as $row_id => $row)
+		foreach($field_data['data'] as $row_count => $row)
 		{
 			$r .= '<tr>';
-			$col_count = 1;
+			$col_count = 0;
 			foreach($field_settings['cols'] as $col_id => $col)
 			{
 				$ftype = $ftypes[$col['type']];
-				$cell_name = $field_name.'['.$row_id.']['.$col_id.']';
+				$cell_name = $field_name.'['.$row_count.']['.$col_id.']';
 				$cell_settings = array_merge(
 					(isset($ftype->default_cell_settings) ? $ftype->default_cell_settings : array()),
 					(isset($col['settings']) ? $col['settings'] : array())
 				);
 				$cell_data = isset($row[$col_id]) ? $row[$col_id] : '';
-				$class = ($row_count % 2) ? 'tableCellOne' : 'tableCellTwo';
-				$r .= '<td class="'.$class.'">'
-				    . ($col_count == 1 ? '<a class="button sort" title="Sort row"></a>' : '')
-				    . $ftype->display_cell($cell_name, $cell_data, $cell_settings)
+				$r .= '<td class="'.($row_count % 2 ? 'tableCellTwo' : 'tableCellOne').'">'
+				    .   $ftype->display_cell($cell_name, $cell_data, $cell_settings)
 				    . '</td>';
 				$col_count++;
 			}
 			$r .= '</tr>';
-			$row_count++;
 		}
 
 		$r .=   '</table>'
