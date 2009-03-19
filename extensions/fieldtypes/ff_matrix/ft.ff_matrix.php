@@ -186,7 +186,6 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		$ftypes = $this->_get_ftypes();
 
 		$this->include_css('styles/ff_matrix.css');
-		$this->include_js('scripts/jquery.sorttable.js');
 		$this->include_js('scripts/jquery.ff_matrix.js');
 
 		$cell_defaults = array();
@@ -215,9 +214,11 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		}
 
 		$row_count = 1;
+		$num_cols = count($field_settings['cols']);
 		foreach($field_data['data'] as $row_id => $row)
 		{
 			$r .= '<tr>';
+			$col_count = 1;
 			foreach($field_settings['cols'] as $col_id => $col)
 			{
 				$ftype = $ftypes[$col['type']];
@@ -228,7 +229,11 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 				);
 				$cell_data = isset($row[$col_id]) ? $row[$col_id] : '';
 				$class = ($row_count % 2) ? 'tableCellOne' : 'tableCellTwo';
-				$r .= '<td class="'.$class.'">'.$ftype->display_cell($cell_name, $cell_data, $cell_settings).'</td>';
+				$r .= '<td class="'.$class.'">'
+				    . ($col_count == 1 ? '<a class="button sort" title="Sort row"></a>' : '')
+				    . $ftype->display_cell($cell_name, $cell_data, $cell_settings)
+				    . '</td>';
+				$col_count++;
 			}
 			$r .= '</tr>';
 			$row_count++;

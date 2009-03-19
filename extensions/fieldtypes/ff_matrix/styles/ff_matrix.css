@@ -1,8 +1,11 @@
 /*--- FF Matrix generic table styles ---*/
 .ff_matrix { position:relative; margin:5px 27px 20px 17px; }
+
 .ff_matrix a.button { display:block; width:16px; height:16px; background:no-repeat 50% 50%; cursor:pointer; }
 .ff_matrix a.button.add { background-image:url(../images/add.png); }
 .ff_matrix a.button.add.row { display:inline-block; margin-top:5px; width:auto; padding-left:18px; background-position:3px 50%; line-height:16px; }
+.ff_matrix a.button.sort { float:left; margin-left:-35px; background-image:url(../images/sort.png); cursor:move; }
+.ff_matrix a.button.delete { float:right; margin-right:-35px; background-image:url(../images/delete.png); }
 
 .ff_matrix table { width:100%; }
 .ff_matrix table th,
@@ -38,7 +41,7 @@
 .ff_matrix_conf table tr.conf td label .defaultBold { color:#999; }
 .ff_matrix_conf table tr.conf td label input { width:98%; max-width:140px; }
 
-.ff_matrix_conf table tr.delete td { border:none; border-top:1px solid #1d2326; padding:0; }
+.ff_matrix_conf table tr.delete td { border:none; border-top:1px solid #1d2326; padding:0; background:none; }
 .ff_matrix_conf table tr.delete td a.button.delete { margin:5px 0 0 auto; background-image:url(../images/delete.png); }
 
 

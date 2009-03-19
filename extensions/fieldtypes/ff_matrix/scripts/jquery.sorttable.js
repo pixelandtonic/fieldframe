@@ -44,6 +44,11 @@ $.fn.sorttable = function(options) {
 				}
 			}));
 		}
+		else {
+			$table.sortable($.extend(options, {
+				items: 'tr:not(.tableHeading)'
+			}));
+		}
 
 	});
 };
