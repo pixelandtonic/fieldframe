@@ -116,7 +116,7 @@ $.fn.ffMatrixConf = function(id, cols) {
 		}
 
 		$.each(cols, function(colId) {
-			addCol(colId, this);
+			addCol(parseInt(colId), this);
 		});
 		toggleCellSettings();
 
