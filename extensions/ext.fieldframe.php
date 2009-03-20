@@ -1516,6 +1516,8 @@ class Fieldframe_Main {
 			return $this->get_last_call();
 		}
 
+		global $REGX;
+
 		$field_name = 'field_id_'.$row['field_id'];
 		$fields = $this->_get_fields();
 
@@ -1526,6 +1528,10 @@ class Fieldframe_Main {
 			if (method_exists($field['ftype'], 'display_field'))
 			{
 				$this->row = $row;
+				if (($tmp_field_data = @unserialize($field_data)) !== FALSE)
+				{
+					$field_data = $REGX->array_stripslashes($tmp_field_data);
+				}
 				$r = $field['ftype']->display_field($field_name, $field_data, $field['settings']);
 				unset($this->row);
 			}
@@ -1556,22 +1562,22 @@ class Fieldframe_Main {
 	{
 		foreach($this->_get_fields() as $field_id => $field)
 		{
-			$field_name = 'field_id_'.$field_id;
+			$this->field_name = 'field_id_'.$field_id;
 
-			if (isset($_POST[$field_name]))
+			if (isset($_POST[$this->field_name]))
 			{
 				if (method_exists($field['ftype'], 'save_field'))
 				{
-					$field['ftype']->save_field($field_name, $field['settings']);
+					$_POST[$this->field_name] = $field['ftype']->save_field($_POST[$this->field_name], $field['settings']);
 				}
 
-				if (isset($_POST[$field_name]) AND is_array($_POST[$field_name]))
+				if (isset($_POST[$this->field_name]) AND is_array($_POST[$this->field_name]))
 				{
-					$_POST[$field_name] = addslashes(serialize($_POST[$field_name]));
+					$_POST[$this->field_name] = addslashes(serialize($_POST[$this->field_name]));
 				}
 
 				// unset extra FF post vars
-				$prefix = $field_name.'_';
+				$prefix = $this->field_name.'_';
 				$length = strlen($prefix);
 				foreach($_POST as $key => $value)
 				{
@@ -1582,6 +1588,8 @@ class Fieldframe_Main {
 				}
 			}
 		}
+
+		if (isset($this->field_name)) unset($this->field_name);
 
 		return $this->forward_ff_hook('submit_new_entry_start');
 	}
@@ -1640,8 +1648,13 @@ class Fieldframe_Main {
 						  :  '';
         
 						// let the fieldtype do what it wants with it
+						$field_data = $row['field_id_'.$field_id];
+						if (($tmp_field_data = @unserialize($field_data)) !== FALSE)
+						{
+							$field_data = $REGX->array_stripslashes($tmp_field_data);
+						}
 						$this->tagdata = substr($this->tagdata, 0, $tag_pos)
-						               . $field['ftype']->display_tag($params, $field_tagdata, $row['field_id_'.$field_id], $field['settings'])
+						               . $field['ftype']->display_tag($params, $field_tagdata, $field_data, $field['settings'])
 						               . substr($this->tagdata, ($endtag_pos !== FALSE ? $endtag_pos+$endtag_len : $tagdata_pos));
 					}
 				}

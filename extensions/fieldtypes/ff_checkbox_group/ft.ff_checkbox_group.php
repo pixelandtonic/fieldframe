@@ -188,7 +188,7 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 	function display_field($field_name, $field_data, $field_settings)
 	{
 		global $DSP;
-		$field_data = $field_data ? unserialize($field_data) : array();
+		if ( ! $field_data) $field_data = array();
 		$r = '';
 		foreach($field_settings['options'] as $option_name => $option_label)
 		{
@@ -234,7 +234,7 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 			// option template
 			if ( ! $tagdata) $tagdata = $this->site_settings['option_tmpl'];
 
-			$field_data = $field_data ? unserialize($field_data) : array();
+			if ( ! $field_data) $field_data = array();
 
 			// optional sorting
 			if ($sort = strtolower($params['sort']))
