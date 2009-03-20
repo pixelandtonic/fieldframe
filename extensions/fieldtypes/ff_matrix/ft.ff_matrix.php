@@ -207,14 +207,13 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		}
 		$r .=    '</tr>';
 
-		$field_data = $field_data ? $REGX->array_stripslashes(unserialize($field_data)) : array();
-		if ( ! isset($field_data['data']))
+		if ( ! $field_data)
 		{
-			$field_data['data'] = array(array(), array(), array());
+			$field_data = array(array(), array(), array());
 		}
 
 		$num_cols = count($field_settings['cols']);
-		foreach($field_data['data'] as $row_count => $row)
+		foreach($field_data as $row_count => $row)
 		{
 			$r .= '<tr>';
 			$col_count = 0;
@@ -245,6 +244,31 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		$this->insert_js($js);
 
 		return $r;
+	}
+
+	function save_field($field_data, $field_settings)
+	{
+		global $FF;
+		$ftypes = $this->_get_ftypes();
+
+		foreach($field_data as $row_count => &$row)
+		{
+			foreach($row as $col_id => &$cell_data)
+			{
+				$col = $field_settings['cols'][$col_id];
+				$ftype = $ftypes[$col['type']];
+				if (method_exists($ftype, 'save_cell'))
+				{
+					$cell_settings = array_merge(
+						(isset($ftype->default_cell_settings) ? $ftype->default_cell_settings : array()),
+						(isset($col['settings']) ? $col['settings'] : array())
+					);
+					$cell_data = $ftype->save_cell($cell_data, $cell_settings);
+				}
+			}
+		}
+
+		return $field_data;
 	}
 
 }
