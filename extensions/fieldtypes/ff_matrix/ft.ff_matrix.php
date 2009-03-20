@@ -246,6 +246,13 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		return $r;
 	}
 
+	/**
+	 * Save Field
+	 * 
+	 * @param  mixed  $field_data      The field's current value
+	 * @param  array  $field_settings  The field's settings
+	 * @return array  Modified $field_settings
+	 */
 	function save_field($field_data, $field_settings)
 	{
 		global $FF;
@@ -269,6 +276,42 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		}
 
 		return $field_data;
+	}
+
+	/**
+	 * Display Tag
+	 *
+	 * @param  array   $params          Name/value pairs from the opening tag
+	 * @param  string  $tagdata         Chunk of tagdata between field tag pairs
+	 * @param  string  $field_data      Currently saved field value
+	 * @param  array   $field_settings  The field's settings
+	 * @return string  relationship references
+	 */
+	function display_tag($params, $tagdata, $field_data, $field_settings)
+	{
+		global $FF;
+
+		$r = '';
+
+		$ftypes = $this->_get_ftypes();
+
+		foreach($field_data as $row_count => $row)
+		{
+			$row_tagdata = $tagdata;
+			foreach($field_settings['cols'] as $col_id => $col)
+			{
+				$ftype = $ftypes[$col['type']];
+				$cell_data = isset($row[$col_id]) ? $row[$col_id] : '';
+				$cell_settings = array_merge(
+					(isset($ftype->default_cell_settings) ? $ftype->default_cell_settings : array()),
+					(isset($col['settings']) ? $col['settings'] : array())
+				);
+				$FF->_parse_tagdata($row_tagdata, $col['name'], $cell_data, $cell_settings, $ftype);
+			}
+			$r .= $row_tagdata;
+		}
+
+		return $r;
 	}
 
 }

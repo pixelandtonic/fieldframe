@@ -1607,58 +1607,22 @@ class Fieldframe_Main {
 	 */
 	function weblog_entries_tagdata($tagdata, $row, &$weblog)
 	{
+		global $REGX;
+
 		$this->tagdata = $this->get_last_call($tagdata);
 		$this->row = $row;
 		$this->weblog = &$weblog;
 
 		foreach($this->_get_fields() as $field_id => $field)
 		{
-			if (method_exists($field['ftype'], 'display_tag'))
+			$this->field_id = $field_id;
+			$this->field_name = $field['name'];
+			$field_data = $row['field_id_'.$field_id];
+			if (($tmp_field_data = @unserialize($field_data)) !== FALSE)
 			{
-				// find all FF field tags
-				if (preg_match_all('/'.LD.$field['name'].'(\s+.*)?'.RD.'/sU', $this->tagdata, $matches, PREG_OFFSET_CAPTURE))
-				{
-					$this->field_id = $field_id;
-					$this->field_name = $field['name'];
-
-					for ($i = count($matches[0])-1; $i >= 0; $i--)
-					{
-						$tag_pos = $matches[0][$i][1];
-						$tag_len = strlen($matches[0][$i][0]);
-						$tagdata_pos = $tag_pos + $tag_len;
-						$endtag = LD.SLASH.$field['name'].RD;
-						$endtag_len = strlen($endtag);
-						$endtag_pos = strpos($this->tagdata, $endtag, $tagdata_pos);
-        
-						// get the params
-						$params = isset($field['ftype']->default_tag_params)
-						  ?  $field['ftype']->default_tag_params
-						  :  array();
-						if (isset($matches[1][$i][0]) AND preg_match_all('/\s+(\w+)\s*=\s*[\'\"]([^\'\"]*)[\'\"]/sU', $matches[1][$i][0], $param_matches))
-						{
-							for ($j = 0; $j < count($param_matches[0]); $j++)
-							{
-								$params[$param_matches[1][$j]] = $param_matches[2][$j];
-							}
-						}
-        
-						// is this a tag pair?
-						$field_tagdata = ($endtag_pos !== FALSE)
-						  ?  substr($this->tagdata, $tagdata_pos, $endtag_pos - $tagdata_pos)
-						  :  '';
-        
-						// let the fieldtype do what it wants with it
-						$field_data = $row['field_id_'.$field_id];
-						if (($tmp_field_data = @unserialize($field_data)) !== FALSE)
-						{
-							$field_data = $REGX->array_stripslashes($tmp_field_data);
-						}
-						$this->tagdata = substr($this->tagdata, 0, $tag_pos)
-						               . $field['ftype']->display_tag($params, $field_tagdata, $field_data, $field['settings'])
-						               . substr($this->tagdata, ($endtag_pos !== FALSE ? $endtag_pos+$endtag_len : $tagdata_pos));
-					}
-				}
+				$field_data = $REGX->array_stripslashes($tmp_field_data);
 			}
+			$this->_parse_tagdata($this->tagdata, $field['name'], $field_data, $field['settings'], $field['ftype']);
 		}
 
 		// unset temporary field helper vars
@@ -1671,6 +1635,58 @@ class Fieldframe_Main {
 
 		$args = func_get_args();
 		return $this->forward_ff_hook('weblog_entries_tagdata', $args, $tagdata);
+	}
+
+	/**
+	 * Parse Tagdata
+	 *
+	 * @param  string  $tagdata  The Weblog Entries tagdata
+	 * @param  string  $field_name  Name of the field to search for
+	 * @param  mixed   $field_data  The field's value
+	 * @param  array   $field_settings  The field's settings
+	 * @param  object  $ftype  The field's fieldtype object
+	 * @access private
+	 */
+	function _parse_tagdata(&$tagdata, $field_name, $field_data, $field_settings, $ftype)
+	{
+		// find all FF field tags
+		if (preg_match_all('/'.LD.$field_name.'(\s+.*)?'.RD.'/sU', $tagdata, $matches, PREG_OFFSET_CAPTURE))
+		{
+			for ($i = count($matches[0])-1; $i >= 0; $i--)
+			{
+				$tag_pos = $matches[0][$i][1];
+				$tag_len = strlen($matches[0][$i][0]);
+				$tagdata_pos = $tag_pos + $tag_len;
+				$endtag = LD.SLASH.$field_name.RD;
+				$endtag_len = strlen($endtag);
+				$endtag_pos = strpos($tagdata, $endtag, $tagdata_pos);
+
+				// get the params
+				$params = isset($ftype->default_tag_params)
+				  ?  $ftype->default_tag_params
+				  :  array();
+				if (isset($matches[1][$i][0]) AND preg_match_all('/\s+(\w+)\s*=\s*[\'\"]([^\'\"]*)[\'\"]/sU', $matches[1][$i][0], $param_matches))
+				{
+					for ($j = 0; $j < count($param_matches[0]); $j++)
+					{
+						$params[$param_matches[1][$j]] = $param_matches[2][$j];
+					}
+				}
+
+				// is this a tag pair?
+				$field_tagdata = ($endtag_pos !== FALSE)
+				  ?  substr($tagdata, $tagdata_pos, $endtag_pos - $tagdata_pos)
+				  :  '';
+
+				$cell_tagdata = method_exists($ftype, 'display_tag')
+				  ?  $ftype->display_tag($params, $field_tagdata, $field_data, $field_settings)
+				  :  $field_data;
+
+				$tagdata = substr($tagdata, 0, $tag_pos)
+				         . $cell_tagdata
+				         . substr($tagdata, ($endtag_pos !== FALSE ? $endtag_pos+$endtag_len : $tagdata_pos));
+			}
+		}
 	}
 
 	/**
