@@ -298,6 +298,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		foreach($field_data as $row_count => $row)
 		{
 			$row_tagdata = $tagdata;
+
 			foreach($field_settings['cols'] as $col_id => $col)
 			{
 				$ftype = $ftypes[$col['type']];
@@ -307,7 +308,12 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 					(isset($col['settings']) ? $col['settings'] : array())
 				);
 				$FF->_parse_tagdata($row_tagdata, $col['name'], $cell_data, $cell_settings, $ftype);
+
+				// conditionals
+				if (is_array($cell_data)) $cell_data = $cell_data ? '1' : '0';
+				$row_tagdata = preg_replace('/('.LD.'if(:elseif)?\s+(.*\s+)?)('.$col['name'].')((\s+.*)?'.RD.')/isU', '$1"'.$cell_data.'"$5', $row_tagdata);
 			}
+
 			$r .= $row_tagdata;
 		}
 
