@@ -34,11 +34,12 @@ $.fn.ffMatrix = function(fieldName, cellDefaults) {
 		var resetRows = function() {
 			obj.dom.$table.find('tr:not(.tableHeading)').each(function(rowIndex) {
 				$(this).find('td').each(function(cellType) {
-					$(this)
-						.attr('className', rowIndex % 2 ? 'tableCellTwo' : 'tableCellOne')
-						.find('*[name]').each(function() {
-							this.name = obj.fieldName+'['+rowIndex+']' + this.name.substring(this.name.indexOf(']')+1);
-						});
+					$td = $(this);
+					if (rowIndex % 2) $td.removeClass('tableCellOne').addClass('tableCellTwo');
+					else $td.removeClass('tableCellTwo').addClass('tableCellOne');
+					$td.find('*[name]').each(function() {
+						this.name = obj.fieldName+'['+rowIndex+']' + this.name.substring(this.name.indexOf(']')+1);
+					});
 				});
 			});
 		};
@@ -66,7 +67,7 @@ $.fn.ffMatrix = function(fieldName, cellDefaults) {
 			.click(function() {
 				$tr = $('<tr>').appendTo(obj.dom.$table);
 				$.each(cellDefaults, function(cellType) {
-					$td = $('<td>').appendTo($tr).html(cellDefaults[cellType]);
+					$td = $('<td class="'+cellType+'">').appendTo($tr).html(cellDefaults[cellType]);
 					if ($.fn.ffMatrix.onDisplayCell[cellType]) {
 						$.fn.ffMatrix.onDisplayCell[cellType]($td);
 					}
