@@ -1,6 +1,11 @@
 (function($){
 
 
+$.fn.ffMatrix = {
+	onDisplayCell: {}
+};
+
+
 $.fn.ffMatrixConf = function(id, cols) {
 	return this.each(function() {
 
@@ -47,6 +52,9 @@ $.fn.ffMatrixConf = function(id, cols) {
 
 			col.$preview = $('<td>').html(col.preview)
 				.appendTo(obj.dom.$trPreviews);
+			if ($.fn.ffMatrix.onDisplayCell[col.type]) {
+				$.fn.ffMatrix.onDisplayCell[col.type](col.$preview);
+			}
 
 			col.$colConf = $('<td>').html(
 				  '<label class="itemWrapper">'
@@ -108,6 +116,9 @@ $.fn.ffMatrixConf = function(id, cols) {
 					col.type = this.value;
 					var cellType = $.fn.ffMatrixConf.cellTypes[col.type];
 					col.$preview.html(cellType.preview);
+					if ($.fn.ffMatrix.onDisplayCell[col.type]) {
+						$.fn.ffMatrix.onDisplayCell[col.type](col.$preview);
+					}
 					col.$cellSettings.html(groupCellSettings(obj, cellType.settings, colId));
 					toggleCellSettings();
 				});

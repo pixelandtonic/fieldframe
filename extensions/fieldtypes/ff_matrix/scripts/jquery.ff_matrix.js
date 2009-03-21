@@ -33,7 +33,7 @@ $.fn.ffMatrix = function(fieldName, cellDefaults) {
 
 		var resetRows = function() {
 			obj.dom.$table.find('tr:not(.tableHeading)').each(function(rowIndex) {
-				$(this).find('td').each(function(cellIndex) {
+				$(this).find('td').each(function(cellType) {
 					$(this)
 						.attr('className', rowIndex % 2 ? 'tableCellTwo' : 'tableCellOne')
 						.find('*[name]').each(function() {
@@ -42,6 +42,12 @@ $.fn.ffMatrix = function(fieldName, cellDefaults) {
 				});
 			});
 		};
+
+		for (var cellType in $.fn.ffMatrix.onDisplayCell) {
+			obj.dom.$table.find('td.'+cellType).each(function() {
+				$.fn.ffMatrix.onDisplayCell[cellType]($(this));
+			});
+		}
 
 		obj.dom.$table.sortable({
 			items: 'tr:not(.tableHeading)',
@@ -59,8 +65,11 @@ $.fn.ffMatrix = function(fieldName, cellDefaults) {
 			.html('Add row')
 			.click(function() {
 				$tr = $('<tr>').appendTo(obj.dom.$table);
-				$.each(cellDefaults, function(cellIndex) {
-					$td = $('<td>').appendTo($tr).html(cellDefaults[cellIndex]);
+				$.each(cellDefaults, function(cellType) {
+					$td = $('<td>').appendTo($tr).html(cellDefaults[cellType]);
+					if ($.fn.ffMatrix.onDisplayCell[cellType]) {
+						$.fn.ffMatrix.onDisplayCell[cellType]($td);
+					}
 				});
 				addButtons($tr);
 				resetRows();
@@ -68,6 +77,9 @@ $.fn.ffMatrix = function(fieldName, cellDefaults) {
 
 	});
 };
+
+
+$.fn.ffMatrix.onDisplayCell = {};
 
 
 })(jQuery);

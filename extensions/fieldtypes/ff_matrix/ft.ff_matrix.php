@@ -203,7 +203,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 				(isset($ftype->default_cell_settings) ? $ftype->default_cell_settings : array()),
 				(isset($col['settings']) ? $col['settings'] : array())
 			);
-			$cell_defaults[] = $ftype->display_cell($field_name.'[0][0]', '', $cell_settings);
+			$cell_defaults[$col['type']] = $ftype->display_cell($field_name.'[0]['.$col_id.']', '', $cell_settings);
 		}
 		$r .=    '</tr>';
 
@@ -226,7 +226,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 					(isset($col['settings']) ? $col['settings'] : array())
 				);
 				$cell_data = isset($row[$col_id]) ? $row[$col_id] : '';
-				$r .= '<td class="'.($row_count % 2 ? 'tableCellTwo' : 'tableCellOne').'">'
+				$r .= '<td class="'.($row_count % 2 ? 'tableCellTwo' : 'tableCellOne').' '.$col['type'].'">'
 				    .   $ftype->display_cell($cell_name, $cell_data, $cell_settings)
 				    . '</td>';
 				$col_count++;
@@ -255,7 +255,6 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 	 */
 	function save_field($field_data, $field_settings)
 	{
-		global $FF;
 		$ftypes = $this->_get_ftypes();
 
 		foreach($field_data as $row_count => &$row)
