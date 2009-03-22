@@ -30,8 +30,8 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 	 */
 	var $default_field_settings = array(
 		'cols' => array(
-			'1' => array('name' => 'cell_1', 'label' => 'Cell 1', 'type' => 'ff_matrix_text'),
-			'2' => array('name' => 'cell_2', 'label' => 'Cell 2', 'type' => 'ff_matrix_textarea')
+			'1' => array('name' => 'cell_1', 'label' => 'Cell 1', 'type' => 'ff_matrix_text', 'new' => 'y'),
+			'2' => array('name' => 'cell_2', 'label' => 'Cell 2', 'type' => 'ff_matrix_textarea', 'new' => 'y')
 		)
 	);
 
@@ -120,7 +120,8 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 				'label' => $col['label'],
 				'type' => $col['type'],
 				'preview' => $ftype->display_cell('', '', $cell_settings),
-				'settings' => (method_exists($ftype, 'display_cell_settings') ? $ftype->display_cell_settings($cell_settings) : '')
+				'settings' => (method_exists($ftype, 'display_cell_settings') ? $ftype->display_cell_settings($cell_settings) : ''),
+				'isNew' => isset($col['new'])
 			);
 		}
 
@@ -191,7 +192,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 	 */
 	function display_field($field_name, $field_data, $field_settings)
 	{
-		global $DSP, $REGX, $FF;
+		global $DSP, $REGX, $FF, $LANG;
 
 		$ftypes = $this->_get_ftypes();
 
@@ -247,7 +248,13 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		$r .=   '</table>'
 		    . '</div>';
 
+		$LANG->fetch_language_file('ff_matrix');
+
 		$js = 'jQuery(window).bind("load", function() {' . NL
+		    . '  jQuery.fn.ffMatrix.lang.addRow = "'.$LANG->line('add_row').'";' . NL
+		    . '  jQuery.fn.ffMatrix.lang.deleteRow = "'.$LANG->line('delete_row').'";' . NL
+		    . '  jQuery.fn.ffMatrix.lang.confirmDeleteRow = "'.$LANG->line('confirm_delete_row').'";' . NL
+		    . '  jQuery.fn.ffMatrix.lang.sortRow = "'.$LANG->line('sort_row').'";' . NL
 		    . '  jQuery("#'.$field_name.'").ffMatrix("'.$field_name.'", '.json_encode($cell_defaults).');' . NL
 		    . '});';
 

@@ -14,12 +14,12 @@ $.fn.ffMatrix = function(fieldName, cellDefaults) {
 
 		var addButtons = function($tr) {
 			$tr.find('td:first-child').prepend(
-				$('<a class="button sort">').attr('title', 'Sort row')
+				$('<a class="button sort">').attr('title', $.fn.ffMatrix.lang.sortRow)
 			);
 			$tr.find('td:last-child').prepend(
-				$('<a class="button delete">').attr('title', 'Delete row')
+				$('<a class="button delete">').attr('title', $.fn.ffMatrix.lang.deleteRow)
 					.click(function() {
-						if (confirm('Delete this row?')) {
+						if (confirm($.fn.ffMatrix.lang.confirmDeleteRow)) {
 							$tr.remove();
 						}
 					})
@@ -63,7 +63,7 @@ $.fn.ffMatrix = function(fieldName, cellDefaults) {
 
 		obj.dom.$add = $('<a class="button add row">')
 			.appendTo(obj.dom.$container)
-			.html('Add row')
+			.html($.fn.ffMatrix.lang.addRow)
 			.click(function() {
 				$tr = $('<tr>').appendTo(obj.dom.$table);
 				$.each(cellDefaults, function(cellType) {
@@ -78,6 +78,10 @@ $.fn.ffMatrix = function(fieldName, cellDefaults) {
 
 	});
 };
+
+
+// Language
+$.fn.ffMatrix.lang = {};
 
 
 $.fn.ffMatrix.onDisplayCell = {};

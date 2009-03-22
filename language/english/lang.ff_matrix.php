@@ -30,7 +30,22 @@ $L = array(
 'Delete Column',
 
 'confirm_delete_column' =>
-'Delete this column?',
+'Are you sure you want to delete this column? You will lose all its associated data.',
+
+
+// Field
+
+'add_row' =>
+'Add row',
+
+'delete_row' =>
+'Delete row',
+
+'confirm_delete_row' =>
+'Are you sure you want to delete this row?',
+
+'sort_row' =>
+'Sort row',
 
 
 ''=>''

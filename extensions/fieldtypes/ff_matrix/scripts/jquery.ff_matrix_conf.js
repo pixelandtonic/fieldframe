@@ -97,7 +97,7 @@ $.fn.ffMatrixConf = function(id, cols) {
 				.appendTo(col.$delete)
 				.attr('title', $.fn.ffMatrixConf.lang.deleteColumn)
 				.click(function() {
-					if (confirm($.fn.ffMatrixConf.lang.confirmDeleteColumn)) {
+					if (col.isNew || confirm($.fn.ffMatrixConf.lang.confirmDeleteColumn)) {
 						col.$header.remove();
 						col.$preview.remove();
 						col.$colConf.remove();
@@ -142,7 +142,8 @@ $.fn.ffMatrixConf = function(id, cols) {
 				name:     $.fn.ffMatrixConf.lang.cell.toLowerCase().replace(' ', '_')+'_'+cellNum,
 				type:     cellType,
 				preview:  $.fn.ffMatrixConf.cellTypes[cellType].preview,
-				settings: $.fn.ffMatrixConf.cellTypes[cellType].settings
+				settings: $.fn.ffMatrixConf.cellTypes[cellType].settings,
+				isNew:    true
 			});
 			toggleCellSettings();
 		});
@@ -151,14 +152,7 @@ $.fn.ffMatrixConf = function(id, cols) {
 
 
 // Language
-$.fn.ffMatrixConf.lang = {
-	colName: 'Col Name',
-	colLabel: 'Col Label',
-	cellType: 'Cell Type',
-	cell: 'Cell',
-	deleteColumn: 'Delete Column',
-	confirmDeleteColumn: 'Delete this column?'
-};
+$.fn.ffMatrixConf.lang = {};
 
 
 // Cell Types
