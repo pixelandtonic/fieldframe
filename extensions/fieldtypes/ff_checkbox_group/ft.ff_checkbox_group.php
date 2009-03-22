@@ -135,7 +135,7 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 		$options = $this->_options_setting($cell_settings['options']);
 
 		$r = '<label class="itemWrapper">'
-		   . $DSP->qdiv('defaultBold', $LANG->line('radio_options_label'))
+		   . $DSP->qdiv('defaultBold', $LANG->line('checkbox_options_label'))
 		   . $DSP->input_textarea('options', $options, '3', 'textarea', '140px')
 		   . '</label>';
 
