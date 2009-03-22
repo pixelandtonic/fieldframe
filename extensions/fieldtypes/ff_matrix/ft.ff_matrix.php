@@ -220,7 +220,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 
 		if ( ! $field_data)
 		{
-			$field_data = array(array(), array(), array());
+			$field_data = array(array());
 		}
 
 		$num_cols = count($field_settings['cols']);
