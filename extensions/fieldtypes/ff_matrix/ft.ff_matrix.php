@@ -19,7 +19,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 	 */
 	var $info = array(
 		'name'     => 'FF Matrix',
-		'version'  => '0.0.4',
+		'version'  => FF_VERSION,
 		'desc'     => 'Provides a tabular data fieldtype',
 		'docs_url' => 'http://wiki.github.com/brandonkelly/bk.fieldframe.ee_addon/ff-checkbox'
 	);
