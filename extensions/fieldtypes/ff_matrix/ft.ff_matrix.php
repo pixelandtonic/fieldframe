@@ -89,10 +89,20 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		{
 			$cell_settings = isset($ftype->default_cell_settings) ? $ftype->default_cell_settings : array();
 
+			if (method_exists($ftype, 'display_cell_settings'))
+			{
+				$LANG->fetch_language_file($class_name);
+				$settings_display = $ftype->display_cell_settings($cell_settings);
+			}
+			else
+			{
+				$settings_display = '';
+			}
+
 			$cell_types[$class_name] = array(
 				'name' => $ftype->info['name'],
 				'preview' => $ftype->display_cell('', '', $cell_settings),
-				'settings' => (method_exists($ftype, 'display_cell_settings') ? $ftype->display_cell_settings($cell_settings) : '')
+				'settings' => $settings_display
 			);
 		}
 
