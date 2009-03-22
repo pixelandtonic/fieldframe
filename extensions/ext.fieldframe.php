@@ -314,7 +314,7 @@ class Fieldframe_Main {
 
 		$this->hooks = $hooks;
 		$this->errors = array();
-		$this->snippets = array();
+		$this->snippets = array('head' => array(), 'body' => array());
 
 		// get the site-specific settings
 		$this->settings = $this->_get_settings($settings);
@@ -327,7 +327,7 @@ class Fieldframe_Main {
 		if ( ! defined('FT_URL') AND $this->settings['fieldtypes_url']) 
 		{
 			define('FT_URL', $this->settings['fieldtypes_url']);
-			$this->snippets[] = array('</body>', '<script type="text/javascript">FT_URL = "'.FT_URL.'";</script>');
+			$this->snippets['body'][] = '<script type="text/javascript">FT_URL = "'.FT_URL.'";</script>';
 		}
 	}
 
@@ -1489,9 +1489,13 @@ class Fieldframe_Main {
 			}
 		}
 
-		foreach($this->snippets as $snippet)
+		foreach($this->snippets as $placement => $snippets)
 		{
-			$out = str_replace($snippet[0], $snippet[1].NL.$snippet[0], $out);
+			$placement = '</'.$placement.'>';
+			foreach(array_unique($snippets) as $snippet)
+			{
+				$out = str_replace($placement, $snippet.NL.$placement, $out);
+			}
 		}
 
 		$args = func_get_args();
@@ -2028,7 +2032,7 @@ class Fieldframe_Fieldtype {
 	function insert($at, $html)
 	{
 		global $FF;
-		$FF->snippets[] = array('</'.$at.'>', $html);
+		$FF->snippets[$at][] = $html;
 	}
 
 	function insert_css($css)
