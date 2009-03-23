@@ -48,21 +48,23 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		{
 			$this->ftypes = array();
 
-			// Add the included FF Matrix cell types
+			// Add the included celltypes
 			$this->ftypes['ff_matrix_text'] = new Ff_matrix_text();
 			$this->ftypes['ff_matrix_textarea'] = new Ff_matrix_textarea();
 
-			// Add the FF fieldtyes with display_cell
+			// Get the FF fieldtyes with display_cell
+			$ftypes = array();
 			foreach($FF->_get_ftypes() as $class_name => $ftype)
 			{
 				if (method_exists($ftype, 'display_cell'))
 				{
-					$this->ftypes[$class_name] = $ftype;
+					$ftypes[$class_name] = $ftype;
 				}
 			}
+			$FF->_sort_ftypes($ftypes);
 
-			// Sort by name
-			$FF->_sort_ftypes($this->ftypes);
+			// Combine with the included celltypes
+			$this->ftypes = array_merge($this->ftypes, $ftypes);
 		}
 
 		return $this->ftypes;
