@@ -1117,8 +1117,7 @@ class Fieldframe_Main {
 
 		global $DSP;
 
-		$ftypes = $this->_get_ftypes();
-		foreach($ftypes as $class_name => $ftype)
+		foreach($this->_get_ftypes() as $class_name => $ftype)
 		{
 			// only list normal fieldtypes
 			if (method_exists($ftype, 'display_field'))
@@ -1274,6 +1273,7 @@ class Fieldframe_Main {
 	function _publish_admin_edit_field_type_cell($data, $cell, $index)
 	{
 		$r = $this->get_last_call($cell);
+
 		foreach($this->_get_ftypes() as $class_name => $ftype)
 		{
 			$ftype_id = 'ftype_id_'.$ftype->_fieldtype_id;
@@ -1356,60 +1356,63 @@ class Fieldframe_Main {
 
 		$r = $this->get_last_call($r);
 
-		$rows = '';
-		foreach($this->_get_ftypes() as $class_name => $ftype)
+		if ($ftypes = $this->_get_ftypes())
 		{
-			$ftype_id = 'ftype_id_'.$ftype->_fieldtype_id;
-			$selected = ($data['field_type'] == $ftype_id);
-
-			foreach($ftype->_field_settings['rows'] as $index => $row)
+			$rows = '';
+			foreach($ftypes as $class_name => $ftype)
 			{
-				$rows .= '<tr id="'.$ftype_id.'_row'.($index+1).'"' . ($selected ? '' : ' style="display:none;"') . '>'
-				       . '<td class="tableCellOne"'.(isset($row[1]) ? '' : ' colspan="2"').'>'
-				       . $row[0]
-				       . $DSP->td_c()
-				       . (isset($row[1])
-				            ?  $DSP->td('tableCellOne')
-				             . $row[1]
-				             . $DSP->td_c()
-				             . $DSP->tr_c()
-				            : '');
-			}
+				$ftype_id = 'ftype_id_'.$ftype->_fieldtype_id;
+				$selected = ($data['field_type'] == $ftype_id);
 
-			if ($selected)
-			{
-				// show/hide formatting
-				if ($ftype->_field_settings['formatting_available'])
+				foreach($ftype->_field_settings['rows'] as $index => $row)
 				{
-					$formatting_search = 'none';
-					$formatting_replace = 'block';
+					$rows .= '<tr id="'.$ftype_id.'_row'.($index+1).'"' . ($selected ? '' : ' style="display:none;"') . '>'
+					       . '<td class="tableCellOne"'.(isset($row[1]) ? '' : ' colspan="2"').'>'
+					       . $row[0]
+					       . $DSP->td_c()
+					       . (isset($row[1])
+					            ?  $DSP->td('tableCellOne')
+					             . $row[1]
+					             . $DSP->td_c()
+					             . $DSP->tr_c()
+					            : '');
 				}
-				else
-				{
-					$formatting_search = 'block';
-					$formatting_replace = 'none';
-				}
-				$r = preg_replace('/(\sid\s*=\s*[\'\"]formatting_block[\'\"].*display\s*:\s*)'.$formatting_search.'(\s*;)/isU', '$1'.$formatting_replace.'$2', $r);
-				$r = preg_replace('/(\sid\s*=\s*[\'\"]formatting_unavailable[\'\"].*display\s*:\s*)'.$formatting_replace.'(\s*;)/isU', '$1'.$formatting_search.'$2', $r);
 
-				// show/hide direction
-				if ($ftype->_field_settings['direction_available'])
+				if ($selected)
 				{
-					$direction_search = 'none';
-					$direction_replace = 'block';
+					// show/hide formatting
+					if ($ftype->_field_settings['formatting_available'])
+					{
+						$formatting_search = 'none';
+						$formatting_replace = 'block';
+					}
+					else
+					{
+						$formatting_search = 'block';
+						$formatting_replace = 'none';
+					}
+					$r = preg_replace('/(\sid\s*=\s*[\'\"]formatting_block[\'\"].*display\s*:\s*)'.$formatting_search.'(\s*;)/isU', '$1'.$formatting_replace.'$2', $r);
+					$r = preg_replace('/(\sid\s*=\s*[\'\"]formatting_unavailable[\'\"].*display\s*:\s*)'.$formatting_replace.'(\s*;)/isU', '$1'.$formatting_search.'$2', $r);
+
+					// show/hide direction
+					if ($ftype->_field_settings['direction_available'])
+					{
+						$direction_search = 'none';
+						$direction_replace = 'block';
+					}
+					else
+					{
+						$direction_search = 'block';
+						$direction_replace = 'none';
+					}
+					$r = preg_replace('/(\sid\s*=\s*[\'\"]direction_available[\'\"].*display\s*:\s*)'.$direction_search.'(\s*;)/isU', '$1'.$direction_replace.'$2', $r);
+					$r = preg_replace('/(\sid\s*=\s*[\'\"]direction_unavailable[\'\"].*display\s*:\s*)'.$direction_replace.'(\s*;)/isU', '$1'.$direction_search.'$2', $r);
 				}
-				else
-				{
-					$direction_search = 'block';
-					$direction_replace = 'none';
-				}
-				$r = preg_replace('/(\sid\s*=\s*[\'\"]direction_available[\'\"].*display\s*:\s*)'.$direction_search.'(\s*;)/isU', '$1'.$direction_replace.'$2', $r);
-				$r = preg_replace('/(\sid\s*=\s*[\'\"]direction_unavailable[\'\"].*display\s*:\s*)'.$direction_replace.'(\s*;)/isU', '$1'.$direction_search.'$2', $r);
 			}
+			$rows = $this->_group_ftype_inputs($ftype_id, $rows);
+
+			$r = preg_replace('/(<tr>\s*<td[^>]*>\s*<div[^>]*>\s*'.$LANG->line('deft_field_formatting').'\s*<\/div>)/is', $rows.'$1', $r);
 		}
-		$rows = $this->_group_ftype_inputs($ftype_id, $rows);
-
-		$r = preg_replace('/(<tr>\s*<td[^>]*>\s*<div[^>]*>\s*'.$LANG->line('deft_field_formatting').'\s*<\/div>)/is', $rows.'$1', $r);
 
 		$args = func_get_args();
 		return $this->forward_ff_hook('publish_admin_edit_field_extra_row', $args, $r);
