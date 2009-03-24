@@ -18,10 +18,11 @@ class Ff_radio_group extends Fieldframe_Fieldtype {
 	 * @var array
 	 */
 	var $info = array(
-		'name'             => 'FF Radio Group',
-		'version'          => FF_VERSION,
-		'desc'             => 'Provides a radio group fieldtype',
-		'docs_url'         => 'http://wiki.github.com/brandonkelly/bk.fieldframe.ee_addon/ff-radio-group'
+		'name'     => 'FF Radio Group',
+		'version'  => FF_VERSION,
+		'desc'     => 'Provides a radio group fieldtype',
+		'docs_url' => 'http://wiki.github.com/brandonkelly/bk.fieldframe.ee_addon/ff-radio-group',
+		'no_lang'  => TRUE
 	);
 
 	/**
@@ -47,17 +48,6 @@ class Ff_radio_group extends Fieldframe_Fieldtype {
 		)
 	);
 
-	function _options_setting($options_setting=array())
-	{
-		$options = '';
-		foreach($options_setting as $name => $label)
-		{
-			if ($options) $options .= "\n";
-			$options .= $name . ($name != $label ? ' : '.$label : '');
-		}
-		return $options;
-	}
-
 	/**
 	 * Display Field Settings
 	 * 
@@ -69,9 +59,9 @@ class Ff_radio_group extends Fieldframe_Fieldtype {
 		global $DSP, $LANG;
 
 		$cell2 = $DSP->qdiv('defaultBold', $LANG->line('radio_options_label'))
-		       . $DSP->qdiv('default', $LANG->line('radio_options_subtext'))
+		       . $DSP->qdiv('default', $LANG->line('field_list_instructions'))
 		       . $DSP->input_textarea('options', $this->options_setting($field_settings['options']), '6', 'textarea', '99%')
-		       . $DSP->qdiv('default', $LANG->line('radio_option_examples'));
+		       . $DSP->qdiv('default', $LANG->line('option_setting_examples'));
 
 		return array('cell2' => $cell2);
 	}
