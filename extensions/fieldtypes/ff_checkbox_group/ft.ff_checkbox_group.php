@@ -91,17 +91,6 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 		return $r;
 	}
 
-	function _options_setting($options_setting=array())
-	{
-		$options = '';
-		foreach($options_setting as $name => $label)
-		{
-			if ($options) $options .= "\n";
-			$options .= $name . ($name != $label ? ' : '.$label : '');
-		}
-		return $options;
-	}
-
 	/**
 	 * Display Field Settings
 	 * 
@@ -112,11 +101,9 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 	{
 		global $DSP, $LANG;
 
-		$options = $this->_options_setting($field_settings['options']);
-
 		$cell2 = $DSP->qdiv('defaultBold', $LANG->line('checkbox_options_label'))
 		       . $DSP->qdiv('default', $LANG->line('checkbox_options_subtext'))
-		       . $DSP->input_textarea('options', $options, '6', 'textarea', '99%')
+		       . $DSP->input_textarea('options', $this->options_setting($field_settings['options']), '6', 'textarea', '99%')
 		       . $DSP->qdiv('default', $LANG->line('checkbox_option_examples'));
 
 		return array('cell2' => $cell2);
@@ -132,11 +119,9 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 	{
 		global $DSP, $LANG;
 
-		$options = $this->_options_setting($cell_settings['options']);
-
 		$r = '<label class="itemWrapper">'
 		   . $DSP->qdiv('defaultBold', $LANG->line('checkbox_options_label'))
-		   . $DSP->input_textarea('options', $options, '3', 'textarea', '140px')
+		   . $DSP->input_textarea('options', $this->options_setting($cell_settings['options']), '3', 'textarea', '140px')
 		   . '</label>';
 
 		return $r;
@@ -152,16 +137,8 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 	 */
 	function save_field_settings($field_settings)
 	{
-		$r = array('options' => array());
-		$options = preg_split('/[\r\n]+/', $field_settings['options']);
-		foreach($options as $option)
-		{
-			$option = explode(':', $option);
-			$option_name = trim($option[0]);
-			$option_value = isset($option[1]) ? trim($option[1]) : $option_name;
-			$r['options'][$option_name] = $option_value;
-		}
-		return $r;
+		$field_settings['options'] = $this->save_options_setting($field_settings['options']);
+		return $field_settings;
 	}
 
 	/**

@@ -51,6 +51,8 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 			// Add the included celltypes
 			$this->ftypes['ff_matrix_text'] = new Ff_matrix_text();
 			$this->ftypes['ff_matrix_textarea'] = new Ff_matrix_textarea();
+			$this->ftypes['ff_matrix_select'] = new Ff_matrix_select();
+			$this->ftypes['ff_matrix_multiselect'] = new ff_matrix_multiselect();
 
 			// Get the FF fieldtyes with display_cell
 			$ftypes = array();
@@ -344,7 +346,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 }
 
 
-class Ff_matrix_text {
+class Ff_matrix_text extends Fieldframe_Fieldtype {
 
 	var $_class_name = 'ff_matrix_text';
 
@@ -377,7 +379,7 @@ class Ff_matrix_text {
 }
 
 
-class Ff_matrix_textarea {
+class Ff_matrix_textarea extends Fieldframe_Fieldtype {
 
 	var $_class_name = 'ff_matrix_textarea';
 
@@ -405,6 +407,153 @@ class Ff_matrix_textarea {
 	{
 		global $DSP;
 		return $DSP->input_textarea($cell_name, $cell_value, $cell_settings['rows'], '', '95%');
+	}
+
+}
+
+
+class Ff_matrix_select extends Fieldframe_Fieldtype {
+
+	var $_class_name = 'ff_matrix_select';
+
+	var $info = array(
+		'name' => 'Select'
+	);
+
+	var $default_cell_settings = array(
+		'options' => array(
+			'Opt 1' => 'Opt 1',
+			'Opt 2' => 'Opt 2'
+		)
+	);
+
+	function display_cell_settings($cell_settings)
+	{
+		global $DSP, $LANG;
+
+		$r = '<label class="itemWrapper">'
+		   . $DSP->qdiv('defaultBold', $LANG->line('field_list_items'))
+		   . $DSP->input_textarea('options', $this->options_setting($cell_settings['options']), '3', 'textarea', '140px')
+		   . '</label>';
+
+		return $r;
+	}
+
+	function save_cell_settings($cell_settings)
+	{
+		$cell_settings['options'] = $this->save_options_setting($cell_settings['options']);
+		return $cell_settings;
+	}
+
+	function display_cell($cell_name, $cell_value, $cell_settings)
+	{
+		$SD = new Fieldframe_SettingsDisplay();
+		return $SD->select($cell_name, $cell_value, $cell_settings['options']);
+	}
+
+}
+
+
+class Ff_matrix_multiselect extends Fieldframe_Fieldtype {
+
+	var $_class_name = 'ff_matrix_multiselect';
+
+	var $info = array(
+		'name' => 'Multi-select'
+	);
+
+	var $default_cell_settings = array(
+		'options' => array(
+			'Opt 1' => 'Opt 1',
+			'Opt 2' => 'Opt 2'
+		)
+	);
+
+	function display_cell_settings($cell_settings)
+	{
+		global $DSP, $LANG;
+
+		$r = '<label class="itemWrapper">'
+		   . $DSP->qdiv('defaultBold', $LANG->line('field_list_items'))
+		   . $DSP->input_textarea('options', $this->options_setting($cell_settings['options']), '3', 'textarea', '140px')
+		   . '</label>';
+
+		return $r;
+	}
+
+	function save_cell_settings($cell_settings)
+	{
+		$cell_settings['options'] = $this->save_options_setting($cell_settings['options']);
+		return $cell_settings;
+	}
+
+	function display_cell($cell_name, $cell_value, $cell_settings)
+	{
+		$SD = new Fieldframe_SettingsDisplay();
+		return $SD->multiselect($cell_name, $cell_value, $cell_settings['options'], array('width' => '145px'));
+	}
+
+	function display_tag($params, $tagdata, $field_data, $field_settings)
+	{
+		global $TMPL;
+
+		$r = '';
+
+		if ($field_settings['options'])
+		{
+			// option template
+			if ( ! $field_data) $field_data = array();
+
+			// optional sorting
+			if ($sort = strtolower($params['sort']))
+			{
+				if ($sort == 'asc')
+				{
+					sort($field_data);
+				}
+				else if ($sort == 'desc')
+				{
+					rsort($field_data);
+				}
+			}
+
+			// replace switch tags with {SWITCH[abcdefgh]SWITCH} markers
+			$this->switches = array();
+			$tagdata = preg_replace_callback('/'.LD.'switch\s*=\s*[\'\"]([^\'\"]+)[\'\"]'.RD.'/sU', array(&$this, '_get_switch_options'), $tagdata);
+
+			$count = 0;
+			foreach($field_data as $option_name)
+			{
+				if (isset($field_settings['options'][$option_name]))
+				{
+					// copy $tagdata
+					$option_tagdata = $tagdata;
+
+					// simple var swaps
+					$option_tagdata = $TMPL->swap_var_single('option', $field_settings['options'][$option_name], $option_tagdata);
+					$option_tagdata = $TMPL->swap_var_single('option_name', $option_name, $option_tagdata);
+					$option_tagdata = $TMPL->swap_var_single('count', $count+1, $option_tagdata);
+
+					// switch tags
+					foreach($this->switches as $i => $switch)
+					{
+						$option = $count % count($switch['options']);
+						$option_tagdata = str_replace($switch['marker'], $switch['options'][$option], $option_tagdata);
+					}
+
+					$r .= $option_tagdata;
+
+					$count++;
+				}
+			}
+		}
+
+		if ($params['backspace'])
+		{
+			$r = substr($r, 0, -$params['backspace']);
+		}
+
+		return $r;
 	}
 
 }

@@ -1971,7 +1971,7 @@ class Fieldframe_SettingsDisplay {
 	 */
 	function multiselect($name, $values, $options, $attr=array())
 	{
-		$attr = array_merge($attr, array('multi'=>1));
+		$attr = array_merge($attr, array('multi' => 1));
 		return $this->select($name, $values, $options, $attr);
 	}
 
@@ -2056,6 +2056,31 @@ class Fieldframe_Fieldtype {
 	function include_js($filename)
 	{
 		$this->insert('body', '<script type="text/javascript" src="'.FT_URL.$this->_class_name.'/'.$filename.'" charset="utf-8"></script>');
+	}
+
+	function options_setting($options=array())
+	{
+		$r = '';
+		foreach($options as $name => $label)
+		{
+			if ($r) $r .= "\n";
+			$r .= $name . ($name != $label ? ' : '.$label : '');
+		}
+		return $r;
+	}
+
+	function save_options_setting($options='')
+	{
+		$r = array();
+		$options = preg_split('/[\r\n]+/', $options);
+		foreach($options as $option)
+		{
+			$option = explode(':', $option);
+			$option_name = trim($option[0]);
+			$option_value = isset($option[1]) ? trim($option[1]) : $option_name;
+			$r[$option_name] = $option_value;
+		}
+		return $r;
 	}
 
 }
