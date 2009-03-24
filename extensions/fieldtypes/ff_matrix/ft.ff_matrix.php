@@ -46,13 +46,14 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 
 		if ( ! isset($this->ftypes))
 		{
-			$this->ftypes = array();
-
 			// Add the included celltypes
-			$this->ftypes['ff_matrix_text'] = new Ff_matrix_text();
-			$this->ftypes['ff_matrix_textarea'] = new Ff_matrix_textarea();
-			$this->ftypes['ff_matrix_select'] = new Ff_matrix_select();
-			$this->ftypes['ff_matrix_multiselect'] = new ff_matrix_multiselect();
+			$this->ftypes = array(
+				'ff_matrix_text' => new Ff_matrix_text(),
+				'ff_matrix_textarea' => new Ff_matrix_textarea(),
+				'ff_matrix_select' => new Ff_matrix_select(),
+				'ff_matrix_multiselect' => new ff_matrix_multiselect(),
+				'ff_matrix_date' => new Ff_matrix_date()
+			);
 
 			// Get the FF fieldtyes with display_cell
 			$ftypes = array();
@@ -370,10 +371,10 @@ class Ff_matrix_text extends Fieldframe_Fieldtype {
 		return $r;
 	}
 
-	function display_cell($cell_name, $cell_value, $cell_settings)
+	function display_cell($cell_name, $cell_data, $cell_settings)
 	{
 		global $DSP;
-		return $DSP->input_text($cell_name, $cell_value, '', $cell_settings['maxl'], '', '95%');
+		return $DSP->input_text($cell_name, $cell_data, '', $cell_settings['maxl'], '', '95%');
 	}
 
 }
@@ -403,10 +404,10 @@ class Ff_matrix_textarea extends Fieldframe_Fieldtype {
 		return $r;
 	}
 
-	function display_cell($cell_name, $cell_value, $cell_settings)
+	function display_cell($cell_name, $cell_data, $cell_settings)
 	{
 		global $DSP;
-		return $DSP->input_textarea($cell_name, $cell_value, $cell_settings['rows'], '', '95%');
+		return $DSP->input_textarea($cell_name, $cell_data, $cell_settings['rows'], '', '95%');
 	}
 
 }
@@ -445,10 +446,10 @@ class Ff_matrix_select extends Fieldframe_Fieldtype {
 		return $cell_settings;
 	}
 
-	function display_cell($cell_name, $cell_value, $cell_settings)
+	function display_cell($cell_name, $cell_data, $cell_settings)
 	{
 		$SD = new Fieldframe_SettingsDisplay();
-		return $SD->select($cell_name, $cell_value, $cell_settings['options']);
+		return $SD->select($cell_name, $cell_data, $cell_settings['options']);
 	}
 
 }
@@ -487,10 +488,10 @@ class Ff_matrix_multiselect extends Fieldframe_Fieldtype {
 		return $cell_settings;
 	}
 
-	function display_cell($cell_name, $cell_value, $cell_settings)
+	function display_cell($cell_name, $cell_data, $cell_settings)
 	{
 		$SD = new Fieldframe_SettingsDisplay();
-		return $SD->multiselect($cell_name, $cell_value, $cell_settings['options'], array('width' => '145px'));
+		return $SD->multiselect($cell_name, $cell_data, $cell_settings['options'], array('width' => '145px'));
 	}
 
 	function display_tag($params, $tagdata, $field_data, $field_settings)
@@ -554,6 +555,46 @@ class Ff_matrix_multiselect extends Fieldframe_Fieldtype {
 		}
 
 		return $r;
+	}
+
+}
+
+
+class Ff_matrix_date extends Fieldframe_Fieldtype {
+
+	var $_class_name = 'ff_matrix_date';
+
+	var $info = array(
+		'name' => 'Date'
+	);
+
+	var $default_tag_params = array(
+		'format' => '%F %d %Y'
+	);
+
+	function display_cell($cell_name, $cell_data, $cell_settings)
+	{
+		global $DSP, $LOC, $LANG;
+
+		$LANG->fetch_language_file('search');
+
+		$cell_data = ($cell_data AND is_numeric($cell_data)) ? $LOC->set_human_time($cell_data) : '';
+		$r = $DSP->input_text($cell_name, $cell_data, '', '23', '', '95%') . NBS
+		   . '<a style="cursor:pointer;" onclick="jQuery(this).prev().val(\''.$LOC->set_human_time($LOC->now).'\');" >'.$LANG->line('today').'</a>';
+
+		return $r;
+	}
+
+	function save_cell($cell_data, $cell_settings)
+	{
+		global $LOC;
+		return $cell_data ? $LOC->convert_human_date_to_gmt($cell_data) : '';
+	}
+
+	function display_tag($params, $tagdata, $field_data, $field_settings)
+	{
+		global $LOC;
+		return $LOC->decode_date($params['format'], $field_data);
 	}
 
 }
