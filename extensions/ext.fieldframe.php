@@ -8,7 +8,7 @@ if ( ! defined('FF_CLASS'))
 {
 	define('FF_CLASS',   'Fieldframe');
 	define('FF_NAME',    'FieldFrame');
-	define('FF_VERSION', '0.9.5');
+	define('FF_VERSION', '0.9.6');
 }
 
 
@@ -658,6 +658,7 @@ class Fieldframe_Main {
 		if ( ! isset($OBJ->info['author'])) $OBJ->info['author'] = '';
 		if ( ! isset($OBJ->info['author_url'])) $OBJ->info['author_url'] = '';
 		if ( ! isset($OBJ->info['versions_xml_url'])) $OBJ->info['versions_xml_url'] = '';
+		if ( ! isset($OBJ->info['no_lang'])) $OBJ->info['no_lang'] = FALSE;
 
 		// hooks
 		if ( ! isset($OBJ->hooks)) $OBJ->hooks = array();
@@ -887,7 +888,7 @@ class Fieldframe_Main {
 				}
 				else if ($ftype->_is_enabled AND method_exists($ftype, 'display_site_settings'))
 				{
-					$LANG->fetch_language_file($class_name);
+					if ( ! $ftype->info['no_lang']) $LANG->fetch_language_file($class_name);
 
 					$data = '<div style="margin:-2px 0 -1px; border:solid #b1b6d2; border-width:1px 0; padding:7px 7px 6px; background:#cad0d5;">'
 					      . '<div style="background:#fff;">'
@@ -1145,6 +1146,9 @@ class Fieldframe_Main {
 	{
 		global $LANG, $REGX;
 
+		// Fetch the FF lang file
+		$LANG->fetch_language_file('fieldframe');
+
 		// Prepare fieldtypes for following Publish Admin hooks
 		$field_settings_tmpl = array(
 			'cell1' => '',
@@ -1165,7 +1169,7 @@ class Fieldframe_Main {
 			if (method_exists($ftype, 'display_field_settings'))
 			{
 				// Load the language file
-				$LANG->fetch_language_file($class_name);
+				if ( ! $ftype->info['no_lang']) $LANG->fetch_language_file($class_name);
 
 				$field_settings = array_merge(
 					(isset($ftype->default_field_settings) ? $ftype->default_field_settings : array()),

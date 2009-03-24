@@ -43,9 +43,3 @@
 
 .ff_matrix_conf table tr.delete td { border:none; border-top:1px solid #1d2326; padding:0; background:none; }
 .ff_matrix_conf table tr.delete td a.button.delete { margin:5px 0 0 auto; background-image:url(../images/delete.png); }
-
-
-/*--- FF Matrix cell types ---*/
-td.ff_matrix_text input { width:95%; }
-td.ff_matrix_textarea textarea { width:95%; }
-td.ff_matrix_date input { width:150px; text-align:center; }

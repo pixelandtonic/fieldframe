@@ -4,24 +4,24 @@ if ( ! defined('EXT')) exit('Invalid file request');
 
 
 /**
- * Checkbox Group Class
+ * Multi-select Class
  *
  * @package   FieldFrame
  * @author    Brandon Kelly <me@brandon-kelly.com>
  * @copyright Copyright (c) 2009 Brandon Kelly
  * @license   http://creativecommons.org/licenses/by-sa/3.0/ Attribution-Share Alike 3.0 Unported
  */
-class Ff_checkbox_group extends Fieldframe_Fieldtype {
+class Ff_multiselect extends Fieldframe_Fieldtype {
 
 	/**
 	 * Fieldtype Info
 	 * @var array
 	 */
 	var $info = array(
-		'name'     => 'FF Checkbox Group',
+		'name'     => 'FF Multi-select',
 		'version'  => FF_VERSION,
-		'desc'     => 'Provides a checkbox group fieldtype',
-		'docs_url' => 'http://wiki.github.com/brandonkelly/bk.fieldframe.ee_addon/ff-checkbox-group',
+		'desc'     => 'Provides a multi-select fieldtype',
+		'docs_url' => 'http://wiki.github.com/brandonkelly/bk.fieldframe.ee_addon/ff-multiselect',
 		'no_lang'  => TRUE
 	);
 
@@ -66,33 +66,6 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 	);
 
 	/**
-	 * Display Site Settings
-	 */
-	function display_site_settings()
-	{
-		global $LANG;
-
-		// Initialize a new instance of SettingsDisplay
-		$SD = new Fieldframe_SettingsDisplay();
-
-		// Open the settings block
-		$r = $SD->block('FF Checkbox Group');
-
-		// Add the Default Option Template setting
-		$r .= $SD->row(array(
-		                 $SD->label('checkbox_option_tmpl_label', 'checkbox_option_tmpl_subtext'),
-		                 $SD->textarea('option_tmpl', $this->site_settings['option_tmpl'], array('rows' => '2'))
-		                   . '<p>'.$LANG->line('checkbox_option_tmpl_tags').'</p>'
-		               ));
-
-		// Close the settings block
-		$r .= $SD->block_c();
-
-		// Return the settings block
-		return $r;
-	}
-
-	/**
 	 * Display Field Settings
 	 * 
 	 * @param  array  $field_settings  The field's settings
@@ -102,7 +75,7 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 	{
 		global $DSP, $LANG;
 
-		$cell2 = $DSP->qdiv('defaultBold', $LANG->line('checkbox_options_label'))
+		$cell2 = $DSP->qdiv('defaultBold', $LANG->line('field_list_items'))
 		       . $DSP->qdiv('default', $LANG->line('field_list_instructions'))
 		       . $DSP->input_textarea('options', $this->options_setting($field_settings['options']), '6', 'textarea', '99%')
 		       . $DSP->qdiv('default', $LANG->line('option_setting_examples'));
@@ -121,7 +94,7 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 		global $DSP, $LANG;
 
 		$r = '<label class="itemWrapper">'
-		   . $DSP->qdiv('defaultBold', $LANG->line('checkbox_options_label'))
+		   . $DSP->qdiv('defaultBold', $LANG->line('field_list_items'))
 		   . $DSP->input_textarea('options', $this->options_setting($cell_settings['options']), '3', 'textarea', '140px')
 		   . '</label>';
 
@@ -165,18 +138,8 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 	 */
 	function display_field($field_name, $field_data, $field_settings)
 	{
-		global $DSP;
-		if ( ! $field_data) $field_data = array();
-		$r = '';
-		foreach($field_settings['options'] as $option_name => $option_label)
-		{
-			$checked = in_array($option_name, $field_data) ? 1 : 0;
-			$r .= '<label style="margin-right:15px; white-space:nowrap;">'
-			    . $DSP->input_checkbox("{$field_name}[]", $option_name, $checked)
-			    . $option_label
-			    . '</label>';
-		}
-		return $r;
+		$SD = new Fieldframe_SettingsDisplay();
+		return $SD->multiselect($cell_name.'[]', $cell_data, $cell_settings['options']);
 	}
 
 	/**
@@ -189,7 +152,8 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 	 */
 	function display_cell($cell_name, $cell_data, $cell_settings)
 	{
-		return $this->display_field($cell_name, $cell_data, $cell_settings);
+		$SD = new Fieldframe_SettingsDisplay();
+		return $SD->multiselect($cell_name.'[]', $cell_data, $cell_settings['options'], array('width' => '145px'));
 	}
 
 	/**
@@ -209,9 +173,7 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 
 		if ($field_settings['options'])
 		{
-			// option template
-			if ( ! $tagdata) $tagdata = $this->site_settings['option_tmpl'];
-
+			if ( ! $tagdata) $tagdata = '<li>'.LD.'option'.RD.'</li>';
 			if ( ! $field_data) $field_data = array();
 
 			// optional sorting
@@ -284,5 +246,5 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 }
 
 
-/* End of file ft.ff_checkbox_group.php */
-/* Location: ./system/fieldtypes/ff_checkbox_group/ft.ff_checkbox_group.php */
+/* End of file ft.ff_multiselect.php */
+/* Location: ./system/fieldtypes/ff_multiselect/ft.ff_multiselect.php */

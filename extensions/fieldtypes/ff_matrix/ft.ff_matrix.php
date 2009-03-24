@@ -35,6 +35,11 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		)
 	);
 
+	var $default_tag_params = array(
+		'cellspacing' => '1',
+		'cellpadding' => '10'
+	);
+
 	/**
 	 * Get Fieldtypes
 	 *
@@ -51,7 +56,6 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 				'ff_matrix_text' => new Ff_matrix_text(),
 				'ff_matrix_textarea' => new Ff_matrix_textarea(),
 				'ff_matrix_select' => new Ff_matrix_select(),
-				'ff_matrix_multiselect' => new ff_matrix_multiselect(),
 				'ff_matrix_date' => new Ff_matrix_date()
 			);
 
@@ -96,7 +100,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 
 			if (method_exists($ftype, 'display_cell_settings'))
 			{
-				if (substr($ftype->_class_name, 0, 10) != 'ff_matrix_') $LANG->fetch_language_file($class_name);
+				if ( ! $ftype->info['no_lang']) $LANG->fetch_language_file($class_name);
 				$settings_display = $ftype->display_cell_settings($cell_settings);
 			}
 			else
@@ -114,7 +118,9 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		$cols = array();
 		foreach($field_settings['cols'] as $col_id => $col)
 		{
-			$ftype = $ftypes[$col['type']];
+			// Get the fieldtype. If it doesn't exist, use a textarea in an attempt to preserve the data
+			$ftype = isset($ftypes[$col['type']]) ? $ftypes[$col['type']] : $ftypes['ff_matrix_textarea'];
+
 			$cell_settings = array_merge(
 				(isset($ftype->default_cell_settings) ? $ftype->default_cell_settings : array()),
 				(isset($col['settings']) ? $col['settings'] : array())
@@ -317,6 +323,24 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 
 		$r = '';
 
+		$table_mode = $tagdata ? FALSE : TRUE;
+		if ($table_mode)
+		{
+			$r .= '<table cellspacing="'.$params['cellspacing'].'" cellpadding="'.$params['cellpadding'].'">' . "\n"
+			    . '  <thead>' . "\n"
+			    . '    <tr>' . "\n";
+			$tagdata = '    <tr>' . "\n";
+			foreach($field_settings['cols'] as $col_id => $col)
+			{
+				$r .= '      <th scope="col">'.$col['label'].'</th>' . "\n";
+				$tagdata .= '      <td>'.LD.$col['name'].RD.'</td>' . "\n";
+			}
+			$r .= '    </tr>' . "\n"
+			    . '  </thead>' . "\n"
+			    . '  <tbody>' . "\n";
+			$tagdata .= '    </tr>' . "\n";
+		}
+
 		$ftypes = $this->_get_ftypes();
 
 		foreach($field_data as $row_count => $row)
@@ -341,6 +365,12 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 			$r .= $row_tagdata;
 		}
 
+		if ($table_mode)
+		{
+			$r .= '  </tbody>' . "\n"
+			    . '</table>';
+		}
+
 		return $r;
 	}
 
@@ -352,7 +382,8 @@ class Ff_matrix_text extends Fieldframe_Fieldtype {
 	var $_class_name = 'ff_matrix_text';
 
 	var $info = array(
-		'name' => 'Text'
+		'name' => 'Text',
+		'no_lang' => TRUE
 	);
 
 	var $default_cell_settings = array(
@@ -385,7 +416,8 @@ class Ff_matrix_textarea extends Fieldframe_Fieldtype {
 	var $_class_name = 'ff_matrix_textarea';
 
 	var $info = array(
-		'name' => 'Textarea'
+		'name' => 'Textarea',
+		'no_lang' => TRUE
 	);
 
 	var $default_cell_settings = array(
@@ -418,7 +450,8 @@ class Ff_matrix_select extends Fieldframe_Fieldtype {
 	var $_class_name = 'ff_matrix_select';
 
 	var $info = array(
-		'name' => 'Select'
+		'name' => 'Select',
+		'no_lang' => TRUE
 	);
 
 	var $default_cell_settings = array(
@@ -455,117 +488,13 @@ class Ff_matrix_select extends Fieldframe_Fieldtype {
 }
 
 
-class Ff_matrix_multiselect extends Fieldframe_Fieldtype {
-
-	var $_class_name = 'ff_matrix_multiselect';
-
-	var $info = array(
-		'name' => 'Multi-select'
-	);
-
-	var $default_cell_settings = array(
-		'options' => array(
-			'Opt 1' => 'Opt 1',
-			'Opt 2' => 'Opt 2'
-		)
-	);
-
-	function display_cell_settings($cell_settings)
-	{
-		global $DSP, $LANG;
-
-		$r = '<label class="itemWrapper">'
-		   . $DSP->qdiv('defaultBold', $LANG->line('field_list_items'))
-		   . $DSP->input_textarea('options', $this->options_setting($cell_settings['options']), '3', 'textarea', '140px')
-		   . '</label>';
-
-		return $r;
-	}
-
-	function save_cell_settings($cell_settings)
-	{
-		$cell_settings['options'] = $this->save_options_setting($cell_settings['options']);
-		return $cell_settings;
-	}
-
-	function display_cell($cell_name, $cell_data, $cell_settings)
-	{
-		$SD = new Fieldframe_SettingsDisplay();
-		return $SD->multiselect($cell_name, $cell_data, $cell_settings['options'], array('width' => '145px'));
-	}
-
-	function display_tag($params, $tagdata, $field_data, $field_settings)
-	{
-		global $TMPL;
-
-		$r = '';
-
-		if ($field_settings['options'])
-		{
-			// option template
-			if ( ! $field_data) $field_data = array();
-
-			// optional sorting
-			if ($sort = strtolower($params['sort']))
-			{
-				if ($sort == 'asc')
-				{
-					sort($field_data);
-				}
-				else if ($sort == 'desc')
-				{
-					rsort($field_data);
-				}
-			}
-
-			// replace switch tags with {SWITCH[abcdefgh]SWITCH} markers
-			$this->switches = array();
-			$tagdata = preg_replace_callback('/'.LD.'switch\s*=\s*[\'\"]([^\'\"]+)[\'\"]'.RD.'/sU', array(&$this, '_get_switch_options'), $tagdata);
-
-			$count = 0;
-			foreach($field_data as $option_name)
-			{
-				if (isset($field_settings['options'][$option_name]))
-				{
-					// copy $tagdata
-					$option_tagdata = $tagdata;
-
-					// simple var swaps
-					$option_tagdata = $TMPL->swap_var_single('option', $field_settings['options'][$option_name], $option_tagdata);
-					$option_tagdata = $TMPL->swap_var_single('option_name', $option_name, $option_tagdata);
-					$option_tagdata = $TMPL->swap_var_single('count', $count+1, $option_tagdata);
-
-					// switch tags
-					foreach($this->switches as $i => $switch)
-					{
-						$option = $count % count($switch['options']);
-						$option_tagdata = str_replace($switch['marker'], $switch['options'][$option], $option_tagdata);
-					}
-
-					$r .= $option_tagdata;
-
-					$count++;
-				}
-			}
-		}
-
-		if ($params['backspace'])
-		{
-			$r = substr($r, 0, -$params['backspace']);
-		}
-
-		return $r;
-	}
-
-}
-
-
 class Ff_matrix_date extends Fieldframe_Fieldtype {
 
 	var $_class_name = 'ff_matrix_date';
 
 	var $info = array(
-		'name' => 'Date'
+		'name' => 'Date',
+		'no_lang' => TRUE
 	);
 
 	var $default_tag_params = array(
@@ -579,7 +508,7 @@ class Ff_matrix_date extends Fieldframe_Fieldtype {
 		$LANG->fetch_language_file('search');
 
 		$cell_data = ($cell_data AND is_numeric($cell_data)) ? $LOC->set_human_time($cell_data) : '';
-		$r = $DSP->input_text($cell_name, $cell_data, '', '23', '', '95%') . NBS
+		$r = $DSP->input_text($cell_name, $cell_data, '', '23', '', '140px') . NBS
 		   . '<a style="cursor:pointer;" onclick="jQuery(this).prev().val(\''.$LOC->set_human_time($LOC->now).'\');" >'.$LANG->line('today').'</a>';
 
 		return $r;
