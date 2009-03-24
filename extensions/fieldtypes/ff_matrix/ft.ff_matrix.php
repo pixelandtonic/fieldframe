@@ -216,7 +216,10 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 				(isset($ftype->default_cell_settings) ? $ftype->default_cell_settings : array()),
 				(isset($col['settings']) ? $col['settings'] : array())
 			);
-			$cell_defaults[$col['type']] = $ftype->display_cell($field_name.'[0]['.$col_id.']', '', $cell_settings);
+			$cell_defaults[] = array(
+				'type' => $col['type'],
+				'cell' => $ftype->display_cell($field_name.'[0]['.$col_id.']', '', $cell_settings)
+			);
 		}
 		$r .=    '</tr>';
 

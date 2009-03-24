@@ -66,10 +66,10 @@ $.fn.ffMatrix = function(fieldName, cellDefaults) {
 			.html($.fn.ffMatrix.lang.addRow)
 			.click(function() {
 				$tr = $('<tr>').appendTo(obj.dom.$table);
-				$.each(cellDefaults, function(cellType) {
-					$td = $('<td class="'+cellType+'">').appendTo($tr).html(cellDefaults[cellType]);
-					if ($.fn.ffMatrix.onDisplayCell[cellType]) {
-						$.fn.ffMatrix.onDisplayCell[cellType]($td);
+				$.each(cellDefaults, function() {
+					$td = $('<td class="'+this.type+'">').appendTo($tr).html(this.cell);
+					if ($.fn.ffMatrix.onDisplayCell[this.type]) {
+						$.fn.ffMatrix.onDisplayCell[this.type]($td);
 					}
 				});
 				addButtons($tr);
