@@ -93,7 +93,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 
 			if (method_exists($ftype, 'display_cell_settings'))
 			{
-				$LANG->fetch_language_file($class_name);
+				if (substr($ftype->_class_name, 0, 10) != 'ff_matrix_') $LANG->fetch_language_file($class_name);
 				$settings_display = $ftype->display_cell_settings($cell_settings);
 			}
 			else
@@ -352,10 +352,26 @@ class Ff_matrix_text {
 		'name' => 'Text'
 	);
 
+	var $default_cell_settings = array(
+		'maxl' => '128'
+	);
+
+	function display_cell_settings($cell_settings)
+	{
+		global $DSP, $LANG;
+
+		$r = '<label class="itemWrapper">'
+		   . $DSP->input_text('maxl', $cell_settings['maxl'], '3', '3', 'input', '30px') . NBS
+		   . $LANG->line('field_max_length')
+		   . '</label>';
+
+		return $r;
+	}
+
 	function display_cell($cell_name, $cell_value, $cell_settings)
 	{
 		global $DSP;
-		return $DSP->input_text($cell_name, $cell_value, '', '', '', '95%');
+		return $DSP->input_text($cell_name, $cell_value, '', $cell_settings['maxl'], '', '95%');
 	}
 
 }
@@ -369,10 +385,26 @@ class Ff_matrix_textarea {
 		'name' => 'Textarea'
 	);
 
+	var $default_cell_settings = array(
+		'rows' => '2'
+	);
+
+	function display_cell_settings($cell_settings)
+	{
+		global $DSP, $LANG;
+
+		$r = '<label class="itemWrapper">'
+		   . $DSP->input_text('rows', $cell_settings['rows'], '3', '3', 'input', '30px') . NBS
+		   . $LANG->line('textarea_rows')
+		   . '</label>';
+
+		return $r;
+	}
+
 	function display_cell($cell_name, $cell_value, $cell_settings)
 	{
 		global $DSP;
-		return $DSP->input_textarea($cell_name, $cell_value, '', '', '95%');
+		return $DSP->input_textarea($cell_name, $cell_value, $cell_settings['rows'], '', '95%');
 	}
 
 }

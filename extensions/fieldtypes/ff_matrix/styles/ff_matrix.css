@@ -31,7 +31,7 @@
 .ff_matrix_conf table td { background:#f5faff; }
 
 /* confs */
-.ff_matrix_conf table tr.conf td { border-right:1px solid #1d2326; border-top:1px dotted #1d2326; background:#262e33 repeat-x 0 0; }
+.ff_matrix_conf table tr.conf td { border-right:1px solid #1d2326; border-top:1px dotted #1d2326; background:#262e33 repeat-x 0 0; color:#999; }
 .ff_matrix_conf table tr.conf td:first-child { border-left:1px solid #1d2326; }
 .ff_matrix_conf table tr.conf td:last-child { border-right-style:solid; }
 .ff_matrix_conf table tr.conf.col td { border-top-style:solid; background-image:url(../images/stripes.png); }
