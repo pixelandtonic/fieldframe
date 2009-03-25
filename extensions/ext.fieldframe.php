@@ -892,10 +892,8 @@ class Fieldframe_Main {
 				{
 					if ( ! $ftype->info['no_lang']) $LANG->fetch_language_file($class_name);
 
-					$data = '<div class="ftsettings-container">'
-					      . '<div class="ftsettings">'
+					$data = '<div class="ftsettings">'
 					      . $this->_group_ftype_inputs($ftype->_fieldtype_id, $ftype->display_site_settings())
-					      . $DSP->div_c()
 					      . $DSP->div_c();
 					$DSP->body .= $SD->row(array($data), '', array('id' => 'ft'.$ftype->_fieldtype_id.'settings', 'style' => 'display:none;'));
 				}
@@ -929,8 +927,13 @@ class Fieldframe_Main {
 		     . '  h1 { padding:7px 0; }' . NL
 		     . '  #ffsettings a.toggle { display:block; cursor:pointer; }' . NL
 		     . '  #ffsettings a.toggle.hide { display:none; }' . NL
-		     . '  #ffsettings .ftsettings-container { margin:-2px 0 -1px; border:solid #b1b6d2; border-width:1px 0; padding:7px 7px 6px; background:#cad0d5; }'
-		     . '  #ffsettings .ftsettings { background:#fff; }'
+		     . '  #ffsettings .ftsettings { margin:-1px; }'
+		     . '  #ffsettings .ftsettings, #ffsettings .ftsettings * { background:#262e33; color:#999; }' . NL
+		     . '  #ffsettings .ftsettings input.input, #ffsettings .ftsettings textarea { background:#fff; color:#333; }' . NL
+		     . '  #ffsettings .ftsettings table { border:none; }' . NL
+		     . '  #ffsettings .ftsettings table tr td { border-bottom:1px solid #1d2326; padding-left:8px; padding-right:8px;  }'
+		     . '  #ffsettings .ftsettings table tr:last-child td { border-bottom:none; }'
+		     . '  #ffsettings .ftsettings table tr td.tableHeading { color:#ddd; background:#232a2e; }'
 		     . '</style>' . NL;
 
 		$this->snippets['head'][] = $css;
