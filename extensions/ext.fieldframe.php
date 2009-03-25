@@ -61,14 +61,9 @@ class Fieldframe_Base {
 	 *
 	 * @param array  $settings
 	 */
-	function Fieldframe_Base($settings=FALSE)
+	function Fieldframe_Base($settings=array())
 	{
-		// only initialize if we're not on the Settings page
-		global $PREFS;
-		if ($settings !== FALSE && isset($settings[$PREFS->ini('site_id')]))
-		{
-			$this->_init_main($settings);
-		}
+		$this->_init_main($settings);
 	}
 
 	/**
@@ -188,7 +183,7 @@ class Fieldframe_Base {
 	 */
 	function settings_form($settings=array())
 	{
-		$this->_init_main($settings);
+		$this->_init_main($settings, TRUE);
 
 		global $FF;
 		$FF->settings_form();
@@ -197,7 +192,7 @@ class Fieldframe_Base {
 	function save_settings()
 	{
 		$settings = Fieldframe_Main::_get_all_settings();
-		$this->_init_main($settings);
+		$this->_init_main($settings, TRUE);
 
 		global $FF;
 		$FF->save_settings();
@@ -209,11 +204,11 @@ class Fieldframe_Base {
 	 * @param  array  $settings
 	 * @access private
 	 */
-	function _init_main($settings)
+	function _init_main($settings, $force=FALSE)
 	{
 		global $SESS, $FF;
 
-		if ( ! isset($FF))
+		if ( ! isset($FF) OR $force)
 		{
 			$SESS->cache[FF_CLASS] = array();
 			$FF = new Fieldframe_Main($settings, $this->hooks);
@@ -230,7 +225,7 @@ class Fieldframe_Base {
 	 */
 	function _call($method, $args)
 	{
-		global $FF;
+		global $FF, $EXT;
 
 		if (isset($FF))
 		{
