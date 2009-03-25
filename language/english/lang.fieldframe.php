@@ -3,6 +3,9 @@
 $L = array(
 
 
+'donate' =>
+'Support FieldFrame by Donating',
+
 // errors
 
 'no_fieldtypes_path' =>
