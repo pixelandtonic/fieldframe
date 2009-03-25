@@ -799,13 +799,20 @@ class Fieldframe_Main {
 		            . $DSP->crumb_item(FF_NAME);
 		$DSP->right_crumb($LANG->line('disable_extension'), BASE.AMP.'C=admin'.AMP.'M=utilities'.AMP.'P=toggle_extension_confirm'.AMP.'which=disable'.AMP.'name='.$IN->GBL('name'));
 
+		// Donations button
+	    $DSP->body .= '<div class="donations">'
+	                . '<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=2181794" target="_blank">'
+	                . $LANG->line('donate')
+	                . '</a>'
+	                . '</div>';
+
 		// open form
-		$DSP->body .= '<h1 style="margin-bottom:18px;">'.FF_NAME.' <small>'.FF_VERSION.'</small></h1>'
+		$DSP->body .= '<h1>'.FF_NAME.' <small>'.FF_VERSION.'</small></h1>'
 		            . $DSP->form_open(
 		                  array(
 		                    'action' => 'C=admin'.AMP.'M=utilities'.AMP.'P=save_extension_settings',
 		                    'name'   => 'settings_subtext',
-		                    'id'     => 'settings_subtext'
+		                    'id'     => 'ffsettings'
 		                  ),
 		                  array(
 		                    'name' => strtolower(FF_CLASS)
@@ -864,8 +871,8 @@ class Fieldframe_Main {
 				                            ?  '--'
 				                            :  $SD->radio_group('ftypes['.$class_name.'][enabled]', ($ftype->_is_enabled ? 'y' : 'n'), array('y'=>'yes', 'n'=>'no'))),
 				                         (($ftype->_is_enabled AND method_exists($ftype, 'display_site_settings'))
-				                            ?  '<a id="ft'.$ftype->_fieldtype_id.'show" style="display:block; cursor:pointer;" onclick="this.style.display=\'none\'; document.getElementById(\'ft'.$ftype->_fieldtype_id.'hide\').style.display=\'block\'; document.getElementById(\'ft'.$ftype->_fieldtype_id.'settings\').style.display=\'table-row\';"><img src="'.$PREFS->ini('theme_folder_url', 1).'cp_global_images/expand.gif" border="0">  '.$LANG->line('show').'</a>'
-				                             . '<a id="ft'.$ftype->_fieldtype_id.'hide" style="display:none; cursor:pointer;" onclick="javascript: this.style.display=\'none\'; document.getElementById(\'ft'.$ftype->_fieldtype_id.'show\').style.display=\'block\'; document.getElementById(\'ft'.$ftype->_fieldtype_id.'settings\').style.display=\'none\';"><img src="'.$PREFS->ini('theme_folder_url', 1).'cp_global_images/collapse.gif" border="0">  '.$LANG->line('hide').'</a>'
+				                            ?  '<a class="toggle show" id="ft'.$ftype->_fieldtype_id.'show" onclick="this.style.display=\'none\'; document.getElementById(\'ft'.$ftype->_fieldtype_id.'hide\').style.display=\'block\'; document.getElementById(\'ft'.$ftype->_fieldtype_id.'settings\').style.display=\'table-row\';"><img src="'.$PREFS->ini('theme_folder_url', 1).'cp_global_images/expand.gif" border="0">  '.$LANG->line('show').'</a>'
+				                             . '<a class="toggle hide" id="ft'.$ftype->_fieldtype_id.'hide" onclick="javascript: this.style.display=\'none\'; document.getElementById(\'ft'.$ftype->_fieldtype_id.'show\').style.display=\'block\'; document.getElementById(\'ft'.$ftype->_fieldtype_id.'settings\').style.display=\'none\';"><img src="'.$PREFS->ini('theme_folder_url', 1).'cp_global_images/collapse.gif" border="0">  '.$LANG->line('hide').'</a>'
 				                            :  '--'),
 				                         ($ftype->info['docs_url'] ? '<a href="'.stripslashes($ftype->info['docs_url']).'">'.$LANG->line('documentation').'</a>' : '--')
 				                       ));
@@ -885,8 +892,8 @@ class Fieldframe_Main {
 				{
 					if ( ! $ftype->info['no_lang']) $LANG->fetch_language_file($class_name);
 
-					$data = '<div style="margin:-2px 0 -1px; border:solid #b1b6d2; border-width:1px 0; padding:7px 7px 6px; background:#cad0d5;">'
-					      . '<div style="background:#fff;">'
+					$data = '<div class="ftsettings-container">'
+					      . '<div class="ftsettings">'
 					      . $this->_group_ftype_inputs($ftype->_fieldtype_id, $ftype->display_site_settings())
 					      . $DSP->div_c()
 					      . $DSP->div_c();
@@ -912,6 +919,21 @@ class Fieldframe_Main {
 		// Close form
 		$DSP->body .= $DSP->qdiv('itemWrapperTop', $DSP->input_submit())
 		            . $DSP->form_c();
+
+
+		// CSS
+		$css = '<style type="text/css" charset="utf-8">' . NL
+		     . '  .donations { float:right; }' . NL
+		     . '  .donations a { display:block; margin:-2px 10px 0 0; padding:5px 0 5px 67px; width:193px; height:15px; font-size:12px; line-height:15px;'
+		                     . ' background:url(http://brandon-kelly.com/images/shared/donations.png) no-repeat 0 0; color:#000; font-weight:bold; }' . NL
+		     . '  h1 { padding:7px 0; }' . NL
+		     . '  #ffsettings a.toggle { display:block; cursor:pointer; }' . NL
+		     . '  #ffsettings a.toggle.hide { display:none; }' . NL
+		     . '  #ffsettings .ftsettings-container { margin:-2px 0 -1px; border:solid #b1b6d2; border-width:1px 0; padding:7px 7px 6px; background:#cad0d5; }'
+		     . '  #ffsettings .ftsettings { background:#fff; }'
+		     . '</style>' . NL;
+
+		$this->snippets['head'][] = $css;
 	}
 
 	/**
@@ -1496,7 +1518,7 @@ class Fieldframe_Main {
 			$placement = '</'.$placement.'>';
 			foreach(array_unique($snippets) as $snippet)
 			{
-				$out = str_replace($placement, $snippet.NL.$placement, $out);
+				$out = str_replace($placement, NL.$snippet.NL.$placement, $out);
 			}
 		}
 
