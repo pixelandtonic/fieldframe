@@ -41,6 +41,15 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 	);
 
 	/**
+	 * FF Matrix class constructor
+	 */
+	function Ff_matrix()
+	{
+		global $FFM;
+		$FFM = $this;
+	}
+
+	/**
 	 * Get Fieldtypes
 	 *
 	 * @access private
@@ -288,11 +297,11 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 	{
 		$ftypes = $this->_get_ftypes();
 
-		foreach($field_data as $row_count => &$row)
+		foreach($field_data as $this->row_count => &$row)
 		{
-			foreach($row as $col_id => &$cell_data)
+			foreach($row as $this->col_id => &$cell_data)
 			{
-				$col = $field_settings['cols'][$col_id];
+				$col = $field_settings['cols'][$this->col_id];
 				$ftype = $ftypes[$col['type']];
 				if (method_exists($ftype, 'save_cell'))
 				{
@@ -304,6 +313,9 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 				}
 			}
 		}
+
+		if (isset($this->row_count)) unset($this->row_count);
+		if (Isset($this->col_id)) unset($this->col_id);
 
 		return $field_data;
 	}
