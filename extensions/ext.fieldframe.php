@@ -867,7 +867,7 @@ class Fieldframe_Main {
 
 			foreach($ftypes as $class_name => $ftype)
 			{
-				$row_id = 'ft'.$ftype->_fieldtype_id;
+				$row_id = 'ft_'.$ftype->_class_name;
 				$row_ids[] = '"'.$row_id.'"';
 
 				if (method_exists($ftype, 'display_site_settings'))
