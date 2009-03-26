@@ -863,19 +863,34 @@ class Fieldframe_Main {
 			                                   $LANG->line('documentation')
 			                                 ));
 
+			$row_ids = array();
+
 			foreach($ftypes as $class_name => $ftype)
 			{
+				$row_id = 'ft'.$ftype->_fieldtype_id;
+				$row_ids[] = '"'.$row_id.'"';
+
+				if (method_exists($ftype, 'display_site_settings'))
+				{
+					if ( ! $ftype->info['no_lang']) $LANG->fetch_language_file($class_name);
+					$site_settings = $ftype->display_site_settings();
+				}
+				else
+				{
+					$site_settings = FALSE;
+				}
+
 				$DSP->body .= $SD->row(array(
 				                         $SD->label($ftype->info['name'].NBS.$DSP->qspan('xhtmlWrapperLight defaultSmall', $ftype->info['version']), $ftype->info['desc']),
 				                         ($ftype->_requires
 				                            ?  '--'
 				                            :  $SD->radio_group('ftypes['.$class_name.'][enabled]', ($ftype->_is_enabled ? 'y' : 'n'), array('y'=>'yes', 'n'=>'no'))),
-				                         (($ftype->_is_enabled AND method_exists($ftype, 'display_site_settings'))
-				                            ?  '<a class="toggle show" id="ft'.$ftype->_fieldtype_id.'show" onclick="this.style.display=\'none\'; document.getElementById(\'ft'.$ftype->_fieldtype_id.'hide\').style.display=\'block\'; document.getElementById(\'ft'.$ftype->_fieldtype_id.'settings\').style.display=\'table-row\';"><img src="'.$PREFS->ini('theme_folder_url', 1).'cp_global_images/expand.gif" border="0">  '.$LANG->line('show').'</a>'
-				                             . '<a class="toggle hide" id="ft'.$ftype->_fieldtype_id.'hide" onclick="javascript: this.style.display=\'none\'; document.getElementById(\'ft'.$ftype->_fieldtype_id.'show\').style.display=\'block\'; document.getElementById(\'ft'.$ftype->_fieldtype_id.'settings\').style.display=\'none\';"><img src="'.$PREFS->ini('theme_folder_url', 1).'cp_global_images/collapse.gif" border="0">  '.$LANG->line('hide').'</a>'
+				                         ($site_settings
+				                            ?  '<a class="toggle show" id="'.$row_id.'_show"><img src="'.$PREFS->ini('theme_folder_url', 1).'cp_global_images/expand.gif" border="0">  '.$LANG->line('show').'</a>'
+				                               . '<a class="toggle hide" id="'.$row_id.'_hide"><img src="'.$PREFS->ini('theme_folder_url', 1).'cp_global_images/collapse.gif" border="0">  '.$LANG->line('hide').'</a>'
 				                            :  '--'),
 				                         ($ftype->info['docs_url'] ? '<a href="'.stripslashes($ftype->info['docs_url']).'">'.$LANG->line('documentation').'</a>' : '--')
-				                       ));
+				                       ), NULL, array('id' => $row_id));
 
 				if ($ftype->_requires)
 				{
@@ -888,16 +903,58 @@ class Fieldframe_Main {
 					$data .= '</ul>';
 					$DSP->body .= $SD->row(array('', $data), $SD->row_class);
 				}
-				else if ($ftype->_is_enabled AND method_exists($ftype, 'display_site_settings'))
+				else if ($site_settings)
 				{
-					if ( ! $ftype->info['no_lang']) $LANG->fetch_language_file($class_name);
-
 					$data = '<div class="ftsettings">'
-					      . $this->_group_ftype_inputs($ftype->_fieldtype_id, $ftype->display_site_settings())
+					      .   $this->_group_ftype_inputs($ftype->_fieldtype_id, $site_settings)
 					      . $DSP->div_c();
-					$DSP->body .= $SD->row(array($data), '', array('id' => 'ft'.$ftype->_fieldtype_id.'settings', 'style' => 'display:none;'));
+					$DSP->body .= $SD->row(array($data), '', array('id' => $row_id.'_settings', 'style' => 'display:none;'));
 				}
 			}
+
+			$js = '<script type="text/javascript" charset="utf-8">' . NL
+			    . '  function ffEnable(ft) {' . NL
+			    . '    ft.show.className = "toggle show";' . NL
+			    . '    ft.show.onclick = function() {' . NL
+			    . '      ft.show.style.display = "none";' . NL
+			    . '      ft.hide.style.display = "block";' . NL
+			    . '      ft.settings.style.display = "table-row";' . NL
+			    . '    };' . NL
+			    . '    ft.hide.onclick = function() {' . NL
+			    . '      ft.show.style.display = "block";' . NL
+			    . '      ft.hide.style.display = "none";' . NL
+			    . '      ft.settings.style.display = "none";' . NL
+			    . '    };' . NL
+			    . '  }' . NL
+			    . '  function ffDisable(ft) {' . NL
+			    . '    ft.show.className = "toggle show disabled";' . NL
+			    . '    ft.show.onclick = null;' . NL
+			    . '    ft.show.style.display = "block";' . NL
+			    . '    ft.hide.style.display = "none";' . NL
+			    . '    ft.settings.style.display = "none";' . NL
+			    . '  }' . NL
+			    . '  function ffInitRow(rowId) {' . NL
+			    . '    var ft = {' . NL
+			    . '      tr: document.getElementById(rowId),' . NL
+			    . '      show: document.getElementById(rowId+"_show"),' . NL
+			    . '      hide: document.getElementById(rowId+"_hide"),' . NL
+			    . '      settings: document.getElementById(rowId+"_settings")' . NL
+			    . '    };' . NL
+			    . '    if (ft.settings) {' . NL
+			    . '      ft.toggles = ft.tr.getElementsByTagName("input");' . NL
+			    . '      ft.toggles[0].onchange = function() { ffEnable(ft); };' . NL
+			    . '      ft.toggles[1].onchange = function() { ffDisable(ft); };' . NL
+			    . '      if (ft.toggles[0].checked) ffEnable(ft);' . NL
+			    . '      else ffDisable(ft);' . NL
+			    . '    }' . NL
+			    . '  }' . NL
+			    . '  var ffRowIds = ['.implode(',', $row_ids).'];' . NL
+			    . '  for (var i = 0; i < ffRowIds.length; i++) {' . NL
+			    . '    ffInitRow(ffRowIds[i]);' . NL
+			    . '  }' . NL
+			    . '</script>';
+
+			$this->snippets['body'][] = $js;
 		}
 		else if ( ! defined('FT_PATH'))
 		{
@@ -927,6 +984,7 @@ class Fieldframe_Main {
 		     . '  h1 { padding:7px 0; }' . NL
 		     . '  #ffsettings a.toggle { display:block; cursor:pointer; }' . NL
 		     . '  #ffsettings a.toggle.hide { display:none; }' . NL
+		     . '  #ffsettings a.toggle.disabled { color:#000; opacity:0.4; cursor:default; }'
 		     . '  #ffsettings .ftsettings { margin:-1px; }'
 		     . '  #ffsettings .ftsettings, #ffsettings .ftsettings * { background:#262e33; color:#999; }' . NL
 		     . '  #ffsettings .ftsettings input.input, #ffsettings .ftsettings textarea { background:#fff; color:#333; }' . NL
@@ -934,7 +992,7 @@ class Fieldframe_Main {
 		     . '  #ffsettings .ftsettings table tr td { border-bottom:1px solid #1d2326; padding-left:8px; padding-right:8px;  }'
 		     . '  #ffsettings .ftsettings table tr:last-child td { border-bottom:none; }'
 		     . '  #ffsettings .ftsettings table tr td.tableHeading { color:#ddd; background:#232a2e; }'
-		     . '</style>' . NL;
+		     . '</style>';
 
 		$this->snippets['head'][] = $css;
 	}
