@@ -165,7 +165,7 @@ $.fn.ffMatrixConf.options = {
 
 
 function groupCellSettings(obj, cellSettings, colId) {
-	return cellSettings.replace(/(name=['"])([^'"\[\]]+)([^'"]*)(['"])/i, '$1'+obj.namespace+'[cols]['+colId+'][settings][$2]$3$4');
+	return cellSettings.replace(/(name=['"])([^'"\[\]]+)([^'"]*)(['"])/ig, '$1'+obj.namespace+'[cols]['+colId+'][settings][$2]$3$4');
 }
 
 
