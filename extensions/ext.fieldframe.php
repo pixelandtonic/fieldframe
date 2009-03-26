@@ -906,7 +906,7 @@ class Fieldframe_Main {
 				else if ($site_settings)
 				{
 					$data = '<div class="ftsettings">'
-					      .   $this->_group_ftype_inputs($ftype->_fieldtype_id, $site_settings)
+					      .   $this->_group_ftype_inputs($ftype->_class_name, $site_settings)
 					      . $DSP->div_c();
 					$DSP->body .= $SD->row(array($data), '', array('id' => $row_id.'_settings', 'style' => 'display:none;'));
 				}
@@ -1043,6 +1043,18 @@ class Fieldframe_Main {
 				{
 					$data = array('enabled' => $ftype_post['enabled'] == 'y' ? 'y' : 'n');
 
+					$settings = (isset($_POST['ftype']) AND isset($_POST['ftype'][$ftype->_class_name]))
+					  ?  $_POST['ftype'][$ftype->_class_name]
+					  :  array();
+
+					// let the fieldtype do what it wants with them
+					if (method_exists($ftype, 'save_site_settings'))
+					{
+						$settings = $ftype->save_site_settings($settings);
+						if ( ! is_array($settings)) $settings = array();
+					}
+					$data['settings'] = addslashes(serialize($settings));
+
 					// insert a new row if it's new
 					if ($ftype->_is_new)
 					{
@@ -1068,19 +1080,6 @@ class Fieldframe_Main {
 					}
 					else
 					{
-						// site settings
-						$settings = (isset($_POST['ftype']) AND isset($_POST['ftype'][$ftype->_fieldtype_id]))
-						  ?  $_POST['ftype'][$ftype->_fieldtype_id]
-						  :  array();
-
-						// let the fieldtype do what it wants with them
-						if (method_exists($ftype, 'save_site_settings'))
-						{
-							$settings = $ftype->save_site_settings($settings);
-							if ( ! is_array($settings)) $settings = array();
-						}
-						$data['settings'] = addslashes(serialize($settings));
-
 						// update the row
 						$DB->query($DB->update_string('exp_ff_fieldtypes', $data, 'fieldtype_id = "'.$ftype->_fieldtype_id.'"'));
 					}
