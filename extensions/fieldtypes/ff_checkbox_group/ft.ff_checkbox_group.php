@@ -123,6 +123,10 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 		$r = '<label class="itemWrapper">'
 		   . $DSP->qdiv('defaultBold', $LANG->line('checkbox_options_label'))
 		   . $DSP->input_textarea('options', $this->options_setting($cell_settings['options']), '3', 'textarea', '140px')
+		   . '</label>'
+		   . '<label class="itemWrapper">'
+		   . $DSP->qdiv('defaultBold', $LANG->line('checkbox_options_label'))
+		   . $DSP->input_textarea('options2', $this->options_setting($cell_settings['options']), '3', 'textarea', '140px')
 		   . '</label>';
 
 		return $r;
