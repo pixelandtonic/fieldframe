@@ -43,7 +43,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 	/**
 	 * FF Matrix class constructor
 	 */
-	function Ff_matrix()
+	function __construct()
 	{
 		global $FFM;
 		$FFM = $this;
