@@ -39,7 +39,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		'cellspacing' => '1',
 		'cellpadding' => '10',
 		'limit' => '0',
-		'flip' => 'n'
+		'sort' => 'asc'
 	);
 
 	/**
@@ -363,7 +363,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 			$tagdata .= '    </tr>' . "\n";
 		}
 
-		if ($params['flip'] == 'y')
+		if ($params['sort'] == 'desc')
 		{
 			$field_data = array_reverse($field_data);
 		}
