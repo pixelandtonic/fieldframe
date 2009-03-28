@@ -49,6 +49,93 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		$FFM = $this;
 	}
 
+	function display_site_settings()
+	{
+		global $DB, $PREFS, $DSP;
+
+		$fields_q = $DB->query('SELECT f.field_id, f.field_label, g.group_name, f.field_type
+		                          FROM exp_weblog_fields AS f, exp_field_groups AS g
+		                          WHERE f.site_id = '.$PREFS->ini('site_id').'
+		                            AND f.field_type IN ("data_matrix", "multi_text")
+		                            AND f.group_id = g.group_id
+		                          ORDER BY g.group_name, f.field_order, f.field_label');
+		if ($fields_q->num_rows)
+		{
+			$SD = new Fieldframe_SettingsDisplay();
+
+			$r = $SD->block();
+
+			$convert_r = '';
+			$last_group_name = '';
+			foreach($fields_q->result as $row)
+			{
+				if ($row['group_name'] != $last_group_name)
+				{
+					$convert_r .= $DSP->qdiv('defaultBold', $row['group_name']);
+					$last_group_name = $row['group_name'];
+				}
+				$convert_r .= '<label>'
+				            . $DSP->input_checkbox('convert[]', $row['field_id'])
+				            . $row['field_label']
+				            . NBS.NBS.'<em style="opacity:0.7">('.($row['field_type'] == 'data_matrix' ? 'LG Data Matrix' : 'MH Multi-text').')</em>'
+				            . '</label>'
+				            . '<br>';
+			}
+			$r .= $SD->row(array(
+				$SD->label('convert_label', 'convert_desc'),
+				$convert_r
+			));
+
+			$r .= $SD->block_c();
+			return $r;
+		}
+
+		return FALSE;
+	}
+
+	/**
+	 * Save Site Settings
+	 *
+	 * @param  array  $site_settings  The site settings post data
+	 * @return array  The modified $site_settings
+	 */
+	function save_site_settings($site_settings)
+	{
+		global $DB, $FF;
+
+		if (isset($site_settings['convert']))
+		{
+			$fields_q = $DB->query('SELECT * FROM exp_weblog_fields
+			                          WHERE field_id IN ('.implode(',', $site_settings['convert']).')');
+
+			$sql = array();
+
+			foreach($fields_q->result as $field)
+			{
+				$field_data = array('field_type' => 'ftype_id_'.$this->_fieldtype_id);
+
+				if ($field['field_type'] == 'data_matrix')
+				{
+					$conf = $REGX->array_stripslashes(unserialize($field['lg_field_conf']));
+
+					$field_data['lg_field_conf'] = '';
+				}
+				else if ($field['field_type'] == 'multi_text')
+				{
+					
+				}
+
+				$sql[] = $DB->update_string('exp_weblog_fields', $field_data, 'field_id = '.$field['field_id']);
+			}
+
+			foreach($sql as $query)
+			{
+				$FF->log($query);
+				//$DB->query($query);
+			}
+		}
+	}
+
 	/**
 	 * Get Fieldtypes
 	 *
