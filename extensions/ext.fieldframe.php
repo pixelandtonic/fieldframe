@@ -1171,11 +1171,14 @@ class Fieldframe_Main {
 	 */
 	function sessions_start($sess)
 	{
+		global $IN;
+
 		// are we saving a field?
-		if (isset($_POST['field_type']))
+		if($IN->GBL('M', 'GET') == 'blog_admin' AND $IN->GBL('P', 'GET') == 'update_weblog_fields' AND isset($_POST['field_type']))
 		{
 			$this->publish_admin_edit_field_save();
 		}
+
 		$args = func_get_args();
 		return $this->forward_ff_hook('sessions_start', $args);
 	}
