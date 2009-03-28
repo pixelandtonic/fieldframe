@@ -985,12 +985,11 @@ class Fieldframe_Main {
 		     . '  #ffsettings a.toggle { display:block; cursor:pointer; }' . NL
 		     . '  #ffsettings a.toggle.hide { display:none; }' . NL
 		     . '  #ffsettings a.toggle.disabled { color:#000; opacity:0.4; cursor:default; }'
-		     . '  #ffsettings .ftsettings { margin:-1px; }'
+		     . '  #ffsettings .ftsettings { margin:-3px -1px -1px; }'
 		     . '  #ffsettings .ftsettings, #ffsettings .ftsettings * { background:#262e33; color:#999; }' . NL
 		     . '  #ffsettings .ftsettings input.input, #ffsettings .ftsettings textarea { background:#fff; color:#333; }' . NL
 		     . '  #ffsettings .ftsettings table { border:none; }' . NL
-		     . '  #ffsettings .ftsettings table tr td { border-bottom:1px solid #1d2326; padding-left:8px; padding-right:8px;  }'
-		     . '  #ffsettings .ftsettings table tr:last-child td { border-bottom:none; }'
+		     . '  #ffsettings .ftsettings table tr td { border-top:1px solid #1d2326; padding-left:8px; padding-right:8px;  }'
 		     . '  #ffsettings .ftsettings table tr td.tableHeading { color:#ddd; background:#232a2e; }' . NL
 		     . '  #ffsettings .ftsettings .defaultBold { color:#ccc; }' . NL
 		     . '</style>';

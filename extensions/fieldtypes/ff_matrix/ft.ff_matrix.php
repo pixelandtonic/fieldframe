@@ -49,47 +49,6 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		$FFM = $this;
 	}
 
-	function display_site_settings()
-	{
-//		global $DB, $DSP;
-//
-//		$fields_q = $DB->query('SELECT f.field_id, f.field_label, g.group_name, f.field_type
-//		                          FROM exp_weblog_fields AS f, exp_field_groups AS g
-//		                          WHERE f.field_type IN ("data_matrix", "multi_text")
-//		                            AND f.group_id = g.group_id
-//		                          ORDER BY g.group_name, f.field_order, f.field_label');
-//		if ($fields_q->num_rows)
-//		{
-//			$SD = new Fieldframe_SettingsDisplay();
-//
-//			$r = $SD->block();
-//
-//			$convert_r = '';
-//			$last_group_name = '';
-//			foreach($fields_q->result as $row)
-//			{
-//				if ($row['group_name'] != $last_group_name)
-//				{
-//					$convert_r .= $SD->label($row['group_name']);
-//					$last_group_name = $row['group_name'];
-//				}
-//				$convert_r .= $DSP->input_checkbox('convert[]', $row['field_id'])
-//				            . $row['field_label']
-//				            . NBS.NBS.'<em style="opacity:0.7">('.($row['field_type'] == 'data_matrix' ? 'LG Data Matrix' : 'MH Multi-text').')</em>'
-//				            . '<br>';
-//			}
-//			$r .= $SD->row(array(
-//				$SD->label('Convert LG Data Matrix and Multi-text fields?', 'FF Matrix can automatically convert your LG Data Matrix and MH Multi-text fields into FF Matrix fields. Just select the applicable fields.'),
-//				$convert_r
-//			));
-//
-//			$r .= $SD->block_c();
-//			return $r;
-//		}
-
-		return FALSE;
-	}
-
 	/**
 	 * Get Fieldtypes
 	 *
