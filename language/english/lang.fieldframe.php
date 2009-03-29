@@ -76,6 +76,9 @@ $L = array(
 'or_later' =>
 'or later',
 
+'apply' =>
+'Apply',
+
 
 /** ---------------------------------
 /** FF Checkbox Group

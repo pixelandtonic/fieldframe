@@ -1106,27 +1106,19 @@ class Fieldframe_Main {
 				// Initialize
 				if (($ftype = $this->_init_ftype($file)) !== FALSE)
 				{
-					$data = array('enabled' => $ftype_post['enabled'] == 'y' ? 'y' : 'n');
+					$enabled = ($ftype_post['enabled'] == 'y');
 
-					$settings = (isset($_POST['ftype']) AND isset($_POST['ftype'][$ftype->_class_name]))
-					  ?  $_POST['ftype'][$ftype->_class_name]
-					  :  array();
-
-					// let the fieldtype do what it wants with them
-					if (method_exists($ftype, 'save_site_settings'))
-					{
-						$settings = $ftype->save_site_settings($settings);
-						if ( ! is_array($settings)) $settings = array();
-					}
-					$data['settings'] = addslashes(serialize($settings));
+					// skip if new and not enabled yet
+					if ( ! $enabled AND $ftype->_is_new) continue;
 
 					// insert a new row if it's new
-					if ($ftype->_is_new)
+					if ($enabled AND $ftype->_is_new)
 					{
-						$data['site_id'] = $PREFS->ini('site_id');
-						$data['class'] = $file;
-						$data['version'] = $ftype->info['version'];
-						$DB->query($DB->insert_string('exp_ff_fieldtypes', $data));
+						$DB->query($DB->insert_string('exp_ff_fieldtypes', array(
+							'site_id' => $PREFS->ini('site_id'),
+							'class'   => $file,
+							'version' => $ftype->info['version']
+						)));
 
 						// get the fieldtype_id
 						$query = $DB->query('SELECT fieldtype_id FROM exp_ff_fieldtypes
@@ -1143,11 +1135,27 @@ class Fieldframe_Main {
 							$ftype->update(FALSE);
 						}
 					}
-					else
+
+					$data = array(
+						'enabled' => ($enabled ? 'y' : 'n')
+					);
+
+					if ($enabled)
 					{
-						// update the row
-						$DB->query($DB->update_string('exp_ff_fieldtypes', $data, 'fieldtype_id = "'.$ftype->_fieldtype_id.'"'));
+						$settings = (isset($_POST['ftype']) AND isset($_POST['ftype'][$ftype->_class_name]))
+						  ?  $_POST['ftype'][$ftype->_class_name]
+						  :  array();
+
+						// let the fieldtype do what it wants with them
+						if (method_exists($ftype, 'save_site_settings'))
+						{
+							$settings = $ftype->save_site_settings($settings);
+							if ( ! is_array($settings)) $settings = array();
+						}
+						$data['settings'] = addslashes(serialize($settings));
 					}
+
+					$DB->query($DB->update_string('exp_ff_fieldtypes', $data, 'fieldtype_id = "'.$ftype->_fieldtype_id.'"'));
 				}
 			}
 
