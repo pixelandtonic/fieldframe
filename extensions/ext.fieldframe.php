@@ -846,6 +846,105 @@ class Fieldframe_Main {
 		                         ))
 		            . $SD->block_c();
 
+		// Fieldtypes Manager
+		$this->fieldtypes_manager(FALSE, $SD);
+
+		// Close form
+		$DSP->body .= $DSP->qdiv('itemWrapperTop', $DSP->input_submit())
+		            . $DSP->form_c();
+
+
+		// CSS
+		$css = '<style type="text/css" charset="utf-8">' . NL
+		     . '  .donations { float:right; }' . NL
+		     . '  .donations a { display:block; margin:-2px 10px 0 0; padding:5px 0 5px 67px; width:193px; height:15px; font-size:12px; line-height:15px;'
+		                     . ' background:url(http://brandon-kelly.com/images/shared/donations.png) no-repeat 0 0; color:#000; font-weight:bold; }' . NL
+		     . '  h1 { padding:7px 0; }' . NL
+		     . '</style>';
+
+		$this->snippets['head'][] = $css;
+	}
+
+	/**
+	 * Add Slash to URL/Path
+	 *
+	 * @param  string  $path  The user-submitted path
+	 * @return string  $path with a slash at the end
+	 * @access private
+	 */
+	function _add_slash($path)
+	{
+		if (substr($path, -1) != '/')
+		{
+			$path .= '/';
+		}
+		return $path;
+	}
+
+	/**
+	 * Save Settings
+	 */
+	function save_settings()
+	{
+		global $DB, $PREFS;
+
+		// get the default FF settings
+		$this->settings = $this->_get_settings();
+
+		$this->settings['fieldtypes_url'] = $_POST['fieldtypes_url'] ? $this->_add_slash($_POST['fieldtypes_url']) : '';
+		$this->settings['fieldtypes_path'] = $_POST['fieldtypes_path'] ? $this->_add_slash($_POST['fieldtypes_path']) : '';
+		$this->settings['check_for_updates'] = ($_POST['check_for_updates'] != 'n') ? 'y' : 'n';
+
+		// save all FF settings
+		$settings = $this->_get_all_settings();
+		$settings[$PREFS->ini('site_id')] = $this->settings;
+		$DB->query($DB->update_string('exp_extensions', array('settings' => addslashes(serialize($settings))), 'class = "'.FF_CLASS.'"'));
+
+		$this->save_fieldtypes_manager();
+	}
+
+	/**
+	 * Fieldtypes Manager
+	 */
+	function fieldtypes_manager($standalone=TRUE, $SD=NULL)
+	{
+		global $DB, $DSP, $LANG, $IN, $PREFS, $SD;
+
+		if ( ! $SD)
+		{
+			// initialize Fieldframe_SettingsDisplay
+			$SD = new Fieldframe_SettingsDisplay();
+		}
+
+		if ($standalone)
+		{
+			// save submitted settings
+			if ($this->save_fieldtypes_manager())
+			{
+				$DSP->body .= $DSP->qdiv('itemWrapper highlight_alt_bold', $LANG->line('settings_update'));
+			}
+
+			// load language file
+			$LANG->fetch_language_file('fieldframe');
+
+			// Breadcrumbs
+			$DSP->crumbline = TRUE;
+			$DSP->title = $LANG->line('extension_settings');
+			$DSP->crumb = $DSP->anchor(BASE.AMP.'C=admin'.AMP.'area=utilities', $LANG->line('utilities'))
+			            . $DSP->crumb_item($LANG->line('fieldtypes_manager'));
+
+			// open form
+			$DSP->body .= $DSP->form_open(
+			                  array(
+			                    'action' => 'C=admin'.AMP.'M=utilities'.AMP.'P=fieldtypes_manager',
+			                    'name'   => 'settings_subtext',
+			                    'id'     => 'ffsettings'
+			                  ),
+			                  array(
+			                    'name' => strtolower(FF_CLASS)
+			                  ));
+		}
+
 		// fieldtype settings
 		$DSP->body .= $SD->block('fieldtypes_manager', 5);
 
@@ -968,17 +1067,15 @@ class Fieldframe_Main {
 
 		$DSP->body .= $SD->block_c();
 
-		// Close form
-		$DSP->body .= $DSP->qdiv('itemWrapperTop', $DSP->input_submit())
-		            . $DSP->form_c();
-
+		if ($standalone)
+		{
+			// Close form
+			$DSP->body .= $DSP->qdiv('itemWrapperTop', $DSP->input_submit($LANG->line('apply')))
+			            . $DSP->form_c();
+		}
 
 		// CSS
 		$css = '<style type="text/css" charset="utf-8">' . NL
-		     . '  .donations { float:right; }' . NL
-		     . '  .donations a { display:block; margin:-2px 10px 0 0; padding:5px 0 5px 67px; width:193px; height:15px; font-size:12px; line-height:15px;'
-		                     . ' background:url(http://brandon-kelly.com/images/shared/donations.png) no-repeat 0 0; color:#000; font-weight:bold; }' . NL
-		     . '  h1 { padding:7px 0; }' . NL
 		     . '  #ffsettings a.toggle { display:block; cursor:pointer; }' . NL
 		     . '  #ffsettings a.toggle.hide { display:none; }' . NL
 		     . '  #ffsettings a.toggle.disabled { color:#000; opacity:0.4; cursor:default; }'
@@ -995,40 +1092,11 @@ class Fieldframe_Main {
 	}
 
 	/**
-	 * Add Slash to URL/Path
-	 *
-	 * @param  string  $path  The user-submitted path
-	 * @return string  $path with a slash at the end
-	 * @access private
+	 * Save Fieldtypes Manager Settings
 	 */
-	function _add_slash($path)
-	{
-		if (substr($path, -1) != '/')
-		{
-			$path .= '/';
-		}
-		return $path;
-	}
-
-	/**
-	 * Save Settings
-	 */
-	function save_settings()
+	function save_fieldtypes_manager()
 	{
 		global $DB, $PREFS;
-
-		// get the default FF settings
-		$this->settings = $this->_get_settings();
-
-		$this->settings['fieldtypes_url'] = $_POST['fieldtypes_url'] ? $this->_add_slash($_POST['fieldtypes_url']) : '';
-		$this->settings['fieldtypes_path'] = $_POST['fieldtypes_path'] ? $this->_add_slash($_POST['fieldtypes_path']) : '';
-		$this->settings['check_for_updates'] = ($_POST['check_for_updates'] != 'n') ? 'y' : 'n';
-
-		// save all FF settings
-		$settings = $this->_get_all_settings();
-		$settings[$PREFS->ini('site_id')] = $this->settings;
-		$DB->query($DB->update_string('exp_extensions', array('settings' => addslashes(serialize($settings))), 'class = "'.FF_CLASS.'"'));
-
 
 		// fieldtype settings
 		if (isset($_POST['ftypes']))
@@ -1082,7 +1150,11 @@ class Fieldframe_Main {
 					}
 				}
 			}
+
+			return TRUE;
 		}
+
+		return FALSE;
 	}
 
 	/**
@@ -1565,7 +1637,7 @@ class Fieldframe_Main {
 		// are we displaying the custom field list?
 		if ($IN->GBL('C', 'GET') == 'admin' AND $IN->GBL('M', 'GET') == 'utilities' AND $IN->GBL('P', 'GET') == 'fieldtypes_manager')
 		{
-			$DSP->body = 'Fieldtypes Manager';
+			$this->fieldtypes_manager();
 		}
 
 		$args = func_get_args();
@@ -1584,12 +1656,12 @@ class Fieldframe_Main {
 	 */
 	function show_full_control_panel_end($out)
 	{
-		global $IN, $DB, $REGX;
+		global $IN, $DB, $REGX, $DSP, $LANG;
 
 		$out = $this->get_last_call($out);
 
 		// are we displaying the custom field list?
-		if($IN->GBL('M', 'GET') == 'blog_admin' AND in_array($IN->GBL('P', 'GET'), array('field_editor', 'update_weblog_fields', 'delete_field', 'update_field_order')))
+		if ($IN->GBL('M', 'GET') == 'blog_admin' AND in_array($IN->GBL('P', 'GET'), array('field_editor', 'update_weblog_fields', 'delete_field', 'update_field_order')))
 		{
 			// get the FF fieldtypes
 			foreach($this->_get_fields() as $field_id => $field)
@@ -1598,6 +1670,13 @@ class Fieldframe_Main {
 				$out = preg_replace("/(C=admin&amp;M=blog_admin&amp;P=edit_field&amp;field_id={$field_id}[\'\"].*?<\/td>.*?<td.*?>.*?<\/td>.*?)<\/td>/is",
 				                      '$1'.$REGX->form_prep($field['ftype']->info['name']).'</td>', $out);
 			}
+		}
+		// is this the main admin page?
+		else if ($IN->GBL('C', 'GET') == 'admin' AND ! ($IN->GBL('M', 'GET') AND $IN->GBL('P', 'GET')))
+		{
+			$LANG->fetch_language_file('fieldframe');
+			$out = preg_replace('/(<li><a href=.+C=admin&amp;M=utilities&amp;P=extensions_manager.+<\/a><\/li>)/',
+				"$1\n<li>".$DSP->anchor(BASE.AMP.'C=admin'.AMP.'M=utilities'.AMP.'P=fieldtypes_manager', $LANG->line('fieldtypes_manager')).'</li>', $out, 1);
 		}
 
 		foreach($this->snippets as $placement => $snippets)
