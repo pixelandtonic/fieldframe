@@ -8,7 +8,7 @@ if ( ! defined('FF_CLASS'))
 {
 	define('FF_CLASS',   'Fieldframe');
 	define('FF_NAME',    'FieldFrame');
-	define('FF_VERSION', '0.9.9');
+	define('FF_VERSION', '1.0.0');
 }
 
 
@@ -42,6 +42,7 @@ class Fieldframe {
 		'publish_admin_edit_field_js',
 
 		// Field Manager
+		'show_full_control_panel_start',
 		'show_full_control_panel_end',
 
 		// Entry Form
@@ -71,72 +72,17 @@ class Fieldframe {
 	 */
 	function activate_extension()
 	{
+		global $DB;
+
 		// require PHP 5
 		if (phpversion() < 5) return;
 
-		global $DB;
-
 		// Get settings
 		$settings = Fieldframe_Main::_get_all_settings();
+		$this->_init_main($settings, TRUE);
 
-		// Delete old hooks
-		$DB->query('DELETE FROM exp_extensions
-		              WHERE class = "'.FF_CLASS.'"
-		                      AND method NOT LIKE "forward_hook:%"');
-
-		// Add new extensions
-		$hook_tmpl = array(
-			'class'    => FF_CLASS,
-			'settings' => addslashes(serialize($settings)),
-			'priority' => 10,
-			'version'  => FF_VERSION,
-			'enabled'  => 'y'
-		);
-
-		foreach($this->hooks as $hook => $data)
-		{
-			if (is_string($data))
-			{
-				$hook = $data;
-				$data = array();
-			}
-			$data = array_merge($hook_tmpl, array('hook' => $hook, 'method' => $hook), $data);
-			$DB->query($DB->insert_string('exp_extensions', $data));
-		}
-
-		// exp_ff_fieldtypes
-		if ( ! $DB->table_exists('exp_ff_fieldtypes'))
-		{
-			$DB->query("CREATE TABLE exp_ff_fieldtypes (
-			              `fieldtype_id` int(10) unsigned NOT NULL auto_increment,
-			              `site_id`      int(4)  unsigned NOT NULL default '1',
-			              `class`        varchar(50)      NOT NULL default '',
-			              `version`      varchar(10)      NOT NULL default '',
-			              `settings`     text             NOT NULL default '',
-			              `enabled`      char(1)          NOT NULL default 'n',
-			              PRIMARY KEY (`fieldtype_id`)
-			            )");
-		}
-
-		// exp_ff_fieldtype_hooks
-		if ( ! $DB->table_exists('exp_ff_fieldtype_hooks'))
-		{
-			$DB->query("CREATE TABLE exp_ff_fieldtype_hooks (
-			              `hook_id`  int(10) unsigned NOT NULL auto_increment,
-			              `class`    varchar(50)      NOT NULL default '',
-			              `hook`     varchar(50)      NOT NULL default '',
-			              `method`   varchar(50)      NOT NULL default '',
-			              `priority` int(2)           NOT NULL DEFAULT '10',
-			              PRIMARY KEY (`hook_id`)
-			            )");
-		}
-
-		// exp_weblog_fields.ff_settings
-		$query = $DB->query("SHOW COLUMNS FROM `{$DB->prefix}weblog_fields` LIKE 'ff_settings'");
-		if ( ! $query->num_rows)
-		{
-			$DB->query("ALTER TABLE `{$DB->prefix}weblog_fields` ADD COLUMN `ff_settings` text NOT NULL");
-		}
+		global $FF;
+		$FF->activate_extension($settings);
 	}
 
 	/**
@@ -150,24 +96,22 @@ class Fieldframe {
 
 		if ( ! $current OR $current == FF_VERSION)
 		{
-			// why did you call me again?
 			return FALSE;
 		}
 
-		//if ($current < '0.0.3')
-		//{
+		if ($current < '1.0.0')
+		{
 			// hooks have changed, so go through
 			// the whole activate_extension() process
 			$this->activate_extension();
-		//}
-		//else
-		//{
-		//	// just update the version nums
-		//	global $DB;
-		//	$DB->query("UPDATE exp_extensions
-		//	              SET version = '".$DB->escape_str(FF_VERSION)."'
-		//	              WHERE class = '{FF_CLASS}'");
-		//}
+		}
+		else
+		{
+			// just update the version #s
+			$DB->query('UPDATE exp_extensions
+			              SET version = "'.FF_VERSION.'"
+			              WHERE class = "'.FF_CLASS.'"');
+		}
 	}
 
 	/**
@@ -186,7 +130,7 @@ class Fieldframe {
 	 */
 	function settings_form($settings=array())
 	{
-		$this->_init_main($settings, TRUE);
+		$this->_init_main($settings);
 
 		global $FF;
 		$FF->settings_form();
@@ -213,7 +157,7 @@ class Fieldframe {
 
 		if ( ! isset($FF) OR $force)
 		{
-			$SESS->cache[FF_CLASS] = array();
+			//$SESS->cache[FF_CLASS] = array();
 			$FF = new Fieldframe_Main($settings, $this->hooks);
 		}
 	}
@@ -291,7 +235,8 @@ class Fieldframe_Main {
 		$this->settings = $this->_get_settings($settings);
 
 		// create a reference to the cache
-		$this->cache = &$SESS->cache[FF_CLASS];
+		//$this->cache = &$SESS->cache[FF_CLASS];
+		$this->cache = array();
 
 		// define fieldtype folder constants
 		if ( ! defined('FT_PATH') AND $this->settings['fieldtypes_path']) define('FT_PATH', $this->settings['fieldtypes_path']);
@@ -676,9 +621,13 @@ class Fieldframe_Main {
 		return $OBJ;
 	}
 
+	/**
+	 * Insert Fieldtype Hooks
+	 * @access private
+	 */
 	function _insert_ftype_hooks($ftype)
 	{
-		global $DB;
+		global $DB, $FF;
 
 		// remove any existing hooks from exp_ff_fieldtype_hooks
 		$DB->query('DELETE FROM exp_ff_fieldtype_hooks
@@ -755,6 +704,78 @@ class Fieldframe_Main {
 	function _group_ftype_inputs($ftype_id, $settings)
 	{
 		return $this->_group_inputs('ftype['.$ftype_id.']', $settings);
+	}
+
+	/**
+	 * Activate Extension
+	 */
+	function activate_extension($settings)
+	{
+		global $DB;
+
+		// Delete old hooks
+		$DB->query('DELETE FROM exp_extensions
+		              WHERE class = "'.FF_CLASS.'"');
+
+		// Add new extensions
+		$hook_tmpl = array(
+			'class'    => FF_CLASS,
+			'settings' => addslashes(serialize($settings)),
+			'priority' => 10,
+			'version'  => FF_VERSION,
+			'enabled'  => 'y'
+		);
+
+		foreach($this->hooks as $hook => $data)
+		{
+			if (is_string($data))
+			{
+				$hook = $data;
+				$data = array();
+			}
+			$data = array_merge($hook_tmpl, array('hook' => $hook, 'method' => $hook), $data);
+			$DB->query($DB->insert_string('exp_extensions', $data));
+		}
+
+		// exp_ff_fieldtypes
+		if ( ! $DB->table_exists('exp_ff_fieldtypes'))
+		{
+			$DB->query("CREATE TABLE exp_ff_fieldtypes (
+			              `fieldtype_id` int(10) unsigned NOT NULL auto_increment,
+			              `site_id`      int(4)  unsigned NOT NULL default '1',
+			              `class`        varchar(50)      NOT NULL default '',
+			              `version`      varchar(10)      NOT NULL default '',
+			              `settings`     text             NOT NULL default '',
+			              `enabled`      char(1)          NOT NULL default 'n',
+			              PRIMARY KEY (`fieldtype_id`)
+			            )");
+		}
+
+		// exp_ff_fieldtype_hooks
+		if ( ! $DB->table_exists('exp_ff_fieldtype_hooks'))
+		{
+			$DB->query("CREATE TABLE exp_ff_fieldtype_hooks (
+			              `hook_id`  int(10) unsigned NOT NULL auto_increment,
+			              `class`    varchar(50)      NOT NULL default '',
+			              `hook`     varchar(50)      NOT NULL default '',
+			              `method`   varchar(50)      NOT NULL default '',
+			              `priority` int(2)           NOT NULL DEFAULT '10',
+			              PRIMARY KEY (`hook_id`)
+			            )");
+		}
+
+		// exp_weblog_fields.ff_settings
+		$query = $DB->query("SHOW COLUMNS FROM `{$DB->prefix}weblog_fields` LIKE 'ff_settings'");
+		if ( ! $query->num_rows)
+		{
+			$DB->query("ALTER TABLE `{$DB->prefix}weblog_fields` ADD COLUMN `ff_settings` text NOT NULL");
+		}
+
+		// reset all ftype hooks
+		foreach($this->_get_ftypes() as $class_name => $ftype)
+		{
+			$this->_insert_ftype_hooks($ftype);
+		}
 	}
 
 	/**
@@ -1170,9 +1191,9 @@ class Fieldframe_Main {
 	 */
 	function publish_admin_edit_field_type_pulldown($data, $typemenu)
 	{
-		$r = $this->get_last_call($typemenu);
-
 		global $DSP;
+
+		$r = $this->get_last_call($typemenu);
 
 		foreach($this->_get_ftypes() as $class_name => $ftype)
 		{
@@ -1526,6 +1547,32 @@ class Fieldframe_Main {
 	}
 
 	/**
+	 * Display - Show Full Control Panel - Start
+	 *
+	 * - Rewrite CP's HTML
+	 * - Find/Replace stuff, etc.
+	 *
+	 * @param  string  $end  The content of the admin page to be outputted
+	 * @return string  The modified $out
+	 * @see    http://expressionengine.com/developers/extension_hooks/show_full_control_panel_end/
+	 */
+	function show_full_control_panel_start($out)
+	{
+		global $IN, $DB, $REGX, $DSP;
+
+		$out = $this->get_last_call($out);
+
+		// are we displaying the custom field list?
+		if ($IN->GBL('C', 'GET') == 'admin' AND $IN->GBL('M', 'GET') == 'utilities' AND $IN->GBL('P', 'GET') == 'fieldtypes_manager')
+		{
+			$DSP->body = 'Fieldtypes Manager';
+		}
+
+		$args = func_get_args();
+		return $this->forward_ff_hook('show_full_control_panel_start', $args, $out);
+	}
+
+	/**
 	 * Display - Show Full Control Panel - End
 	 *
 	 * - Rewrite CP's HTML
@@ -1537,8 +1584,9 @@ class Fieldframe_Main {
 	 */
 	function show_full_control_panel_end($out)
 	{
-		$out = $this->get_last_call($out);
 		global $IN, $DB, $REGX;
+
+		$out = $this->get_last_call($out);
 
 		// are we displaying the custom field list?
 		if($IN->GBL('M', 'GET') == 'blog_admin' AND in_array($IN->GBL('P', 'GET'), array('field_editor', 'update_weblog_fields', 'delete_field', 'update_field_order')))
@@ -1577,13 +1625,13 @@ class Fieldframe_Main {
 	 */
 	function publish_form_field_unique($row, $field_data)
 	{
+		global $REGX, $DSP;
+
 		// return if this isn't a FieldFrame fieldtype
 		if (substr($row['field_type'], 0, 9) != 'ftype_id_')
 		{
 			return $this->get_last_call();
 		}
-
-		global $REGX;
 
 		$field_name = 'field_id_'.$row['field_id'];
 		$fields = $this->_get_fields();
@@ -1608,7 +1656,6 @@ class Fieldframe_Main {
 		// wasn't enabled or didn't have a display_field method
 		if ( ! isset($r))
 		{
-			global $DSP;
 			$r = $DSP->input_textarea($field_name, $field_data, 1, 'textarea', '100%');
 		}
 
