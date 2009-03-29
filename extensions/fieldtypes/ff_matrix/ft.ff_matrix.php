@@ -397,6 +397,11 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 			$r .=  '<th>'.$col['label'].'</th>';
 
 			// get the default state
+			if ( ! isset($ftypes[$col['type']]))
+			{
+				$col['type'] = 'ff_matrix_textarea';
+				$col['settings'] = array('rows' => 1);
+			}
 			$ftype = $ftypes[$col['type']];
 			$cell_settings = array_merge(
 				(isset($ftype->default_cell_settings) ? $ftype->default_cell_settings : array()),
@@ -421,6 +426,15 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 			$col_count = 0;
 			foreach($field_settings['cols'] as $col_id => $col)
 			{
+				if ( ! isset($ftypes[$col['type']]))
+				{
+					$col['type'] = 'ff_matrix_textarea';
+					$col['settings'] = array('rows' => 1);
+					if (isset($row[$col_id]) AND is_array($row[$col_id]))
+					{
+						$row[$col_id] = serialize($row[$col_id]);
+					}
+				}
 				$ftype = $ftypes[$col['type']];
 				$cell_name = $field_name.'['.$row_count.']['.$col_id.']';
 				$cell_settings = array_merge(
