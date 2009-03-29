@@ -8,7 +8,7 @@ if ( ! defined('FF_CLASS'))
 {
 	define('FF_CLASS',   'Fieldframe');
 	define('FF_NAME',    'FieldFrame');
-	define('FF_VERSION', '0.9.8');
+	define('FF_VERSION', '0.9.9');
 }
 
 
@@ -22,7 +22,7 @@ if ( ! defined('FF_CLASS'))
  * @copyright Copyright (c) 2009 Brandon Kelly
  * @license   http://creativecommons.org/licenses/by-sa/3.0/ Attribution-Share Alike 3.0 Unported
  */
-class Fieldframe_Base {
+class Fieldframe {
 
 	var $name           = FF_NAME;
 	var $version        = FF_VERSION;
@@ -61,7 +61,7 @@ class Fieldframe_Base {
 	 *
 	 * @param array  $settings
 	 */
-	function Fieldframe_Base($settings=array())
+	function __construct($settings=array())
 	{
 		$this->_init_main($settings);
 	}
@@ -71,6 +71,9 @@ class Fieldframe_Base {
 	 */
 	function activate_extension()
 	{
+		// require PHP 5
+		if (phpversion() < 5) return;
+
 		global $DB;
 
 		// Get settings
@@ -216,14 +219,14 @@ class Fieldframe_Base {
 	}
 
 	/**
-	 * _call Magic Method
+	 * __call Magic Method
 	 *
-	 * Routes calls to missing methods to the $OBJ
+	 * Routes calls to missing methods to $FF
 	 *
 	 * @param string  $method  Name of the missing method
 	 * @param array   $args    Arguments sent to the missing method
 	 */
-	function _call($method, $args)
+	function __call($method, $args)
 	{
 		global $FF, $EXT;
 
@@ -243,33 +246,6 @@ class Fieldframe_Base {
 		return FALSE;
 	}
 
-}
-
-// define actual Fieldframe class which extends
-// Fieldframe_Base with PHP version-targetted methods
-if (phpversion() >= '5')
-{
-	eval('
-		class Fieldframe extends Fieldframe_Base {
-
-			function __call($method, $args)
-			{
-				return $this->_call($method, $args);
-			}
-		}
-	');
-}
-else
-{
-	eval('
-		class Fieldframe extends Fieldframe_Base {
-
-			function __call($method, $args, &$return_value)
-			{
-				$return_value = $this->_call($method, $args);
-			}
-		}
-	');
 }
 
 /**
@@ -303,7 +279,7 @@ class Fieldframe_Main {
 	 *
 	 * @param array  $settings
 	 */
-	function Fieldframe_Main($settings, $hooks)
+	function __construct($settings, $hooks)
 	{
 		global $SESS, $DB;
 
@@ -1852,7 +1828,7 @@ class Fieldframe_SettingsDisplay {
 	/**
 	 * Fieldframe_SettingsDisplay Constructor
 	 */
-	function Fieldframe_SettingsDisplay()
+	function __construct()
 	{
 		// initialize Display Class
 		global $DSP;

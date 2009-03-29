@@ -21,7 +21,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		'name'     => 'FF Matrix',
 		'version'  => FF_VERSION,
 		'desc'     => 'Provides a tabular data fieldtype',
-		'docs_url' => 'http://wiki.github.com/brandonkelly/bk.fieldframe.ee_addon/ff-checkbox'
+		'docs_url' => 'http://wiki.github.com/brandonkelly/bk.fieldframe.ee_addon/ff-matrix'
 	);
 
 	/**
@@ -37,13 +37,15 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 
 	var $default_tag_params = array(
 		'cellspacing' => '1',
-		'cellpadding' => '10'
+		'cellpadding' => '10',
+		'limit' => '0',
+		'sort' => 'asc'
 	);
 
 	/**
 	 * FF Matrix class constructor
 	 */
-	function Ff_matrix()
+	function __construct()
 	{
 		global $FFM;
 		$FFM = $this;
@@ -384,8 +386,12 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 	{
 		$ftypes = $this->_get_ftypes();
 
-		foreach($field_data as $this->row_count => &$row)
+		$r = array();
+
+		foreach($field_data as $this->row_count => $row)
 		{
+			$include_row = FALSE;
+
 			foreach($row as $this->col_id => &$cell_data)
 			{
 				$col = $field_settings['cols'][$this->col_id];
@@ -398,13 +404,17 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 					);
 					$cell_data = $ftype->save_cell($cell_data, $cell_settings);
 				}
+
+				if ( ! $include_row AND $cell_data) $include_row = TRUE;
 			}
+
+			if ($include_row) $r[] = $row;
 		}
 
 		if (isset($this->row_count)) unset($this->row_count);
 		if (Isset($this->col_id)) unset($this->col_id);
 
-		return $field_data;
+		return $r;
 	}
 
 	/**
@@ -438,6 +448,16 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 			    . '  </thead>' . "\n"
 			    . '  <tbody>' . "\n";
 			$tagdata .= '    </tr>' . "\n";
+		}
+
+		if ($params['sort'] == 'desc')
+		{
+			$field_data = array_reverse($field_data);
+		}
+
+		if ($params['limit'] AND count($field_data) > $params['limit'])
+		{
+			array_splice($field_data, $params['limit']);
 		}
 
 		$ftypes = $this->_get_ftypes();
@@ -622,7 +642,12 @@ class Ff_matrix_date extends Fieldframe_Fieldtype {
 	function display_tag($params, $tagdata, $field_data, $field_settings)
 	{
 		global $LOC;
-		return $LOC->decode_date($params['format'], $field_data);
+		if ($params['format'])
+		{
+			$field_data = $LOC->decode_date($params['format'], $field_data);
+		}
+
+		return $field_data;
 	}
 
 }
