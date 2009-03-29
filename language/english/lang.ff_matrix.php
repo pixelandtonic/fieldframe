@@ -13,6 +13,9 @@ $L = array(
 <p><em><strong>Note</strong>:</em> You will need to update your template tags yourself.</p>
 <div class="defaultBold">This is an irreversible operation. It is strongly advised that you backup your database first.</div>',
 
+'apply' =>
+'Apply',
+
 
 // Field Settings
 
