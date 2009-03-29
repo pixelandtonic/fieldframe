@@ -6,15 +6,12 @@ $L = array(
 // Site Settings
 
 'convert_label' =>
-'Convert LG Data Matrix and Multi-text fields?',
+'Convert LG Data Matrix fields?',
 
 'convert_desc' =>
 '<p>Select which fields you want to be converted to FF Matrix fields.</p>
 <p><em><strong>Note</strong>:</em> You will need to update your template tags yourself.</p>
 <div class="defaultBold">This is an irreversible operation. It is strongly advised that you backup your database first.</div>',
-
-'apply' =>
-'Apply',
 
 
 // Field Settings

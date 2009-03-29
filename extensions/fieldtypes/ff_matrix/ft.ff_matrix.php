@@ -55,10 +55,10 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 	{
 		global $DB, $PREFS, $DSP;
 
-		$fields_q = $DB->query('SELECT f.field_id, f.field_label, g.group_name, f.field_type
+		$fields_q = $DB->query('SELECT f.field_id, f.field_label, g.group_name
 		                          FROM exp_weblog_fields AS f, exp_field_groups AS g
 		                          WHERE f.site_id = '.$PREFS->ini('site_id').'
-		                            AND f.field_type IN ("data_matrix", "multi_text")
+		                            AND f.field_type = "data_matrix"
 		                            AND f.group_id = g.group_id
 		                          ORDER BY g.group_name, f.field_order, f.field_label');
 		if ($fields_q->num_rows)
@@ -79,7 +79,6 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 				$convert_r .= '<label>'
 				            . $DSP->input_checkbox('convert[]', $row['field_id'])
 				            . $row['field_label']
-				            . NBS.NBS.'<em style="opacity:0.7">('.($row['field_type'] == 'data_matrix' ? 'LG Data Matrix' : 'MH Multi-text').')</em>'
 				            . '</label>'
 				            . '<br>';
 			}
@@ -103,10 +102,22 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 	 */
 	function save_site_settings($site_settings)
 	{
-		global $DB, $FF;
+		global $DB, $FF, $LANG, $REGX;
 
 		if (isset($site_settings['convert']))
 		{
+			$setting_name_maps = array(
+				'short_name' => 'name',
+				'title'      => 'label'
+			);
+			$cell_type_maps = array(
+				'text'     => 'ff_matrix_text',
+				'textarea' => 'ff_matrix_textarea',
+				'select'   => 'ff_matrix_select',
+				'date'     => 'ff_matrix_date',
+				'checkbox' => 'ff_checkbox'
+			);
+
 			$fields_q = $DB->query('SELECT * FROM exp_weblog_fields
 			                          WHERE field_id IN ('.implode(',', $site_settings['convert']).')');
 
@@ -116,24 +127,92 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 			{
 				$field_data = array('field_type' => 'ftype_id_'.$this->_fieldtype_id);
 
-				if ($field['field_type'] == 'data_matrix')
+				// get the conf string
+				if (($old_conf = @unserialize($field['lg_field_conf'])) !== FALSE)
 				{
-					$conf = $REGX->array_stripslashes(unserialize($field['lg_field_conf']));
-
-					$field_data['lg_field_conf'] = '';
+					$conf = (is_array($old_conf) AND isset($old_conf['string']))
+					  ?  $old_conf['string']  :  '';
 				}
-				else if ($field['field_type'] == 'multi_text')
+				else
 				{
-					
+					$conf = $field['lg_field_conf'];
 				}
 
+				// parse the conf string
+
+				$field_settings = array('cols' => array());
+				$col_maps = array();
+				foreach(preg_split('/[\r\n]{2,}/', trim($conf)) as $col_id => $col)
+				{
+					// default col settings
+					$col_settings = array(
+						'name'  => $LANG->line('cell').' '.($col_id+1),
+						'label' => strtolower($LANG->line('cell')).'_'.($col_id+1),
+						'type'  => 'text'
+					);
+
+					foreach (preg_split('/[\r\n]/', $col) as $line)
+					{
+						$parts = explode('=', $line);
+						$setting_name = trim($parts[0]);
+						$setting_value = trim($parts[1]);
+
+						if (isset($setting_name_maps[$setting_name]))
+						{
+							$col_settings[$setting_name_maps[$setting_name]] = $setting_value;
+						}
+						else if ($setting_name == 'type')
+						{
+							$col_settings['type'] = isset($cell_type_maps[$setting_value])
+							  ?  $cell_type_maps[$setting_value]
+							  :  'ff_matrix_text';
+						}
+					}
+					$col_maps[$col_settings['name']] = $col_id;
+
+					$field_settings['cols'][$col_id] = $col_settings;
+				}
+
+				$field_data['ff_settings'] = addslashes(serialize($field_settings));
+				$field_data['lg_field_conf'] = '';
 				$sql[] = $DB->update_string('exp_weblog_fields', $field_data, 'field_id = '.$field['field_id']);
+
+				// update the weblog data
+
+				$data_q = $DB->query('SELECT entry_id, field_id_'.$field['field_id'].' data
+				                        FROM exp_weblog_data
+				                        WHERE field_id_'.$field['field_id'].' != ""');
+
+				foreach($data_q->result as $entry)
+				{
+					$entry_rows = array();
+
+					if (($data = @unserialize($entry['data'])) !== FALSE)
+					{
+						foreach($REGX->array_stripslashes($data) as $row_count => $row)
+						{
+							$entry_row = array();
+							$include_row = FALSE;
+							foreach($row as $name => $val)
+							{
+								if (isset($col_maps[$name]))
+								{
+									$entry_row[$col_maps[$name]] = $val;
+									if ( ! $include_row AND $val) $include_row = TRUE;
+								}
+							}
+							if ($include_row) $entry_rows[] = $entry_row;
+						}
+					}
+
+					$entry_data = array('field_id_'.$field['field_id'].'' => addslashes(serialize($entry_rows)));
+					$sql[] = $DB->update_string('exp_weblog_data', $entry_data, 'entry_id = '.$entry['entry_id']);
+				}
 			}
 
 			foreach($sql as $query)
 			{
-				$FF->log($query);
-				//$DB->query($query);
+				$DB->query($query);
 			}
 		}
 	}
