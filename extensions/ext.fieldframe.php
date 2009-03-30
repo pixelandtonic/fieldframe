@@ -921,7 +921,7 @@ class Fieldframe_Main {
 			// save submitted settings
 			if ($this->save_fieldtypes_manager())
 			{
-				$DSP->body .= $DSP->qdiv('itemWrapper highlight_alt_bold', $LANG->line('settings_update'));
+				$DSP->body .= $DSP->qdiv('box', $DSP->qdiv('success', $LANG->line('settings_update')));
 			}
 
 			// load language file
@@ -929,7 +929,7 @@ class Fieldframe_Main {
 
 			// Breadcrumbs
 			$DSP->crumbline = TRUE;
-			$DSP->title = $LANG->line('extension_settings');
+			$DSP->title = $LANG->line('fieldtypes_manager');
 			$DSP->crumb = $DSP->anchor(BASE.AMP.'C=admin'.AMP.'area=utilities', $LANG->line('utilities'))
 			            . $DSP->crumb_item($LANG->line('fieldtypes_manager'));
 
