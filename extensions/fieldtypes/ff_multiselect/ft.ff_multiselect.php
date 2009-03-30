@@ -139,7 +139,7 @@ class Ff_multiselect extends Fieldframe_Fieldtype {
 	function display_field($field_name, $field_data, $field_settings)
 	{
 		$SD = new Fieldframe_SettingsDisplay();
-		return $SD->multiselect($cell_name.'[]', $cell_data, $cell_settings['options']);
+		return $SD->multiselect($field_name.'[]', $field_data, $field_settings['options']);
 	}
 
 	/**
