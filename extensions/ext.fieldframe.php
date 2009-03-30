@@ -28,7 +28,7 @@ class Fieldframe {
 	var $version        = FF_VERSION;
 	var $description    = 'Fieldtype Framework';
 	var $settings_exist = 'y';
-	var $docs_url       = 'http://eefields.com/';
+	var $docs_url       = 'http://brandon-kelly.com/apps/fieldframe';
 
 	var $hooks = array(
 		'sessions_start' => array('priority' => 1),
