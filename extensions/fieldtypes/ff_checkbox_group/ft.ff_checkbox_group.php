@@ -26,14 +26,6 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 	);
 
 	/**
-	 * Default Site Settings
-	 * @var array
-	 */
-	var $default_site_settings = array(
-		'option_tmpl' => '<li>{option}</li>'
-	);
-
-	/**
 	 * Default Field Settings
 	 * @var array
 	 */
@@ -64,33 +56,6 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 		'sort'      => '',
 		'backspace' => '0'
 	);
-
-	/**
-	 * Display Site Settings
-	 */
-	function display_site_settings()
-	{
-		global $LANG;
-
-		// Initialize a new instance of SettingsDisplay
-		$SD = new Fieldframe_SettingsDisplay();
-
-		// Open the settings block
-		$r = $SD->block('FF Checkbox Group');
-
-		// Add the Default Option Template setting
-		$r .= $SD->row(array(
-		                 $SD->label('checkbox_option_tmpl_label', 'checkbox_option_tmpl_subtext'),
-		                 $SD->textarea('option_tmpl', $this->site_settings['option_tmpl'], array('rows' => '2'))
-		                   . '<p>'.$LANG->line('checkbox_option_tmpl_tags').'</p>'
-		               ));
-
-		// Close the settings block
-		$r .= $SD->block_c();
-
-		// Return the settings block
-		return $r;
-	}
 
 	/**
 	 * Display Field Settings
@@ -211,12 +176,13 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 
 		$r = '';
 
-		if ($field_settings['options'])
+		if ($field_settings['options'] AND $field_data)
 		{
-			// option template
-			if ( ! $tagdata) $tagdata = $this->site_settings['option_tmpl'];
-
-			if ( ! $field_data) $field_data = array();
+			$list_mode = $tagdata ? FALSE : TRUE;
+			if ($list_mode)
+			{
+				$tagdata = '  <li>'.LD.'option'.RD.'</li>' . "\n";
+			}
 
 			// optional sorting
 			if ($sort = strtolower($params['sort']))
@@ -236,6 +202,7 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 			$tagdata = preg_replace_callback('/'.LD.'switch\s*=\s*[\'\"]([^\'\"]+)[\'\"]'.RD.'/sU', array(&$this, '_get_switch_options'), $tagdata);
 
 			$count = 0;
+
 			foreach($field_data as $option_name)
 			{
 				if (isset($field_settings['options'][$option_name]))
@@ -260,11 +227,16 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 					$count++;
 				}
 			}
-		}
 
-		if ($params['backspace'])
-		{
-			$r = substr($r, 0, -$params['backspace']);
+			if ($params['backspace'])
+			{
+				$r = substr($r, 0, -$params['backspace']);
+			}
+
+			if ($list_mode)
+			{
+				$r = "<ul>\n" . $r . '</ul>';
+			}
 		}
 
 		return $r;

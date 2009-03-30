@@ -521,66 +521,74 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 	 */
 	function display_tag($params, $tagdata, $field_data, $field_settings)
 	{
-		global $FF;
+		global $FF, $TMPL;
 
 		$r = '';
 
-		$table_mode = $tagdata ? FALSE : TRUE;
-		if ($table_mode)
+		if ($field_settings['cols'] AND $field_data)
 		{
-			$r .= '<table cellspacing="'.$params['cellspacing'].'" cellpadding="'.$params['cellpadding'].'">' . "\n"
-			    . '  <thead>' . "\n"
-			    . '    <tr>' . "\n";
-			$tagdata = '    <tr>' . "\n";
-			foreach($field_settings['cols'] as $col_id => $col)
+			$table_mode = $tagdata ? FALSE : TRUE;
+			if ($table_mode)
 			{
-				$r .= '      <th scope="col">'.$col['label'].'</th>' . "\n";
-				$tagdata .= '      <td>'.LD.$col['name'].RD.'</td>' . "\n";
-			}
-			$r .= '    </tr>' . "\n"
-			    . '  </thead>' . "\n"
-			    . '  <tbody>' . "\n";
-			$tagdata .= '    </tr>' . "\n";
-		}
-
-		if ($params['sort'] == 'desc')
-		{
-			$field_data = array_reverse($field_data);
-		}
-
-		if ($params['limit'] AND count($field_data) > $params['limit'])
-		{
-			array_splice($field_data, $params['limit']);
-		}
-
-		$ftypes = $this->_get_ftypes();
-
-		foreach($field_data as $row_count => $row)
-		{
-			$row_tagdata = $tagdata;
-
-			foreach($field_settings['cols'] as $col_id => $col)
-			{
-				$ftype = $ftypes[$col['type']];
-				$cell_data = isset($row[$col_id]) ? $row[$col_id] : '';
-				$cell_settings = array_merge(
-					(isset($ftype->default_cell_settings) ? $ftype->default_cell_settings : array()),
-					(isset($col['settings']) ? $col['settings'] : array())
-				);
-				$FF->_parse_tagdata($row_tagdata, $col['name'], $cell_data, $cell_settings, $ftype);
-
-				// conditionals
-				if (is_array($cell_data)) $cell_data = $cell_data ? '1' : '0';
-				$row_tagdata = preg_replace('/('.LD.'if(:elseif)?\s+(.*\s+)?)('.$col['name'].')((\s+.*)?'.RD.')/isU', '$1"'.$cell_data.'"$5', $row_tagdata);
+				$r .= '<table cellspacing="'.$params['cellspacing'].'" cellpadding="'.$params['cellpadding'].'">' . "\n"
+				    . '  <thead>' . "\n"
+				    . '    <tr>' . "\n";
+				$tagdata = '    <tr>' . "\n";
+				foreach($field_settings['cols'] as $col_id => $col)
+				{
+					$r .= '      <th scope="col">'.$col['label'].'</th>' . "\n";
+					$tagdata .= '      <td>'.LD.$col['name'].RD.'</td>' . "\n";
+				}
+				$r .= '    </tr>' . "\n"
+				    . '  </thead>' . "\n"
+				    . '  <tbody>' . "\n";
+				$tagdata .= '    </tr>' . "\n";
 			}
 
-			$r .= $row_tagdata;
-		}
+			if ($params['sort'] == 'desc')
+			{
+				$field_data = array_reverse($field_data);
+			}
 
-		if ($table_mode)
-		{
-			$r .= '  </tbody>' . "\n"
-			    . '</table>';
+			if ($params['limit'] AND count($field_data) > $params['limit'])
+			{
+				array_splice($field_data, $params['limit']);
+			}
+
+			$ftypes = $this->_get_ftypes();
+			$total_rows = count($field_data);
+
+			foreach($field_data as $row_count => $row)
+			{
+				$row_tagdata = $tagdata;
+
+				foreach($field_settings['cols'] as $col_id => $col)
+				{
+					$ftype = $ftypes[$col['type']];
+					$cell_data = isset($row[$col_id]) ? $row[$col_id] : '';
+					$cell_settings = array_merge(
+						(isset($ftype->default_cell_settings) ? $ftype->default_cell_settings : array()),
+						(isset($col['settings']) ? $col['settings'] : array())
+					);
+					$FF->_parse_tagdata($row_tagdata, $col['name'], $cell_data, $cell_settings, $ftype);
+
+					// var swaps
+					$row_tagdata = $TMPL->swap_var_single('count', $row_count+1, $row_tagdata);
+					$row_tagdata = $TMPL->swap_var_single('total_rows', $total_rows, $row_tagdata);
+
+					// conditionals
+					if (is_array($cell_data)) $cell_data = $cell_data ? '1' : '0';
+					$row_tagdata = preg_replace('/('.LD.'if(:elseif)?\s+(.*\s+)?)('.$col['name'].')((\s+.*)?'.RD.')/isU', '$1"'.$cell_data.'"$5', $row_tagdata);
+				}
+
+				$r .= $row_tagdata;
+			}
+
+			if ($table_mode)
+			{
+				$r .= '  </tbody>' . "\n"
+				    . '</table>';
+			}
 		}
 
 		return $r;

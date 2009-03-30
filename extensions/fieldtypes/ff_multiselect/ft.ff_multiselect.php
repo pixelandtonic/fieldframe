@@ -171,10 +171,13 @@ class Ff_multiselect extends Fieldframe_Fieldtype {
 
 		$r = '';
 
-		if ($field_settings['options'])
+		if ($field_settings['options'] AND $field_data)
 		{
-			if ( ! $tagdata) $tagdata = '<li>'.LD.'option'.RD.'</li>';
-			if ( ! $field_data) $field_data = array();
+			$list_mode = $tagdata ? FALSE : TRUE;
+			if ($list_mode)
+			{
+				$tagdata = '  <li>'.LD.'option'.RD.'</li>' . "\n";
+			}
 
 			// optional sorting
 			if ($sort = strtolower($params['sort']))
@@ -194,6 +197,7 @@ class Ff_multiselect extends Fieldframe_Fieldtype {
 			$tagdata = preg_replace_callback('/'.LD.'switch\s*=\s*[\'\"]([^\'\"]+)[\'\"]'.RD.'/sU', array(&$this, '_get_switch_options'), $tagdata);
 
 			$count = 0;
+
 			foreach($field_data as $option_name)
 			{
 				if (isset($field_settings['options'][$option_name]))
@@ -218,11 +222,16 @@ class Ff_multiselect extends Fieldframe_Fieldtype {
 					$count++;
 				}
 			}
-		}
 
-		if ($params['backspace'])
-		{
-			$r = substr($r, 0, -$params['backspace']);
+			if ($params['backspace'])
+			{
+				$r = substr($r, 0, -$params['backspace']);
+			}	
+
+			if ($list_mode)
+			{
+				$r = "<ul>\n" . $r . '</ul>';
+			}
 		}
 
 		return $r;
