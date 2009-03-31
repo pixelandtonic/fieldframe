@@ -49,6 +49,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 	{
 		global $FFM;
 		$FFM = $this;
+		include_once 'includes/jsonwrapper/jsonwrapper.php';
 	}
 
 	function display_site_settings()
