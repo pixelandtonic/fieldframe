@@ -348,7 +348,7 @@ class Fieldframe_Main {
 	 * Unserialize
 	 * @access private
 	 */
-	function _unserialize($vals)
+	function _unserialize($vals, $convert=TRUE)
 	{
 		global $REGX, $PREFS;
 
@@ -358,10 +358,10 @@ class Fieldframe_Main {
 
 			$vals = $REGX->array_stripslashes($vals);
 
-			//if ($PREFS->ini('auto_convert_high_ascii') == 'y')
-			//{
-			//	$vals = $this->_array_entities_to_ascii($vals);
-			//}
+			if ($convert AND $PREFS->ini('auto_convert_high_ascii') == 'y')
+			{
+				$vals = $this->_array_entities_to_ascii($vals);
+			}
 		}
 
      	return $vals;
@@ -1897,7 +1897,7 @@ class Fieldframe_Main {
 		{
 			$this->field_id = $field_id;
 			$this->field_name = $field['name'];
-			$field_data = $this->_unserialize($row['field_id_'.$field_id]);
+			$field_data = $this->_unserialize($row['field_id_'.$field_id], FALSE);
 			$this->_parse_tagdata($this->tagdata, $field['name'], $field_data, $field['settings'], $field['ftype']);
 		}
 
