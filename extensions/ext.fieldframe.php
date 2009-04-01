@@ -259,7 +259,7 @@ class Fieldframe_Main {
 		$query = $DB->query('SELECT settings FROM exp_extensions
 		                       WHERE class = "'.FF_CLASS.'" AND settings != "" LIMIT 1');
 		return $query->num_rows
-		  ?  unserialize($query->row['settings'])
+		  ?  $this->_unserialize($query->row['settings'])
 		  :  array();
 	}
 
@@ -282,6 +282,89 @@ class Fieldframe_Main {
 		return isset($settings[$site_id])
 		  ?  array_merge($defaults, $settings[$site_id])
 		  :  $defaults;
+	}
+
+	/**
+	 * Array Ascii to Entities
+	 * @access private
+	 */
+	function _array_ascii_to_entities($vals)
+	{
+		if (is_array($vals))
+		{
+			foreach ($vals as &$val)
+			{
+				$val = $this->_array_ascii_to_entities($val);
+			}
+		}
+		else
+		{
+			global $REGX;
+			$vals = $REGX->ascii_to_entities($vals);
+		}
+
+		return $vals;
+	}
+
+	/**
+	 * Array Ascii to Entities
+	 * @access private
+	 */
+	function _array_entities_to_ascii($vals)
+	{
+		if (is_array($vals))
+		{
+			foreach ($vals as &$val)
+			{
+				$val = $this->_array_entities_to_ascii($val);
+			}
+		}
+		else
+		{
+			global $REGX;
+			$vals = $REGX->entities_to_ascii($vals);
+		}
+
+		return $vals;
+	}
+
+	/**
+	 * Serialize
+	 * @access private
+	 */
+	function _serialize($vals)
+	{
+		global $PREFS;
+
+		if ($PREFS->ini('auto_convert_high_ascii') == 'y')
+		{
+			$vals = $this->_array_ascii_to_entities($vals);
+		}
+
+     	return addslashes(serialize($vals));
+	}
+
+	/**
+	 * Unserialize
+	 * @access private
+	 */
+	function _unserialize($vals)
+	{
+		global $REGX, $PREFS;
+
+		if (($tmp_vals = @unserialize($vals)) !== FALSE)
+		{
+			$vals = $tmp_vals;
+
+			$vals = $REGX->array_stripslashes($vals);
+
+			if ($PREFS->ini('auto_convert_high_ascii') == 'y')
+			{
+				$vals = $this->_array_entities_to_ascii($vals);
+			}
+		}
+
+     	return $vals;
 	}
 
 	/**
@@ -429,7 +512,7 @@ class Fieldframe_Main {
 							'ftype' => $ftypes_by_id[$ftype_id],
 							'settings' => array_merge(
 							                           (isset($ftypes_by_id[$ftype_id]->default_field_settings) ? $ftypes_by_id[$ftype_id]->default_field_settings : array()),
-							                           ($row['ff_settings'] ? $REGX->array_stripslashes(unserialize($row['ff_settings'])) : array())
+							                           ($row['ff_settings'] ? $this->_unserialize($row['ff_settings']) : array())
 							                          )
 						);
 					}
@@ -591,7 +674,7 @@ class Fieldframe_Main {
 		{
 			$OBJ->_fieldtype_id = $ftype['fieldtype_id'];
 			if ($ftype['enabled'] == 'y') $OBJ->_is_enabled = TRUE;
-			if ($ftype['settings']) $OBJ->site_settings = array_merge($OBJ->site_settings, $REGX->array_stripslashes(unserialize($ftype['settings'])));
+			if ($ftype['settings']) $OBJ->site_settings = array_merge($OBJ->site_settings, $this->_unserialize($ftype['settings']));
 
 			// new version?
 			if ($OBJ->info['version'] != $ftype['version'])
@@ -720,7 +803,7 @@ class Fieldframe_Main {
 		// Add new extensions
 		$hook_tmpl = array(
 			'class'    => FF_CLASS,
-			'settings' => addslashes(serialize($settings)),
+			'settings' => $this->_serialize($settings),
 			'priority' => 10,
 			'version'  => FF_VERSION,
 			'enabled'  => 'y'
@@ -898,7 +981,7 @@ class Fieldframe_Main {
 		// save all FF settings
 		$settings = $this->_get_all_settings();
 		$settings[$PREFS->ini('site_id')] = $this->settings;
-		$DB->query($DB->update_string('exp_extensions', array('settings' => addslashes(serialize($settings))), 'class = "'.FF_CLASS.'"'));
+		$DB->query($DB->update_string('exp_extensions', array('settings' => $this->_serialize($settings)), 'class = "'.FF_CLASS.'"'));
 
 		$this->save_fieldtypes_manager();
 	}
@@ -1152,7 +1235,7 @@ class Fieldframe_Main {
 							$settings = $ftype->save_site_settings($settings);
 							if ( ! is_array($settings)) $settings = array();
 						}
-						$data['settings'] = addslashes(serialize($settings));
+						$data['settings'] = $this->_serialize($settings);
 					}
 
 					$DB->query($DB->update_string('exp_ff_fieldtypes', $data, 'fieldtype_id = "'.$ftype->_fieldtype_id.'"'));
@@ -1330,7 +1413,7 @@ class Fieldframe_Main {
 
 				$field_settings = array_merge(
 					(isset($ftype->default_field_settings) ? $ftype->default_field_settings : array()),
-					($selected ? $REGX->array_stripslashes(unserialize($data['ff_settings'])) : array())
+					($selected ? $this->_unserialize($data['ff_settings']) : array())
 				);
 				$ftype->_field_settings = array_merge($field_settings_tmpl, $ftype->display_field_settings($field_settings));
 			}
@@ -1613,7 +1696,7 @@ class Fieldframe_Main {
 			}
 
 			// save settings as a post var
-			$_POST['ff_settings'] = addslashes(serialize($settings));
+			$_POST['ff_settings'] = $this->_serialize($settings);
 		}
 
 		// unset extra FF post vars
@@ -1643,7 +1726,7 @@ class Fieldframe_Main {
 		$out = $this->get_last_call($out);
 
 		// are we displaying the custom field list?
-		if ($IN->GBL('C', 'GET') == 'admin' AND $IN->GBL('M', 'GET') == 'utilities' AND $IN->GBL('P', 'GET') == 'fieldtypes_manager')
+		if ($IN->GBL('C', 'GET') == 'admin' AND $IN->GBL('M', 'GET') == 'utilities' AND $IN->GBL('P', 'GET') == 'fieldtypes_manager' AND defined('FT_PATH'))
 		{
 			$this->fieldtypes_manager();
 		}
@@ -1730,11 +1813,7 @@ class Fieldframe_Main {
 			if (method_exists($field['ftype'], 'display_field'))
 			{
 				$this->row = $row;
-				if (($tmp_field_data = @unserialize($field_data)) !== FALSE)
-				{
-					$field_data = $REGX->array_stripslashes($tmp_field_data);
-				}
-				$r = $field['ftype']->display_field($field_name, $field_data, $field['settings']);
+				$r = $field['ftype']->display_field($field_name, $this->_unserialize($field_data), $field['settings']);
 				unset($this->row);
 			}
 		}
@@ -1772,9 +1851,9 @@ class Fieldframe_Main {
 					$_POST[$this->field_name] = $field['ftype']->save_field($_POST[$this->field_name], $field['settings']);
 				}
 
-				if (isset($_POST[$this->field_name]) AND is_array($_POST[$this->field_name]))
+				if (is_array($_POST[$this->field_name]))
 				{
-					$_POST[$this->field_name] = addslashes(serialize($_POST[$this->field_name]));
+					$_POST[$this->field_name] = $this->_serialize($_POST[$this->field_name]);
 				}
 
 				// unset extra FF post vars
@@ -1818,11 +1897,7 @@ class Fieldframe_Main {
 		{
 			$this->field_id = $field_id;
 			$this->field_name = $field['name'];
-			$field_data = $row['field_id_'.$field_id];
-			if (($tmp_field_data = @unserialize($field_data)) !== FALSE)
-			{
-				$field_data = $REGX->array_stripslashes($tmp_field_data);
-			}
+			$field_data = $this->_unserialize($row['field_id_'.$field_id]);
 			$this->_parse_tagdata($this->tagdata, $field['name'], $field_data, $field['settings'], $field['ftype']);
 		}
 
