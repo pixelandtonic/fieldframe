@@ -354,9 +354,7 @@ class Fieldframe_Main {
 
 		if (($tmp_vals = @unserialize($vals)) !== FALSE)
 		{
-			$vals = $tmp_vals;
-
-			$vals = $REGX->array_stripslashes($vals);
+			$vals = $REGX->array_stripslashes($tmp_vals);
 
 			if ($convert AND $PREFS->ini('auto_convert_high_ascii') == 'y')
 			{
