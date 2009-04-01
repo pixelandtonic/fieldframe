@@ -358,10 +358,10 @@ class Fieldframe_Main {
 
 			$vals = $REGX->array_stripslashes($vals);
 
-			if ($PREFS->ini('auto_convert_high_ascii') == 'y')
-			{
-				$vals = $this->_array_entities_to_ascii($vals);
-			}
+			//if ($PREFS->ini('auto_convert_high_ascii') == 'y')
+			//{
+			//	$vals = $this->_array_entities_to_ascii($vals);
+			//}
 		}
 
      	return $vals;
