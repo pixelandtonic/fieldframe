@@ -1924,7 +1924,7 @@ class Fieldframe_Main {
 	function _parse_tagdata(&$tagdata, $field_name, $field_data, $field_settings, $ftype)
 	{
 		// find all FF field tags
-		if (preg_match_all('/'.LD.$field_name.'(\s+.*)?'.RD.'/sU', $tagdata, $matches, PREG_OFFSET_CAPTURE))
+		if (preg_match_all('/'.LD.$field_name.'(\s+.*?)?'.RD.'(?![\'"])/s', $tagdata, $matches, PREG_OFFSET_CAPTURE))
 		{
 			for ($i = count($matches[0])-1; $i >= 0; $i--)
 			{
