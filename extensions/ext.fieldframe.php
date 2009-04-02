@@ -1924,7 +1924,8 @@ class Fieldframe_Main {
 	function _parse_tagdata(&$tagdata, $field_name, $field_data, $field_settings, $ftype)
 	{
 		// find all FF field tags
-		if (preg_match_all('/'.LD.$field_name.'(\s+.*?)?'.RD.'(?![\'"])/s', $tagdata, $matches, PREG_OFFSET_CAPTURE))
+		//if (preg_match_all('/'.LD.$field_name.'(\s+.*?)?'.RD.'(?![\'"])/s', $tagdata, $matches, PREG_OFFSET_CAPTURE))
+		if (preg_match_all('/'.LD.$field_name.'(\s+.*)?'.RD.'/sU', $tagdata, $matches, PREG_OFFSET_CAPTURE))
 		{
 			for ($i = count($matches[0])-1; $i >= 0; $i--)
 			{
@@ -1961,6 +1962,10 @@ class Fieldframe_Main {
 				         . substr($tagdata, ($endtag_pos !== FALSE ? $endtag_pos+$endtag_len : $tagdata_pos));
 			}
 		}
+
+		// conditionals
+		if (is_array($field_data)) $field_data = $field_data ? '1' : '0';
+		$row_tagdata = preg_replace('/('.LD.'if(:elseif)?\s+(.*\s+)?)('.$field_name.')((\s+.*)?'.RD.')/isU', '$1"'.$field_data.'"$5', $tagdata);
 	}
 
 	/**
