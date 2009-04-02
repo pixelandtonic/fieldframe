@@ -574,7 +574,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 					$FF->_parse_tagdata($row_tagdata, $col['name'], $cell_data, $cell_settings, $ftype);
 
 					// var swaps
-					$row_tagdata = $TMPL->swap_var_single('count', $row_count+1, $row_tagdata);
+					$row_tagdata = $TMPL->swap_var_single('row_count', $row_count+1, $row_tagdata);
 					$row_tagdata = $TMPL->swap_var_single('total_rows', $total_rows, $row_tagdata);
 
 					// conditionals
