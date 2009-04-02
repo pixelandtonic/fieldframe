@@ -576,10 +576,6 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 					// var swaps
 					$row_tagdata = $TMPL->swap_var_single('row_count', $row_count+1, $row_tagdata);
 					$row_tagdata = $TMPL->swap_var_single('total_rows', $total_rows, $row_tagdata);
-
-					// conditionals
-					if (is_array($cell_data)) $cell_data = $cell_data ? '1' : '0';
-					$row_tagdata = preg_replace('/('.LD.'if(:elseif)?\s+(.*\s+)?)('.$col['name'].')((\s+.*)?'.RD.')/isU', '$1"'.$cell_data.'"$5', $row_tagdata);
 				}
 
 				$r .= $row_tagdata;
