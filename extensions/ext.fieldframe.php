@@ -1673,28 +1673,31 @@ class Fieldframe_Main {
 		// is this a FF fieldtype?
 		if (preg_match('/^ftype_id_(\d+)$/', $_POST['field_type'], $matches) !== FALSE)
 		{
-			$ftype_id = $matches[1];
-			$settings = (isset($_POST['ftype']) AND isset($_POST['ftype'][$_POST['field_type']]))
-			  ?  $_POST['ftype'][$_POST['field_type']]
-			  :  array();
+			if (isset($matches[1]))
+			{
+				$ftype_id = $matches[1];
+				$settings = (isset($_POST['ftype']) AND isset($_POST['ftype'][$_POST['field_type']]))
+				  ?  $_POST['ftype'][$_POST['field_type']]
+				  :  array();
 
-			// initialize the fieldtype
-			$query = $DB->query('SELECT * FROM exp_ff_fieldtypes WHERE fieldtype_id = "'.$ftype_id.'"');
-			if ($query->row)
-			{	
-				// let the fieldtype modify the settings
-				if (($ftype = $this->_init_ftype($query->row)) !== FALSE)
-				{
-					if (method_exists($ftype, 'save_field_settings'))
+				// initialize the fieldtype
+				$query = $DB->query('SELECT * FROM exp_ff_fieldtypes WHERE fieldtype_id = "'.$ftype_id.'"');
+				if ($query->row)
+				{	
+					// let the fieldtype modify the settings
+					if (($ftype = $this->_init_ftype($query->row)) !== FALSE)
 					{
-						$settings = $ftype->save_field_settings($settings);
-						if ( ! is_array($settings)) $settings = array();
+						if (method_exists($ftype, 'save_field_settings'))
+						{
+							$settings = $ftype->save_field_settings($settings);
+							if ( ! is_array($settings)) $settings = array();
+						}
 					}
 				}
-			}
 
-			// save settings as a post var
-			$_POST['ff_settings'] = $this->_serialize($settings);
+				// save settings as a post var
+				$_POST['ff_settings'] = $this->_serialize($settings);
+			}
 		}
 
 		// unset extra FF post vars
