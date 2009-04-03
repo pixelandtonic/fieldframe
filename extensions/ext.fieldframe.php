@@ -1965,7 +1965,7 @@ class Fieldframe_Main {
 
 		// conditionals
 		if (is_array($field_data)) $field_data = $field_data ? '1' : '0';
-		$row_tagdata = preg_replace('/('.LD.'if(:elseif)?\s+(.*\s+)?)('.$field_name.')((\s+.*)?'.RD.')/isU', '$1"'.$field_data.'"$5', $tagdata);
+		$tagdata = preg_replace('/('.LD.'if(:elseif)?\s+(.*\s+)?)('.$field_name.')((\s+.*)?'.RD.')/isU', '$1"'.$field_data.'"$5', $tagdata);
 	}
 
 	/**
