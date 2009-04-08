@@ -10,13 +10,13 @@ $.fn.ffMatrix = function(fieldName, cellDefaults) {
 			dom: { $container: $(this) }
 		};
 
-		obj.dom.$table = obj.dom.$container.find('table');
+		obj.dom.$table = obj.dom.$container.find('table:first');
 
 		var addButtons = function($tr) {
-			$tr.find('td:first-child').prepend(
+			$tr.find('> td:eq(0)').prepend(
 				$('<a class="button sort">').attr('title', $.fn.ffMatrix.lang.sortRow)
 			);
-			$tr.find('td:last-child').prepend(
+			$tr.find('> td:last-child').prepend(
 				$('<a class="button delete">').attr('title', $.fn.ffMatrix.lang.deleteRow)
 					.click(function() {
 						if (confirm($.fn.ffMatrix.lang.confirmDeleteRow)) {
@@ -27,12 +27,12 @@ $.fn.ffMatrix = function(fieldName, cellDefaults) {
 		}
 
 		// add deletes
-		obj.dom.$table.find('tr:not(.tableHeading)').each(function() {
+		obj.dom.$table.find('tbody:first > tr:not(.tableHeading)').each(function() {
 			addButtons($(this));
 		});
 
 		var resetRows = function() {
-			obj.dom.$table.find('tr:not(.tableHeading)').each(function(rowIndex) {
+			obj.dom.$table.find('tbody:first > tr:not(.tableHeading)').each(function(rowIndex) {
 				$(this).find('td').each(function(cellType) {
 					$td = $(this);
 					if (rowIndex % 2) $td.removeClass('tableCellOne').addClass('tableCellTwo');
@@ -51,7 +51,7 @@ $.fn.ffMatrix = function(fieldName, cellDefaults) {
 		}
 
 		obj.dom.$table.sortable({
-			items: 'tr:not(.tableHeading)',
+			items: 'tbody:first > tr:not(.tableHeading)',
 			axis: 'y',
 			handle: '.sort',
 			opacity: 0.8,
