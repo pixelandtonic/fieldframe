@@ -559,6 +559,10 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 			$ftypes = $this->_get_ftypes();
 			$total_rows = count($field_data);
 
+			// prepare for {switch} and {row_count} tags
+			$this->prep_iterators($tagdata);
+			$this->_count_tag = 'row_count';
+
 			foreach($field_data as $row_count => $row)
 			{
 				$row_tagdata = $tagdata;
@@ -574,8 +578,10 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 					$FF->_parse_tagdata($row_tagdata, $col['name'], $cell_data, $cell_settings, $ftype);
 
 					// var swaps
-					$row_tagdata = $TMPL->swap_var_single('row_count', $row_count+1, $row_tagdata);
 					$row_tagdata = $TMPL->swap_var_single('total_rows', $total_rows, $row_tagdata);
+
+					// parse {switch} and {row_count} tags
+					$this->parse_iterators($row_tagdata);
 				}
 
 				$r .= $row_tagdata;

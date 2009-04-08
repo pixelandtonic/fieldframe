@@ -2358,6 +2358,43 @@ class Fieldframe_Fieldtype {
 		return $r;
 	}
 
+	function prep_iterators(&$tagdata)
+	{
+		// find {switch} tags
+		$this->_switches = array();
+		$tagdata = preg_replace_callback('/'.LD.'switch\s*=\s*[\'\"]([^\'\"]+)[\'\"]'.RD.'/sU', array(&$this, '_get_switch_options'), $tagdata);
+
+		$this->_count_tag = 'count';
+		$this->_iterator_count = 0;
+	}
+
+	function _get_switch_options($match)
+	{
+		global $FNS;
+
+		$marker = LD.'SWITCH['.$FNS->random('alpha', 8).']SWITCH'.RD;
+		$this->_switches[] = array('marker' => $marker, 'options' => explode('|', $match[1]));
+		return $marker;
+	}
+
+	function parse_iterators(&$tagdata)
+	{
+		global $TMPL;
+
+		// {switch} tags
+		foreach($this->_switches as $i => $switch)
+		{
+			$option = $this->_iterator_count % count($switch['options']);
+			$tagdata = str_replace($switch['marker'], $switch['options'][$option], $tagdata);
+		}
+
+		// update the count
+		$this->_iterator_count++;
+
+		// {count} tags
+		$tagdata = $TMPL->swap_var_single($this->_count_tag, $this->_iterator_count, $tagdata);
+	}
+
 }
 
 /* End of file ext.fieldframe.php */

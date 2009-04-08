@@ -192,11 +192,8 @@ class Ff_multiselect extends Fieldframe_Fieldtype {
 				}
 			}
 
-			// replace switch tags with {SWITCH[abcdefgh]SWITCH} markers
-			$this->switches = array();
-			$tagdata = preg_replace_callback('/'.LD.'switch\s*=\s*[\'\"]([^\'\"]+)[\'\"]'.RD.'/sU', array(&$this, '_get_switch_options'), $tagdata);
-
-			$count = 0;
+			// prepare for {switch} and {count} tags
+			$this->prep_iterators($tagdata);
 
 			foreach($field_data as $option_name)
 			{
@@ -208,18 +205,11 @@ class Ff_multiselect extends Fieldframe_Fieldtype {
 					// simple var swaps
 					$option_tagdata = $TMPL->swap_var_single('option', $field_settings['options'][$option_name], $option_tagdata);
 					$option_tagdata = $TMPL->swap_var_single('option_name', $option_name, $option_tagdata);
-					$option_tagdata = $TMPL->swap_var_single('count', $count+1, $option_tagdata);
 
-					// switch tags
-					foreach($this->switches as $i => $switch)
-					{
-						$option = $count % count($switch['options']);
-						$option_tagdata = str_replace($switch['marker'], $switch['options'][$option], $option_tagdata);
-					}
+					// parse {switch} and {count} tags
+					$this->parse_iterators($option_tagdata);
 
 					$r .= $option_tagdata;
-
-					$count++;
 				}
 			}
 
@@ -235,21 +225,6 @@ class Ff_multiselect extends Fieldframe_Fieldtype {
 		}
 
 		return $r;
-	}
-
-	/**
-	 * Get Switch Options
-	 *
-	 * @param  array   $matches  array of match chunks
-	 * @return string  marker to be inserted back into tagdata
-	 * @access private
-	 */
-	function _get_switch_options($match)
-	{
-		global $FNS;
-		$marker = LD.'SWITCH['.$FNS->random('alpha', 8).']SWITCH'.RD;
-		$this->switches[] = array('marker' => $marker, 'options' => explode('|', $match[1]));
-		return $marker;
 	}
 
 }
