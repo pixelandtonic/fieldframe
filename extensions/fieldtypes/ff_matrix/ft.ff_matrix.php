@@ -49,7 +49,6 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 	{
 		global $FFM;
 		$FFM = $this;
-		include_once 'includes/jsonwrapper/jsonwrapper.php';
 	}
 
 	function display_site_settings()
@@ -314,6 +313,9 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 			);
 		}
 
+		// add json lib if < PHP 5.2
+		include_once 'includes/jsonwrapper/jsonwrapper.php';
+
 		$js = 'jQuery(window).bind("load", function() {' . NL
 		    . '  jQuery.fn.ffMatrixConf.lang.colName = "'.$LANG->line('col_name').'";' . NL
 		    . '  jQuery.fn.ffMatrixConf.lang.colLabel = "'.$LANG->line('col_label').'";' . NL
@@ -455,6 +457,9 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		    . '</div>';
 
 		$LANG->fetch_language_file('ff_matrix');
+
+		// add json lib if < PHP 5.2
+		include_once 'includes/jsonwrapper/jsonwrapper.php';
 
 		$js = 'jQuery(window).bind("load", function() {' . NL
 		    . '  jQuery.fn.ffMatrix.lang.addRow = "'.$LANG->line('add_row').'";' . NL
