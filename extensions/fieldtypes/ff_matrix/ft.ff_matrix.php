@@ -42,6 +42,8 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		'sort' => 'asc'
 	);
 
+	var $postpone_saves = TRUE;
+
 	/**
 	 * FF Matrix class constructor
 	 */
@@ -477,11 +479,12 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 	/**
 	 * Save Field
 	 * 
-	 * @param  mixed  $field_data      The field's current value
-	 * @param  array  $field_settings  The field's settings
-	 * @return array  Modified $field_settings
+	 * @param  mixed   $field_data      The field's current value
+	 * @param  array   $field_settings  The field's settings
+	 * @param  string  $entry_id        The entry ID
+	 * @return array   Modified $field_settings
 	 */
-	function save_field($field_data, $field_settings)
+	function save_field($field_data, $field_settings, $entry_id)
 	{
 		$ftypes = $this->_get_ftypes();
 
@@ -501,7 +504,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 						(isset($ftype->default_cell_settings) ? $ftype->default_cell_settings : array()),
 						(isset($col['settings']) ? $col['settings'] : array())
 					);
-					$cell_data = $ftype->save_cell($cell_data, $cell_settings);
+					$cell_data = $ftype->save_cell($cell_data, $cell_settings, $entry_id);
 				}
 
 				if ( ! $include_row AND $cell_data) $include_row = TRUE;
