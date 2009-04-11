@@ -1966,7 +1966,10 @@ class Fieldframe_Main {
 			}
 
 			// manually save it to the db
-			$DB->query($DB->update_string('exp_weblog_data', array($this->field_name => $_POST[$this->field_name]), 'entry_id = '.$entry_id));
+			if ($entry_id)
+			{
+				$DB->query($DB->update_string('exp_weblog_data', array($this->field_name => $_POST[$this->field_name]), 'entry_id = '.$entry_id));
+			}
 		}
 
 		if (isset($this->field_name)) unset($this->field_name);
