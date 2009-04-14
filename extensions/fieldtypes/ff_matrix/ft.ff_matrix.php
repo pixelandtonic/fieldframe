@@ -13,10 +13,6 @@ if ( ! defined('EXT')) exit('Invalid file request');
  */
 class Ff_matrix extends Fieldframe_Fieldtype {
 
-	/**
-	 * Fieldtype Info
-	 * @var array
-	 */
 	var $info = array(
 		'name'     => 'FF Matrix',
 		'version'  => FF_VERSION,
@@ -24,10 +20,6 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		'docs_url' => 'http://wiki.github.com/brandonkelly/bk.fieldframe.ee_addon/ff-matrix'
 	);
 
-	/**
-	 * Default Field Settings
-	 * @var array
-	 */
 	var $default_field_settings = array(
 		'cols' => array(
 			'1' => array('name' => 'cell_1', 'label' => 'Cell 1', 'type' => 'ff_matrix_text', 'new' => 'y'),
@@ -53,6 +45,9 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		$FFM = $this;
 	}
 
+	/**
+	 * Display Site Settings
+	 */
 	function display_site_settings()
 	{
 		global $DB, $PREFS, $DSP;
