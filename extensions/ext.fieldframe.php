@@ -2081,6 +2081,7 @@ class Fieldframe_Main {
 	function lg_addon_update_register_source($sources)
 	{
 		$sources = $this->get_last_call($sources);
+
 		if ($this->settings['check_for_updates'] == 'y')
 		{
 			// add FieldFrame source
@@ -2100,7 +2101,9 @@ class Fieldframe_Main {
 				}
 			}
 		}
-		return $sources;
+
+		$args = func_get_args();
+		return $this->forward_ff_hook('lg_addon_update_register_source', $args, $sources);
 	}
 
 	/**
@@ -2113,6 +2116,7 @@ class Fieldframe_Main {
 	function lg_addon_update_register_addon($addons)
 	{
 		$addons = $this->get_last_call($addons);
+
 		if ($this->settings['check_for_updates'] == 'y')
 		{
 			// add FieldFrame
@@ -2124,7 +2128,9 @@ class Fieldframe_Main {
 				$addons[$class_name] = $ftype->info['version'];
 			}
 		}
-		return $addons;
+
+		$args = func_get_args();
+		return $this->forward_ff_hook('lg_addon_update_register_addon', $args, $addons);
 	}
 
 }
