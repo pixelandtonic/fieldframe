@@ -31,7 +31,8 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		'cellspacing' => '1',
 		'cellpadding' => '10',
 		'limit' => '0',
-		'sort' => 'asc'
+		'sort' => 'asc',
+		'backspace' => '0'
 	);
 
 	var $postpone_saves = TRUE;
@@ -594,6 +595,11 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 			{
 				$r .= '  </tbody>' . "\n"
 				    . '</table>';
+			}
+
+			if ($params['backspace'])
+			{
+				$r = substr($r, 0, -$params['backspace']);
 			}
 		}
 
