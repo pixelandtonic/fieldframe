@@ -216,7 +216,7 @@ class Ff_multiselect extends Fieldframe_Fieldtype {
 			if ($params['backspace'])
 			{
 				$r = substr($r, 0, -$params['backspace']);
-			}	
+			}
 
 			if ($list_mode)
 			{

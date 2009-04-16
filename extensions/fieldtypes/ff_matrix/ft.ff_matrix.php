@@ -13,10 +13,6 @@ if ( ! defined('EXT')) exit('Invalid file request');
  */
 class Ff_matrix extends Fieldframe_Fieldtype {
 
-	/**
-	 * Fieldtype Info
-	 * @var array
-	 */
 	var $info = array(
 		'name'     => 'FF Matrix',
 		'version'  => FF_VERSION,
@@ -24,10 +20,6 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		'docs_url' => 'http://wiki.github.com/brandonkelly/bk.fieldframe.ee_addon/ff-matrix'
 	);
 
-	/**
-	 * Default Field Settings
-	 * @var array
-	 */
 	var $default_field_settings = array(
 		'cols' => array(
 			'1' => array('name' => 'cell_1', 'label' => 'Cell 1', 'type' => 'ff_matrix_text', 'new' => 'y'),
@@ -39,8 +31,11 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		'cellspacing' => '1',
 		'cellpadding' => '10',
 		'limit' => '0',
-		'sort' => 'asc'
+		'sort' => 'asc',
+		'backspace' => '0'
 	);
+
+	var $postpone_saves = TRUE;
 
 	/**
 	 * FF Matrix class constructor
@@ -51,6 +46,9 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		$FFM = $this;
 	}
 
+	/**
+	 * Display Site Settings
+	 */
 	function display_site_settings()
 	{
 		global $DB, $PREFS, $DSP;
@@ -477,11 +475,12 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 	/**
 	 * Save Field
 	 * 
-	 * @param  mixed  $field_data      The field's current value
-	 * @param  array  $field_settings  The field's settings
-	 * @return array  Modified $field_settings
+	 * @param  mixed   $field_data      The field's current value
+	 * @param  array   $field_settings  The field's settings
+	 * @param  string  $entry_id        The entry ID
+	 * @return array   Modified $field_settings
 	 */
-	function save_field($field_data, $field_settings)
+	function save_field($field_data, $field_settings, $entry_id)
 	{
 		$ftypes = $this->_get_ftypes();
 
@@ -501,7 +500,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 						(isset($ftype->default_cell_settings) ? $ftype->default_cell_settings : array()),
 						(isset($col['settings']) ? $col['settings'] : array())
 					);
-					$cell_data = $ftype->save_cell($cell_data, $cell_settings);
+					$cell_data = $ftype->save_cell($cell_data, $cell_settings, $entry_id);
 				}
 
 				if ( ! $include_row AND $cell_data) $include_row = TRUE;
@@ -596,6 +595,11 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 			{
 				$r .= '  </tbody>' . "\n"
 				    . '</table>';
+			}
+
+			if ($params['backspace'])
+			{
+				$r = substr($r, 0, -$params['backspace']);
 			}
 		}
 
