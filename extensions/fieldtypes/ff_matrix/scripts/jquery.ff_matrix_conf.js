@@ -105,7 +105,6 @@ $.fn.ffMatrixConf = function(id, cols) {
 						col.$cellSettings.remove();
 						col.$delete.remove();
 						delete(obj.cols[colId]);
-						console.log(obj.cols);
 						toggleCellSettings();
 					}
 				});
