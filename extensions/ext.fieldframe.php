@@ -8,7 +8,7 @@ if ( ! defined('FF_CLASS'))
 {
 	define('FF_CLASS',   'Fieldframe');
 	define('FF_NAME',    'FieldFrame');
-	define('FF_VERSION', '1.0.3');
+	define('FF_VERSION', '1.0.5');
 }
 
 
@@ -48,6 +48,8 @@ class Fieldframe {
 		// Entry Form
 		'publish_form_field_unique',
 		'submit_new_entry_start',
+		'submit_new_entry_end',
+		'publish_form_start',
 
 		// Templates
 		'weblog_entries_tagdata' => array('priority' => 1),
@@ -99,7 +101,7 @@ class Fieldframe {
 			return FALSE;
 		}
 
-		if ($current < '1.0.0')
+		if ($current < '1.0.5')
 		{
 			// hooks have changed, so go through
 			// the whole activate_extension() process
@@ -234,9 +236,8 @@ class Fieldframe_Main {
 		// get the site-specific settings
 		$this->settings = $this->_get_settings($settings);
 
-		// create a reference to the cache
-		//$this->cache = &$SESS->cache[FF_CLASS];
 		$this->cache = array();
+		$this->postponed_saves = array();
 
 		// define fieldtype folder constants
 		if ( ! defined('FT_PATH') AND $this->settings['fieldtypes_path']) define('FT_PATH', $this->settings['fieldtypes_path']);
@@ -657,8 +658,8 @@ class Fieldframe_Main {
 		if ( ! isset($OBJ->info['versions_xml_url'])) $OBJ->info['versions_xml_url'] = '';
 		if ( ! isset($OBJ->info['no_lang'])) $OBJ->info['no_lang'] = FALSE;
 
-		// hooks
 		if ( ! isset($OBJ->hooks)) $OBJ->hooks = array();
+		if ( ! isset($OBJ->postpone_saves)) $OBJ->postpone_saves = FALSE;
 
 		// do we already know about this fieldtype?
 		if (is_string($ftype))
@@ -1811,12 +1812,12 @@ class Fieldframe_Main {
 		{
 			$field = $fields[$row['field_id']];
 
-			if (method_exists($field['ftype'], 'display_field'))
-			{
-				$this->row = $row;
-				$r = $field['ftype']->display_field($field_name, $this->_unserialize($field_data), $field['settings']);
-				unset($this->row);
-			}
+			// is there post data available?
+			if (isset($_POST[$field_name])) $field_data = $_POST[$field_name];
+
+			$this->row = $row;
+			$r = $field['ftype']->display_field($field_name, $this->_unserialize($field_data), $field['settings']);
+			unset($this->row);
 		}
 
 		// place field data in a basic textfield if the fieldtype
@@ -1833,13 +1834,24 @@ class Fieldframe_Main {
 	}
 
 	/**
-	 * Publish Form - Submit New Entry
+	 * Publish Form - Submit New Entry - Start
 	 *
 	 * Add More Stuff to do when you first submit an entry
 	 *
 	 * @see http://expressionengine.com/developers/extension_hooks/submit_new_entry_start/
 	 */
 	function submit_new_entry_start()
+	{
+		$this->_save_fields();
+
+		return $this->forward_ff_hook('submit_new_entry_start');
+	}
+
+	/**
+	 * Save Fields
+	 * @access private
+	 */
+	function _save_fields()
 	{
 		foreach($this->_get_fields() as $field_id => $field)
 		{
@@ -1849,10 +1861,22 @@ class Fieldframe_Main {
 			{
 				if (method_exists($field['ftype'], 'save_field'))
 				{
-					$_POST[$this->field_name] = $field['ftype']->save_field($_POST[$this->field_name], $field['settings']);
+					if ($field['ftype']->postpone_saves)
+					{
+						// save it for later
+						$field['data'] = $_POST[$this->field_name];
+						$this->postponed_saves[$field_id] = $field;
+
+						// prevent the system from overwriting the current data
+						unset($_POST[$this->field_name]);
+					}
+					else
+					{
+						$_POST[$this->field_name] = $field['ftype']->save_field($_POST[$this->field_name], $field['settings']);
+					}
 				}
 
-				if (is_array($_POST[$this->field_name]))
+				if (isset($_POST[$this->field_name]) AND is_array($_POST[$this->field_name]))
 				{
 					$_POST[$this->field_name] = $this->_serialize($_POST[$this->field_name]);
 				}
@@ -1871,8 +1895,84 @@ class Fieldframe_Main {
 		}
 
 		if (isset($this->field_name)) unset($this->field_name);
+	}
 
-		return $this->forward_ff_hook('submit_new_entry_start');
+	/**
+	 * Publish Form - Submit New Entry - End
+	 *
+	 * After an entry is submitted, do more processing
+	 *
+	 * @param string  $entry_id      Entry's ID
+	 * @param array   $data          Array of data about entry (title, url_title)
+	 * @param string  $ping_message  Error message if trackbacks or pings have failed to be sent
+	 * @see   http://expressionengine.com/developers/extension_hooks/submit_new_entry_end/
+	 */
+	function submit_new_entry_end($entry_id, $data, $ping_message)
+	{
+		$this->_postponed_save($entry_id);
+
+		$args = func_get_args();
+		return $this->forward_ff_hook('submit_new_entry_end', $args);
+	}
+
+	/**
+	 * Publish Form - Start
+	 *
+	 * Allows complete rewrite of Publish page
+	 *
+	 * @param  string  $which             new, preview, edit, or save
+	 * @param  string  $submission_error  submission error, if any
+	 * @param  string  $entry_id          Entry ID being sent to the form
+	 * @see    http://expressionengine.com/developers/extension_hooks/publish_form_start/
+	 */
+	function publish_form_start($which, $submission_error, $entry_id)
+	{
+		global $IN;
+
+		// is this a quicksave/preview?
+		if (in_array($which, array('save', 'preview')))
+		{
+			if ($which == 'preview')
+			{
+				// submit_new_entry_start() doesn't get called on preview
+				// so fill in for it here
+				$this->_save_fields();
+			}
+
+			if ( ! $entry_id) $entry_id = $IN->GBL('entry_id');
+			$this->_postponed_save($entry_id);
+		}
+
+		$args = func_get_args();
+		return $this->forward_ff_hook('publish_form_start', $args);
+	}
+
+	/**
+	 * Postponed Save
+	 * @access private
+	 */
+	function _postponed_save($entry_id)
+	{
+		global $DB;
+
+		foreach($this->postponed_saves as $field_id => $field)
+		{
+			$this->field_name = 'field_id_'.$field_id;
+
+			$_POST[$this->field_name] = $field['ftype']->save_field($field['data'], $field['settings'], $entry_id);
+			if (is_array($_POST[$this->field_name]))
+			{
+				$_POST[$this->field_name] = $this->_serialize($_POST[$this->field_name]);
+			}
+
+			// manually save it to the db
+			if ($entry_id)
+			{
+				$DB->query($DB->update_string('exp_weblog_data', array($this->field_name => $_POST[$this->field_name]), 'entry_id = '.$entry_id));
+			}
+		}
+
+		if (isset($this->field_name)) unset($this->field_name);
 	}
 
 	/**
@@ -1981,6 +2081,7 @@ class Fieldframe_Main {
 	function lg_addon_update_register_source($sources)
 	{
 		$sources = $this->get_last_call($sources);
+
 		if ($this->settings['check_for_updates'] == 'y')
 		{
 			// add FieldFrame source
@@ -2000,7 +2101,9 @@ class Fieldframe_Main {
 				}
 			}
 		}
-		return $sources;
+
+		$args = func_get_args();
+		return $this->forward_ff_hook('lg_addon_update_register_source', $args, $sources);
 	}
 
 	/**
@@ -2013,6 +2116,7 @@ class Fieldframe_Main {
 	function lg_addon_update_register_addon($addons)
 	{
 		$addons = $this->get_last_call($addons);
+
 		if ($this->settings['check_for_updates'] == 'y')
 		{
 			// add FieldFrame
@@ -2024,7 +2128,9 @@ class Fieldframe_Main {
 				$addons[$class_name] = $ftype->info['version'];
 			}
 		}
-		return $addons;
+
+		$args = func_get_args();
+		return $this->forward_ff_hook('lg_addon_update_register_addon', $args, $addons);
 	}
 
 }
