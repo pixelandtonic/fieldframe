@@ -8,7 +8,7 @@ if ( ! defined('FF_CLASS'))
 {
 	define('FF_CLASS',   'Fieldframe');
 	define('FF_NAME',    'FieldFrame');
-	define('FF_VERSION', '1.0.5');
+	define('FF_VERSION', '1.0.6');
 }
 
 
@@ -2028,7 +2028,7 @@ class Fieldframe_Main {
 	{
 		// find all FF field tags
 		//if (preg_match_all('/'.LD.$field_name.'(\s+.*?)?'.RD.'(?![\'"])/s', $tagdata, $matches, PREG_OFFSET_CAPTURE))
-		if (preg_match_all('/'.LD.$field_name.'(\s+.*)?'.RD.'/sU', $tagdata, $matches, PREG_OFFSET_CAPTURE))
+		if (preg_match_all('/'.LD.$field_name.'(:(\w+))?(\s+.*)?'.RD.'/sU', $tagdata, $matches, PREG_OFFSET_CAPTURE))
 		{
 			for ($i = count($matches[0])-1; $i >= 0; $i--)
 			{
@@ -2043,7 +2043,7 @@ class Fieldframe_Main {
 				$params = isset($ftype->default_tag_params)
 				  ?  $ftype->default_tag_params
 				  :  array();
-				if (isset($matches[1][$i][0]) AND preg_match_all('/\s+(\w+)\s*=\s*[\'\"]([^\'\"]*)[\'\"]/sU', $matches[1][$i][0], $param_matches))
+				if (isset($matches[3][$i][0]) AND preg_match_all('/\s+(\w+)\s*=\s*[\'\"]([^\'\"]*)[\'\"]/sU', $matches[1][$i][0], $param_matches))
 				{
 					for ($j = 0; $j < count($param_matches[0]); $j++)
 					{
@@ -2056,12 +2056,14 @@ class Fieldframe_Main {
 				  ?  substr($tagdata, $tagdata_pos, $endtag_pos - $tagdata_pos)
 				  :  '';
 
-				$cell_tagdata = method_exists($ftype, 'display_tag')
-				  ?  $ftype->display_tag($params, $field_tagdata, $field_data, $field_settings)
+				$function = $matches[2][$i][0] ? $matches[2][$i][0] : 'display_tag';
+
+				$new_tagdata = method_exists($ftype, $function)
+				  ?  call_user_func_array(array(&$ftype, $function), array($params, $field_tagdata, $field_data, $field_settings))
 				  :  $field_data;
 
 				$tagdata = substr($tagdata, 0, $tag_pos)
-				         . $cell_tagdata
+				         . $new_tagdata
 				         . substr($tagdata, ($endtag_pos !== FALSE ? $endtag_pos+$endtag_len : $tagdata_pos));
 			}
 		}
