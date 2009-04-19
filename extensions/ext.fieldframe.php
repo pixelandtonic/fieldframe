@@ -2035,7 +2035,7 @@ class Fieldframe_Main {
 				$tag_pos = $matches[0][$i][1];
 				$tag_len = strlen($matches[0][$i][0]);
 				$tagdata_pos = $tag_pos + $tag_len;
-				$endtag = LD.SLASH.$field_name.RD;
+				$endtag = LD.SLASH.$field_name.$matches[1][$i][0].RD;
 				$endtag_len = strlen($endtag);
 				$endtag_pos = strpos($tagdata, $endtag, $tagdata_pos);
 
@@ -2069,8 +2069,34 @@ class Fieldframe_Main {
 		}
 
 		// conditionals
-		if (is_array($field_data)) $field_data = $field_data ? '1' : '0';
-		$tagdata = preg_replace('/('.LD.'if(:elseif)?\s+(.*\s+)?)('.$field_name.')((\s+.*)?'.RD.')/isU', '$1"'.$field_data.'"$5', $tagdata);
+		$this->ftype = $ftype;
+		$this->field_data = $field_data;
+		$this->field_settings = $field_settings;
+		$tagdata = preg_replace_callback('/('.LD.'if(:elseif)?\s+(.*\s+)?)('.$field_name.')(:(\w+))?((\s+.*)?'.RD.')/isU', array(&$this, '_parse_conditional'), $tagdata);
+		unset($this->ftype);
+		unset($this->field_data);
+		unset($this->field_settings);
+	}
+
+	/**
+	 * Parse Conditionals
+	 *
+	 * @access private
+	 */
+	function _parse_conditional($matches)
+	{
+		// custom function?
+		if ($matches[6])
+		{
+			$params = isset($ftype->default_tag_params) ? $ftype->default_tag_params : array();
+			$r = call_user_func_array(array(&$this->ftype, $matches[6]), array($params, '', $this->field_data, $this->field_settings));
+		}
+		else
+		{
+			$r = is_array($this->field_data) ? ($this->field_data ? '1' : '0') : $this->field_data;
+		}
+
+		return $matches[1].'"'.$r.'"'.$matches[7];
 	}
 
 	/**
