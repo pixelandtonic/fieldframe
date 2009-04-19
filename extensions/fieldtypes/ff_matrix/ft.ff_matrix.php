@@ -522,7 +522,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 	 * @param  string  $tagdata         Chunk of tagdata between field tag pairs
 	 * @param  string  $field_data      Currently saved field value
 	 * @param  array   $field_settings  The field's settings
-	 * @return string  relationship references
+	 * @return string  Modified $tagdata
 	 */
 	function display_tag($params, $tagdata, $field_data, $field_settings)
 	{
@@ -580,13 +580,13 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 						(isset($col['settings']) ? $col['settings'] : array())
 					);
 					$FF->_parse_tagdata($row_tagdata, $col['name'], $cell_data, $cell_settings, $ftype);
-
-					// var swaps
-					$row_tagdata = $TMPL->swap_var_single('total_rows', $total_rows, $row_tagdata);
-
-					// parse {switch} and {row_count} tags
-					$this->parse_iterators($row_tagdata);
 				}
+
+				// var swaps
+				$row_tagdata = $TMPL->swap_var_single('total_rows', $total_rows, $row_tagdata);
+
+				// parse {switch} and {row_count} tags
+				$this->parse_iterators($row_tagdata);
 
 				$r .= $row_tagdata;
 			}
