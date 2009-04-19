@@ -8,7 +8,7 @@ if ( ! defined('FF_CLASS'))
 {
 	define('FF_CLASS',   'Fieldframe');
 	define('FF_NAME',    'FieldFrame');
-	define('FF_VERSION', '1.0.6');
+	define('FF_VERSION', '1.0.7');
 }
 
 
@@ -2035,7 +2035,7 @@ class Fieldframe_Main {
 				$tag_pos = $matches[0][$i][1];
 				$tag_len = strlen($matches[0][$i][0]);
 				$tagdata_pos = $tag_pos + $tag_len;
-				$endtag = LD.SLASH.$field_name.$matches[1][$i][0].RD;
+				$endtag = LD.SLASH.$field_name.(isset($matches[1][$i][0]) ? $matches[1][$i][0] : '').RD;
 				$endtag_len = strlen($endtag);
 				$endtag_pos = strpos($tagdata, $endtag, $tagdata_pos);
 
@@ -2056,7 +2056,7 @@ class Fieldframe_Main {
 				  ?  substr($tagdata, $tagdata_pos, $endtag_pos - $tagdata_pos)
 				  :  '';
 
-				$function = $matches[2][$i][0] ? $matches[2][$i][0] : 'display_tag';
+				$function = (isset($matches[2][$i][0]) AND $matches[2][$i][0]) ? $matches[2][$i][0] : 'display_tag';
 
 				$new_tagdata = method_exists($ftype, $function)
 				  ?  call_user_func_array(array(&$ftype, $function), array($params, $field_tagdata, $field_data, $field_settings))
@@ -2088,7 +2088,7 @@ class Fieldframe_Main {
 		// custom function?
 		if ($matches[6])
 		{
-			$params = isset($ftype->default_tag_params) ? $ftype->default_tag_params : array();
+			$params = isset($this->ftype->default_tag_params) ? $this->ftype->default_tag_params : array();
 			$r = call_user_func_array(array(&$this->ftype, $matches[6]), array($params, '', $this->field_data, $this->field_settings));
 		}
 		else
