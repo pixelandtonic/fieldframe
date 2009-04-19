@@ -8,7 +8,7 @@ if ( ! defined('FF_CLASS'))
 {
 	define('FF_CLASS',   'Fieldframe');
 	define('FF_NAME',    'FieldFrame');
-	define('FF_VERSION', '1.0.7');
+	define('FF_VERSION', '1.0.8');
 }
 
 
@@ -2028,44 +2028,41 @@ class Fieldframe_Main {
 	{
 		// find all FF field tags
 		//if (preg_match_all('/'.LD.$field_name.'(\s+.*?)?'.RD.'(?![\'"])/s', $tagdata, $matches, PREG_OFFSET_CAPTURE))
-		if (preg_match_all('/'.LD.$field_name.'(:(\w+))?(\s+.*)?'.RD.'/sU', $tagdata, $matches, PREG_OFFSET_CAPTURE))
+		while (preg_match('/'.LD.$field_name.'(:(\w+))?(\s+.*)?'.RD.'/sU', $tagdata, $matches, PREG_OFFSET_CAPTURE))
 		{
-			for ($i = count($matches[0])-1; $i >= 0; $i--)
+			$tag_pos = $matches[0][1];
+			$tag_len = strlen($matches[0][0]);
+			$tagdata_pos = $tag_pos + $tag_len;
+			$endtag = LD.SLASH.$field_name.(isset($matches[1][0]) ? $matches[1][0] : '').RD;
+			$endtag_len = strlen($endtag);
+			$endtag_pos = strpos($tagdata, $endtag, $tagdata_pos);
+
+			// get the params
+			$params = isset($ftype->default_tag_params)
+			  ?  $ftype->default_tag_params
+			  :  array();
+			if (isset($matches[3][0]) AND $matches[3][0] AND preg_match_all('/\s+(\w+)\s*=\s*[\'\"]([^\'\"]*)[\'\"]/sU', $matches[3][0], $param_matches))
 			{
-				$tag_pos = $matches[0][$i][1];
-				$tag_len = strlen($matches[0][$i][0]);
-				$tagdata_pos = $tag_pos + $tag_len;
-				$endtag = LD.SLASH.$field_name.(isset($matches[1][$i][0]) ? $matches[1][$i][0] : '').RD;
-				$endtag_len = strlen($endtag);
-				$endtag_pos = strpos($tagdata, $endtag, $tagdata_pos);
-
-				// get the params
-				$params = isset($ftype->default_tag_params)
-				  ?  $ftype->default_tag_params
-				  :  array();
-				if (isset($matches[3][$i][0]) AND preg_match_all('/\s+(\w+)\s*=\s*[\'\"]([^\'\"]*)[\'\"]/sU', $matches[1][$i][0], $param_matches))
+				for ($j = 0; $j < count($param_matches[0]); $j++)
 				{
-					for ($j = 0; $j < count($param_matches[0]); $j++)
-					{
-						$params[$param_matches[1][$j]] = $param_matches[2][$j];
-					}
+					$params[$param_matches[1][$j]] = $param_matches[2][$j];
 				}
-
-				// is this a tag pair?
-				$field_tagdata = ($endtag_pos !== FALSE)
-				  ?  substr($tagdata, $tagdata_pos, $endtag_pos - $tagdata_pos)
-				  :  '';
-
-				$function = (isset($matches[2][$i][0]) AND $matches[2][$i][0]) ? $matches[2][$i][0] : 'display_tag';
-
-				$new_tagdata = method_exists($ftype, $function)
-				  ?  call_user_func_array(array(&$ftype, $function), array($params, $field_tagdata, $field_data, $field_settings))
-				  :  $field_data;
-
-				$tagdata = substr($tagdata, 0, $tag_pos)
-				         . $new_tagdata
-				         . substr($tagdata, ($endtag_pos !== FALSE ? $endtag_pos+$endtag_len : $tagdata_pos));
 			}
+
+			// is this a tag pair?
+			$field_tagdata = ($endtag_pos !== FALSE)
+			  ?  substr($tagdata, $tagdata_pos, $endtag_pos - $tagdata_pos)
+			  :  '';
+
+			$function = (isset($matches[2][0]) AND $matches[2][0]) ? $matches[2][0] : 'display_tag';
+
+			$new_tagdata = method_exists($ftype, $function)
+			  ?  call_user_func_array(array(&$ftype, $function), array($params, $field_tagdata, $field_data, $field_settings))
+			  :  $field_data;
+
+			$tagdata = substr($tagdata, 0, $tag_pos)
+			         . $new_tagdata
+			         . substr($tagdata, ($endtag_pos !== FALSE ? $endtag_pos+$endtag_len : $tagdata_pos));
 		}
 
 		// conditionals
