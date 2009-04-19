@@ -606,6 +606,20 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		return $r;
 	}
 
+	/**
+	 * Total Rows
+	 *
+	 * @param  array   $params          Name/value pairs from the opening tag
+	 * @param  string  $tagdata         Chunk of tagdata between field tag pairs
+	 * @param  string  $field_data      Currently saved field value
+	 * @param  array   $field_settings  The field's settings
+	 * @return string  Number of total rows
+	 */
+	function total_rows($params, $tagdata, $field_data, $field_settings)
+	{
+		return count($field_data);
+	}
+
 }
 
 
