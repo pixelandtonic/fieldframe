@@ -8,7 +8,7 @@ if ( ! defined('FF_CLASS'))
 {
 	define('FF_CLASS',   'Fieldframe');
 	define('FF_NAME',    'FieldFrame');
-	define('FF_VERSION', '1.0.8');
+	define('FF_VERSION', '1.1.0');
 }
 
 
@@ -50,6 +50,11 @@ class Fieldframe {
 		'submit_new_entry_start',
 		'submit_new_entry_end',
 		'publish_form_start',
+
+		// SAEF
+		'weblog_standalone_form_start',
+		'weblog_standalone_form_end',
+		'weblog_standalone_insert_entry',
 
 		// Templates
 		'weblog_entries_tagdata' => array('priority' => 1),
@@ -101,7 +106,7 @@ class Fieldframe {
 			return FALSE;
 		}
 
-		if ($current < '1.0.5')
+		if ($current < '1.1.0')
 		{
 			// hooks have changed, so go through
 			// the whole activate_extension() process
@@ -220,6 +225,13 @@ class Fieldframe_Main {
 		}
 	}
 
+	var $errors = array();
+	var $cache = array();
+	var $postponed_saves = array();
+	var $snippets = array('head' => array(), 'body' => array());
+
+	var $saef = FALSE;
+
 	/**
 	 * FieldFrame_Main Class Initialization
 	 *
@@ -230,14 +242,9 @@ class Fieldframe_Main {
 		global $SESS, $DB;
 
 		$this->hooks = $hooks;
-		$this->errors = array();
-		$this->snippets = array('head' => array(), 'body' => array());
 
 		// get the site-specific settings
 		$this->settings = $this->_get_settings($settings);
-
-		$this->cache = array();
-		$this->postponed_saves = array();
 
 		// define fieldtype folder constants
 		if ( ! defined('FT_PATH') AND $this->settings['fieldtypes_path']) define('FT_PATH', $this->settings['fieldtypes_path']);
@@ -1976,6 +1983,77 @@ class Fieldframe_Main {
 	}
 
 	/**
+	 * Weblog - SAEF - Start
+	 *
+	 * Rewrite the SAEF completely
+	 *
+	 * @param bool    $return_form  Return the No Cache version of the form or not
+	 * @param string  $captcha  Cached CAPTCHA value from preview
+	 * @param string  $weblog_id  Weblog ID for this form
+	 * @see   http://expressionengine.com/developers/extension_hooks/weblog_standalone_form_start/
+	 */
+	function weblog_standalone_form_start($return_form, $captcha, $weblog_id)
+	{
+		global $DSP;
+
+		// initialize Display
+		if ( ! $DSP)
+		{
+			if ( ! class_exists('Display'))
+			{
+				require PATH_CP.'cp.display'.EXT;
+			}
+			$DSP = new Display();
+		}
+
+		// remember this is a SAEF for publish_form_field_unique
+		$this->saef = TRUE;
+
+		$args = func_get_args();
+		return $this->forward_ff_hook('weblog_standalone_form_start', $args);
+	}
+
+	/**
+	 * Weblog - SAEF - End
+	 *
+	 * Allows adding to end of submission form
+	 *
+	 * @param  string  $tagdata  The tag data for the submission form at the end of processing
+	 * @return string  Modified $tagdata
+	 * @see    http://expressionengine.com/developers/extension_hooks/weblog_standalone_form_end/
+	 */
+	function weblog_standalone_form_end($tagdata)
+	{
+		$tagdata = $this->get_last_call($tagdata);
+
+		foreach($this->snippets as $placement => $snippets)
+		{
+			$placement = '</'.$placement.'>';
+			foreach(array_unique($snippets) as $snippet)
+			{
+				$tagdata .= NL.$snippet.NL;
+			}
+		}
+
+		$args = func_get_args();
+		return $this->forward_ff_hook('weblog_standalone_form_start', $args, $tagdata);
+	}
+
+	/**
+	 * Weblog - SAEF - Insert Entry
+	 *
+	 * Modify any of the POST data for a SAEF insert
+	 *
+	 * @see http://expressionengine.com/developers/extension_hooks/weblog_standalone_insert_entry/
+	 */
+	function weblog_standalone_insert_entry()
+	{
+		
+
+		return $this->forward_ff_hook('weblog_standalone_insert_entry');
+	}
+
+	/**
 	 * Weblog - Entry Tag Data
 	 *
 	 * Modify the tagdata for the weblog entries before anything else is parsed
@@ -2030,35 +2108,46 @@ class Fieldframe_Main {
 		//if (preg_match_all('/'.LD.$field_name.'(\s+.*?)?'.RD.'(?![\'"])/s', $tagdata, $matches, PREG_OFFSET_CAPTURE))
 		while (preg_match('/'.LD.$field_name.'(:(\w+))?(\s+.*)?'.RD.'/sU', $tagdata, $matches, PREG_OFFSET_CAPTURE))
 		{
+			// tag info
 			$tag_pos = $matches[0][1];
 			$tag_len = strlen($matches[0][0]);
 			$tagdata_pos = $tag_pos + $tag_len;
 			$endtag = LD.SLASH.$field_name.(isset($matches[1][0]) ? $matches[1][0] : '').RD;
 			$endtag_len = strlen($endtag);
 			$endtag_pos = strpos($tagdata, $endtag, $tagdata_pos);
+			$tag_func = (isset($matches[2][0]) AND $matches[2][0]) ? $matches[2][0] : '';
 
-			// get the params
-			$params = isset($ftype->default_tag_params)
-			  ?  $ftype->default_tag_params
-			  :  array();
-			if (isset($matches[3][0]) AND $matches[3][0] AND preg_match_all('/\s+(\w+)\s*=\s*[\'\"]([^\'\"]*)[\'\"]/sU', $matches[3][0], $param_matches))
+			// is this SAEF?
+			if ($this->saef AND ! $tag_func)
 			{
-				for ($j = 0; $j < count($param_matches[0]); $j++)
-				{
-					$params[$param_matches[1][$j]] = $param_matches[2][$j];
-				}
+				// call display_field rather than display_tag
+				$new_tagdata = $ftype->display_field($field_name, $field_data, $field_settings);
 			}
+			else
+			{
+				// get the params
+				$params = isset($ftype->default_tag_params)
+				  ?  $ftype->default_tag_params
+				  :  array();
+				if (isset($matches[3][0]) AND $matches[3][0] AND preg_match_all('/\s+(\w+)\s*=\s*[\'\"]([^\'\"]*)[\'\"]/sU', $matches[3][0], $param_matches))
+				{
+					for ($j = 0; $j < count($param_matches[0]); $j++)
+					{
+						$params[$param_matches[1][$j]] = $param_matches[2][$j];
+					}
+				}
 
-			// is this a tag pair?
-			$field_tagdata = ($endtag_pos !== FALSE)
-			  ?  substr($tagdata, $tagdata_pos, $endtag_pos - $tagdata_pos)
-			  :  '';
+				// is this a tag pair?
+				$field_tagdata = ($endtag_pos !== FALSE)
+				  ?  substr($tagdata, $tagdata_pos, $endtag_pos - $tagdata_pos)
+				  :  '';
 
-			$function = (isset($matches[2][0]) AND $matches[2][0]) ? $matches[2][0] : 'display_tag';
+				if ( ! $tag_func) $tag_func = 'tag_func';
 
-			$new_tagdata = method_exists($ftype, $function)
-			  ?  call_user_func_array(array(&$ftype, $function), array($params, $field_tagdata, $field_data, $field_settings))
-			  :  $field_data;
+				$new_tagdata = method_exists($ftype, $tag_func)
+				  ?  call_user_func_array(array(&$ftype, $tag_func), array($params, $field_tagdata, $field_data, $field_settings))
+				  :  $field_data;
+			}
 
 			$tagdata = substr($tagdata, 0, $tag_pos)
 			         . $new_tagdata
