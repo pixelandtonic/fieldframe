@@ -1994,21 +1994,27 @@ class Fieldframe_Main {
 		$this->row = $row;
 		$this->weblog = &$weblog;
 
-		foreach($this->_get_fields() as $field_id => $field)
+		$fields = array();
+		if ($fields = $this->_get_fields())
 		{
-			$this->field_id = $field_id;
-			$this->field_name = $field['name'];
-			$field_data = $this->_unserialize($row['field_id_'.$field_id], FALSE);
-			$this->_parse_tagdata($this->tagdata, $field['name'], $field_data, $field['settings'], $field['ftype']);
+			foreach($fields as $field_id => $field)
+			{
+				$fields[$field['name']] = array(
+					'data'     => $this->_unserialize($row['field_id_'.$field_id], FALSE),
+					'settings' => $field['settings'],
+					'ftype'    => $field['ftype'],
+					'helpers'  => array('field_id' => $field_id, 'field_name' => $field['name'])
+				);
+			}
+
+			$this->_parse_tagdata($this->tagdata, $fields);
 		}
 
-		// unset temporary field helper vars
+		// unset temporary helper vars
 		$tagdata = $this->tagdata;
 		unset($this->tagdata);
 		unset($this->row);
 		unset($this->weblog);
-		if (isset($this->field_id)) unset($this->field_id);
-		if (isset($this->field_name)) unset($this->field_name);
 
 		$args = func_get_args();
 		return $this->forward_ff_hook('weblog_entries_tagdata', $args, $tagdata);
@@ -2024,24 +2030,26 @@ class Fieldframe_Main {
 	 * @param  object  $ftype  The field's fieldtype object
 	 * @access private
 	 */
-	function _parse_tagdata(&$tagdata, $field_name, $field_data, $field_settings, $ftype)
+	function _parse_tagdata(&$tagdata, $fields)
 	{
-		// find all FF field tags
-		//if (preg_match_all('/'.LD.$field_name.'(\s+.*?)?'.RD.'(?![\'"])/s', $tagdata, $matches, PREG_OFFSET_CAPTURE))
-		while (preg_match('/'.LD.$field_name.'(:(\w+))?(\s+.*)?'.RD.'/sU', $tagdata, $matches, PREG_OFFSET_CAPTURE))
+		// find the next ftype tag
+		while (preg_match('/'.LD.'('.implode('|', array_keys($fields)).')(:(\w+))?(\s+.*)?'.RD.'/sU', $tagdata, $matches, PREG_OFFSET_CAPTURE))
 		{
+			$field_name = $matches[1][0];
+			$field = $fields[$field_name];
+
 			$tag_pos = $matches[0][1];
 			$tag_len = strlen($matches[0][0]);
 			$tagdata_pos = $tag_pos + $tag_len;
-			$endtag = LD.SLASH.$field_name.(isset($matches[1][0]) ? $matches[1][0] : '').RD;
+			$endtag = LD.SLASH.$field_name.(isset($matches[2][0]) ? $matches[2][0] : '').RD;
 			$endtag_len = strlen($endtag);
 			$endtag_pos = strpos($tagdata, $endtag, $tagdata_pos);
 
 			// get the params
-			$params = isset($ftype->default_tag_params)
-			  ?  $ftype->default_tag_params
+			$params = isset($field['ftype']->default_tag_params)
+			  ?  $field['ftype']->default_tag_params
 			  :  array();
-			if (isset($matches[3][0]) AND $matches[3][0] AND preg_match_all('/\s+(\w+)\s*=\s*[\'\"]([^\'\"]*)[\'\"]/sU', $matches[3][0], $param_matches))
+			if (isset($matches[4][0]) AND $matches[4][0] AND preg_match_all('/\s+(\w+)\s*=\s*[\'\"]([^\'\"]*)[\'\"]/sU', $matches[4][0], $param_matches))
 			{
 				for ($j = 0; $j < count($param_matches[0]); $j++)
 				{
@@ -2054,11 +2062,26 @@ class Fieldframe_Main {
 			  ?  substr($tagdata, $tagdata_pos, $endtag_pos - $tagdata_pos)
 			  :  '';
 
-			$function = (isset($matches[2][0]) AND $matches[2][0]) ? $matches[2][0] : 'display_tag';
+			$function = (isset($matches[3][0]) AND $matches[3][0]) ? $matches[3][0] : 'display_tag';
 
-			$new_tagdata = method_exists($ftype, $function)
-			  ?  call_user_func_array(array(&$ftype, $function), array($params, $field_tagdata, $field_data, $field_settings))
-			  :  $field_data;
+			if (method_exists($field['ftype'], $function))
+			{
+				foreach($field['helpers'] as $name => $value)
+				{
+					$this->$name = $value;
+				}
+
+				$new_tagdata = call_user_func_array(array(&$field['ftype'], $function), array($params, $field_tagdata, $field['data'], $field['settings']));
+
+				foreach($field['helpers'] as $name => $value)
+				{
+					unset($this->$name);
+				}
+			}
+			else
+			{
+				$new_tagdata = $field['data'];
+			}
 
 			$tagdata = substr($tagdata, 0, $tag_pos)
 			         . $new_tagdata
@@ -2066,13 +2089,16 @@ class Fieldframe_Main {
 		}
 
 		// conditionals
-		$this->ftype = $ftype;
-		$this->field_data = $field_data;
-		$this->field_settings = $field_settings;
-		$tagdata = preg_replace_callback('/('.LD.'if(:elseif)?\s+(.*\s+)?)('.$field_name.')(:(\w+))?((\s+.*)?'.RD.')/isU', array(&$this, '_parse_conditional'), $tagdata);
-		unset($this->ftype);
-		unset($this->field_data);
-		unset($this->field_settings);
+		foreach($fields as $field_name => $field)
+		{
+			$this->ftype = $field['ftype'];
+			$this->field_data = $field['data'];
+			$this->field_settings = $field['settings'];
+			$tagdata = preg_replace_callback('/('.LD.'if(:elseif)?\s+(.*\s+)?)('.$field_name.')(:(\w+))?((\s+.*)?'.RD.')/isU', array(&$this, '_parse_conditional'), $tagdata);
+			unset($this->ftype);
+			unset($this->field_data);
+			unset($this->field_settings);
+		}
 	}
 
 	/**
