@@ -2026,6 +2026,8 @@ class Fieldframe_Main {
 	{
 		$tagdata = $this->get_last_call($tagdata);
 
+		//$this->function weblog_entries_tagdata($tagdata, $row);
+
 		foreach($this->snippets as $placement => $snippets)
 		{
 			$placement = '</'.$placement.'>';
@@ -2064,7 +2066,7 @@ class Fieldframe_Main {
 	 * @return string              Modified $tagdata
 	 * @see    http://expressionengine.com/developers/extension_hooks/weblog_entries_tagdata/
 	 */
-	function weblog_entries_tagdata($tagdata, $row, &$weblog)
+	function weblog_entries_tagdata($tagdata, $row, &$weblog=NULL)
 	{
 		global $REGX;
 
