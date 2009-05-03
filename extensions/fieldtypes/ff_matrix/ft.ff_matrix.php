@@ -571,15 +571,24 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 			{
 				$row_tagdata = $tagdata;
 
-				foreach($field_settings['cols'] as $col_id => $col)
+				if ($field_settings['cols'])
 				{
-					$ftype = $ftypes[$col['type']];
-					$cell_data = isset($row[$col_id]) ? $row[$col_id] : '';
-					$cell_settings = array_merge(
-						(isset($ftype->default_cell_settings) ? $ftype->default_cell_settings : array()),
-						(isset($col['settings']) ? $col['settings'] : array())
-					);
-					$FF->_parse_tagdata($row_tagdata, $col['name'], $cell_data, $cell_settings, $ftype);
+					$cols = array();
+					foreach($field_settings['cols'] as $col_id => $col)
+					{
+						$ftype = $ftypes[$col['type']];
+						$cols[$col['name']] = array(
+							'data'     => (isset($row[$col_id]) ? $row[$col_id] : ''),
+							'settings' => array_merge(
+							                  (isset($ftype->default_cell_settings) ? $ftype->default_cell_settings : array()),
+							                  (isset($col['settings']) ? $col['settings'] : array())
+							              ),
+							'ftype'    => $ftype,
+							'helpers'  => array()
+						);
+					}
+
+					$FF->_parse_tagdata($row_tagdata, $cols);
 				}
 
 				// var swaps

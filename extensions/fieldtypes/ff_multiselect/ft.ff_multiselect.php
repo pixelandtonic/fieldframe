@@ -21,7 +21,7 @@ class Ff_multiselect extends Fieldframe_Fieldtype {
 		'name'     => 'FF Multi-select',
 		'version'  => FF_VERSION,
 		'desc'     => 'Provides a multi-select fieldtype',
-		'docs_url' => 'http://wiki.github.com/brandonkelly/bk.fieldframe.ee_addon/ff-multiselect',
+		'docs_url' => 'http://wiki.github.com/brandonkelly/bk.fieldframe.ee_addon/ff-multi-select',
 		'no_lang'  => TRUE
 	);
 
