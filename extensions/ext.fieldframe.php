@@ -1823,7 +1823,7 @@ class Fieldframe_Main {
 			if (isset($_POST[$field_name])) $field_data = $_POST[$field_name];
 
 			$this->row = $row;
-			$r = $field['ftype']->display_field($field_name, $this->_unserialize($field_data), $field['settings']);
+			$r = $DSP->qdiv('ff-ft', $field['ftype']->display_field($field_name, $this->_unserialize($field_data), $field['settings']));
 			unset($this->row);
 		}
 
@@ -1994,7 +1994,7 @@ class Fieldframe_Main {
 	 */
 	function weblog_standalone_form_start($return_form, $captcha, $weblog_id)
 	{
-		global $DSP;
+		global $DSP, $DB;
 
 		// initialize Display
 		if ( ! $DSP)
@@ -2024,13 +2024,22 @@ class Fieldframe_Main {
 	 */
 	function weblog_standalone_form_end($tagdata)
 	{
+		global $DSP;
+
 		$tagdata = $this->get_last_call($tagdata);
 
-		//$this->weblog_entries_tagdata($tagdata, $row);
+		// parse fieldtype tags
+		$tagdata = $this->weblog_entries_tagdata($tagdata);
 
+		// apply theme CSS to fieldtypes
+		if ( ! defined('PATH_CP_THEME')) define('PATH_CP_THEME', PATH_THEMES.'cp_themes/');
+		$theme = preg_replace('/(.*\{)/', '.ff-ft $1', $DSP->fetch_stylesheet());
+		$theme = '<style type="text/css">'.NL.$theme.NL.'</style>';
+		array_unshift($this->snippets['head'], $theme);
+
+		// append all snippets to the end of $tagdata
 		foreach($this->snippets as $placement => $snippets)
 		{
-			$placement = '</'.$placement.'>';
 			foreach(array_unique($snippets) as $snippet)
 			{
 				$tagdata .= NL.$snippet.NL;
@@ -2050,7 +2059,8 @@ class Fieldframe_Main {
 	 */
 	function weblog_standalone_insert_entry()
 	{
-		
+		$this->log($_POST);
+		die();
 
 		return $this->forward_ff_hook('weblog_standalone_insert_entry');
 	}
@@ -2066,7 +2076,7 @@ class Fieldframe_Main {
 	 * @return string              Modified $tagdata
 	 * @see    http://expressionengine.com/developers/extension_hooks/weblog_entries_tagdata/
 	 */
-	function weblog_entries_tagdata($tagdata, $row, &$weblog=NULL)
+	function weblog_entries_tagdata($tagdata, $row=array(), &$weblog=NULL)
 	{
 		global $REGX;
 
@@ -2080,7 +2090,7 @@ class Fieldframe_Main {
 			foreach($fields as $field_id => $field)
 			{
 				$fields[$field['name']] = array(
-					'data'     => $this->_unserialize($row['field_id_'.$field_id], FALSE),
+					'data'     => (isset($row['field_id_'.$field_id]) ? $this->_unserialize($row['field_id_'.$field_id], FALSE) : ''),
 					'settings' => $field['settings'],
 					'ftype'    => $field['ftype'],
 					'helpers'  => array('field_id' => $field_id, 'field_name' => $field['name'])
@@ -2112,6 +2122,8 @@ class Fieldframe_Main {
 	 */
 	function _parse_tagdata(&$tagdata, $fields)
 	{
+		global $DSP;
+
 		// find the next ftype tag
 		while (preg_match('/'.LD.'('.implode('|', array_keys($fields)).')(:(\w+))?(\s+.*)?'.RD.'/sU', $tagdata, $matches, PREG_OFFSET_CAPTURE))
 		{
@@ -2130,7 +2142,7 @@ class Fieldframe_Main {
 			if ($this->saef AND ! $tag_func)
 			{
 				// call display_field rather than display_tag
-				$new_tagdata = $field['ftype']->display_field($field_name, $field['data'], $field['settings']);
+				$new_tagdata = $DSP->qdiv('ff-ft', $field['ftype']->display_field($field_name, $field['data'], $field['settings']));
 			}
 			else
 			{
@@ -2182,7 +2194,7 @@ class Fieldframe_Main {
 		foreach($fields as $field_name => $field)
 		{
 			$this->ftype = $field['ftype'];
-			$this->field_data = $field['data'];
+			$this->field_data = isset($field['data']) ? $field['data'] : '';
 			$this->field_settings = $field['settings'];
 			$tagdata = preg_replace_callback('/('.LD.'if(:elseif)?\s+(.*\s+)?)('.$field_name.')(:(\w+))?((\s+.*)?'.RD.')/isU', array(&$this, '_parse_conditional'), $tagdata);
 			unset($this->ftype);
