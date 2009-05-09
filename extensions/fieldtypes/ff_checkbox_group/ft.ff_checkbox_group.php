@@ -134,7 +134,7 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 
 		if ( ! $field_data) $field_data = array();
 
-		$r = '';
+		$r = $DSP->input_hidden($field_name, 'n');
 		foreach($field_settings['options'] as $option_name => $option_label)
 		{
 			$checked = in_array($option_name, $field_data) ? 1 : 0;
@@ -146,6 +146,18 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 		$r .= '<div style="clear:left"></div>';
 
 		return $r;
+	}
+
+	/**
+	 * Save Field
+	 *
+	 * @param  mixed   $field_data      The field's data
+	 * @param  array   $field_settings  The field's settings
+	 * @return string  Modified $field_data
+	 */
+	function save_field($field_data, $field_settings)
+	{
+		return is_array($field_data) ? $field_data : '';
 	}
 
 	/**
