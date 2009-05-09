@@ -21,8 +21,51 @@ class Ff_checkbox extends Fieldframe_Fieldtype {
 		'name'     => 'FF Checkbox',
 		'version'  => FF_VERSION,
 		'desc'     => 'Provides a single checkbox fieldtype',
-		'docs_url' => 'http://wiki.github.com/brandonkelly/bk.fieldframe.ee_addon/ff-checkbox'
+		'docs_url' => 'http://wiki.github.com/brandonkelly/bk.fieldframe.ee_addon/ff-checkbox',
+		'no_lang'  => TRUE
 	);
+
+	var $default_field_settings = array(
+		'label' => ''
+	);
+
+	var $default_cell_settings = array(
+		'label' => ''
+	);
+
+	/**
+	 * Display Field Settings
+	 * 
+	 * @param  array  $field_settings  The field's settings
+	 * @return array  Settings HTML (cell1, cell2, rows)
+	 */
+	function display_field_settings($field_settings)
+	{
+		global $DSP, $LANG;
+
+		$cell2 = $DSP->qdiv('defaultBold', $LANG->line('checkbox_label_label'))
+		       . $DSP->input_text('label', $field_settings['label'], '', '', 'input', '260px');
+
+		return array('cell2' => $cell2);
+	}
+
+	/**
+	 * Display Field Settings
+	 * 
+	 * @param  array  $cell_settings  The cell's settings
+	 * @return string  Settings HTML
+	 */
+	function display_cell_settings($cell_settings)
+	{
+		global $DSP, $LANG;
+
+		$r = '<label class="itemWrapper">'
+		   . $DSP->qdiv('defaultBold', $LANG->line('checkbox_label_label'))
+		   . $DSP->input_text('label', $cell_settings['label'], '', '', 'input', '140px')
+		   . '</label>';
+
+		return $r;
+	}
 
 	/**
 	 * Display Field
@@ -35,8 +78,15 @@ class Ff_checkbox extends Fieldframe_Fieldtype {
 	function display_field($field_name, $field_data, $field_settings)
 	{
 		global $DSP;
-		return $DSP->input_hidden($field_name, 'n')
-		     . $DSP->input_checkbox($field_name, 'y', $field_data == 'y' ? 1 : 0);
+
+		$checked = $field_data == 'y' ? 1 : 0;
+		$r = $DSP->input_hidden($field_name, 'n')
+		   . '<label style="display:block; margin:3px 0 7px;">'
+		   . $DSP->input_checkbox($field_name, 'y', $checked)
+		   . NBS.$field_settings['label']
+		   . '</label> ';
+
+		return $r;
 	}
 
 	/**

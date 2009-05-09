@@ -131,16 +131,20 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 	function display_field($field_name, $field_data, $field_settings)
 	{
 		global $DSP;
+
 		if ( ! $field_data) $field_data = array();
+
 		$r = '';
 		foreach($field_settings['options'] as $option_name => $option_label)
 		{
 			$checked = in_array($option_name, $field_data) ? 1 : 0;
-			$r .= '<label style="display:block; float:left; margin:0 15px 10px 0; white-space:nowrap;">'
-			    . $DSP->input_checkbox("{$field_name}[]", $option_name, $checked)
-			    . $option_label
+			$r .= '<label style="display:block; float:left; margin:3px 15px 7px 0; white-space:nowrap;">'
+			    . $DSP->input_checkbox($field_name.'[]', $option_name, $checked)
+			    . NBS.$option_label
 			    . '</label> ';
 		}
+		$r .= '<div style="clear:left"></div>';
+
 		return $r;
 	}
 
