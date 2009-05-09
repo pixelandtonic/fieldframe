@@ -12,7 +12,7 @@
 .ff_matrix table td { padding:6px 10px; vertical-align:top; text-align:left; }
 
 /* headers */
-.ff_matrix table th { border-top:1px solid #5f7888; border-right:1px dotted #556e7f; white-space:nowrap; }
+.ff_matrix table th { border-top:1px solid #5f7888; border-right:1px dotted #556e7f; white-space:nowrap; font-weight:normal; }
 .ff_matrix table th:first-child { border-left:1px solid #6c8494; }
 .ff_matrix table th:last-child { border-right:1px solid #6c8494; }
 

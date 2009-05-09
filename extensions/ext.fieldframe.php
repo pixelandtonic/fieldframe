@@ -54,7 +54,6 @@ class Fieldframe {
 		// SAEF
 		'weblog_standalone_form_start',
 		'weblog_standalone_form_end',
-		'weblog_standalone_insert_entry',
 
 		// Templates
 		'weblog_entries_tagdata' => array('priority' => 1),
@@ -2051,21 +2050,6 @@ class Fieldframe_Main {
 	}
 
 	/**
-	 * Weblog - SAEF - Insert Entry
-	 *
-	 * Modify any of the POST data for a SAEF insert
-	 *
-	 * @see http://expressionengine.com/developers/extension_hooks/weblog_standalone_insert_entry/
-	 */
-	function weblog_standalone_insert_entry()
-	{
-		$this->log($_POST);
-		die();
-
-		return $this->forward_ff_hook('weblog_standalone_insert_entry');
-	}
-
-	/**
 	 * Weblog - Entry Tag Data
 	 *
 	 * Modify the tagdata for the weblog entries before anything else is parsed
@@ -2142,7 +2126,7 @@ class Fieldframe_Main {
 			if ($this->saef AND ! $tag_func)
 			{
 				// call display_field rather than display_tag
-				$new_tagdata = $DSP->qdiv('ff-ft', $field['ftype']->display_field($field_name, $field['data'], $field['settings']));
+				$new_tagdata = $DSP->qdiv('ff-ft', $field['ftype']->display_field('field_id_'.$field['helpers']['field_id'], $field['data'], $field['settings']));
 			}
 			else
 			{
