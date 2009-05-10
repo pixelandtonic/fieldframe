@@ -95,7 +95,9 @@ $.fn.ffMatrix = function(fieldName, cellDefaults, maxRows) {
 				$('<td>').appendTo($tr)
 					.addClass('gutter tableDnD-sort');
 				$.each(cellDefaults, function(i) {
-					var c = ((i == 0) ? ' first' : ((i == cellDefaults.length-1) ? ' last' : ''));
+					var c = '';
+					if (i == 0) c += ' first';
+					if (i == cellDefaults.length-1) c += ' last';
 					$td = $('<td class="'+this.type+' td'+c+'">').appendTo($tr).html(this.cell);
 					if ($.fn.ffMatrix.onDisplayCell[this.type]) {
 						$.fn.ffMatrix.onDisplayCell[this.type]($td);

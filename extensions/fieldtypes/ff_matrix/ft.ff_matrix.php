@@ -416,9 +416,9 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		foreach($field_settings['cols'] as $col_id => $col)
 		{
 			// add the header
-			$class = $col_id == $first_col_id
-			  ?  ' first'
-			  :  ($col_id == $last_col_id ? ' last' : '');
+			$class = '';
+			if ($col_id == $first_col_id) $class .= ' first';
+			if ($col_id == $last_col_id) $class .= ' last';
 			$r .=  '<th class="tableHeading th'.$class.'">'.$col['label'].'</th>';
 
 			// get the default state
@@ -468,9 +468,11 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 					(isset($ftype->default_cell_settings) ? $ftype->default_cell_settings : array()),
 					(isset($col['settings']) ? $col['settings'] : array())
 				);
-				$class = $col_id == $first_col_id
-				  ?  ' first'
-				  :  ($col_id == $last_col_id ? ' last' : '');
+
+				$class = '';
+				if ($col_id == $first_col_id) $class .= ' first';
+				if ($col_id == $last_col_id) $class .= ' last';
+
 				$cell_data = isset($row[$col_id]) ? $row[$col_id] : '';
 				$r .= '<td class="'.($row_count % 2 ? 'tableCellTwo' : 'tableCellOne').' '.$col['type'].' td'.$class.'">'
 				    .   $ftype->display_cell($cell_name, $cell_data, $cell_settings)
@@ -499,8 +501,9 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		// add json lib if < PHP 5.2
 		include_once 'includes/jsonwrapper/jsonwrapper.php';
 
+		$max_rows = $field_settings['max_rows'] ? $field_settings['max_rows'] : '0';
 		$this->insert_js('jQuery(window).bind("load", function() {' . NL
-		               . '  jQuery("#'.$field_name.'").ffMatrix("'.$field_name.'", '.json_encode($cell_defaults).', '.$field_settings['max_rows'].');' . NL
+		               . '  jQuery("#'.$field_name.'").ffMatrix("'.$field_name.'", '.json_encode($cell_defaults).', '.$max_rows.');' . NL
 		               . '});');
 
 		return $r;
