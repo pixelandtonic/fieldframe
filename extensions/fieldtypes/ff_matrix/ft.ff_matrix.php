@@ -391,11 +391,21 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		$cell_defaults = array();
 		$r = '<div class="ff_matrix" id="'.$field_name.'">'
 		   .   '<table cellspacing="0" cellpadding="0">'
-		   .     '<tr class="tableHeading">';
+		   .     '<tr class="head">'
+		   .       '<td class="gutter"></td>';
+
+		// get the first and last col IDs
+		$col_ids = array_keys($field_settings['cols']);
+		$first_col_id = $col_ids[0];
+		$last_col_id = $col_ids[count($col_ids)-1];
+
 		foreach($field_settings['cols'] as $col_id => $col)
 		{
 			// add the header
-			$r .=  '<th>'.$col['label'].'</th>';
+			$class = $col_id == $first_col_id
+			  ?  ' first'
+			  :  ($col_id == $last_col_id ? ' last' : '');
+			$r .=  '<th class="tableHeading th'.$class.'">'.$col['label'].'</th>';
 
 			// get the default state
 			if ( ! isset($ftypes[$col['type']]))
@@ -413,7 +423,8 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 				'cell' => $ftype->display_cell($field_name.'[0]['.$col_id.']', '', $cell_settings)
 			);
 		}
-		$r .=    '</tr>';
+		$r .=      '<td class="gutter"></td>'
+		    .    '</tr>';
 
 		if ( ! $field_data)
 		{
@@ -423,7 +434,8 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		$num_cols = count($field_settings['cols']);
 		foreach($field_data as $row_count => $row)
 		{
-			$r .= '<tr>';
+			$r .= '<tr>'
+			    .   '<td class="gutter tableDnD-sort"></td>';
 			$col_count = 0;
 			foreach($field_settings['cols'] as $col_id => $col)
 			{
@@ -442,32 +454,40 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 					(isset($ftype->default_cell_settings) ? $ftype->default_cell_settings : array()),
 					(isset($col['settings']) ? $col['settings'] : array())
 				);
+				$class = $col_id == $first_col_id
+				  ?  ' first'
+				  :  ($col_id == $last_col_id ? ' last' : '');
 				$cell_data = isset($row[$col_id]) ? $row[$col_id] : '';
-				$r .= '<td class="'.($row_count % 2 ? 'tableCellTwo' : 'tableCellOne').' '.$col['type'].'">'
+				$r .= '<td class="'.($row_count % 2 ? 'tableCellTwo' : 'tableCellOne').' '.$col['type'].' td'.$class.'">'
 				    .   $ftype->display_cell($cell_name, $cell_data, $cell_settings)
 				    . '</td>';
 				$col_count++;
 			}
-			$r .= '</tr>';
+			$r .=   '<td class="gutter"></td>'
+			    . '</tr>';
 		}
 
 		$r .=   '</table>'
 		    . '</div>';
 
+		// add localized strings
 		$LANG->fetch_language_file('ff_matrix');
+		$this->insert_js('jQuery.fn.ffMatrix.lang.addRow = "'.$LANG->line('add_row').'";' . NL
+		               . 'jQuery.fn.ffMatrix.lang.deleteRow = "'.$LANG->line('delete_row').'";' . NL
+		               . 'jQuery.fn.ffMatrix.lang.confirmDeleteRow = "'.$LANG->line('confirm_delete_row').'";' . NL
+		               . 'jQuery.fn.ffMatrix.lang.sortRow = "'.$LANG->line('sort_row').'";');
+
+		$this->insert('body', '<!--[if lte IE 7]>' . NL
+		                    . '<script type="text/javascript" src="'.FT_URL.$this->_class_name.'/scripts/jquery.tablednd.js" charset="utf-8"></script>' . NL
+		                    . '<script type="text/javascript" charset="utf-8">jQuery.fn.ffMatrix.useTableDnD = true;</script>' . NL
+		                    . '<![endif]-->');
 
 		// add json lib if < PHP 5.2
 		include_once 'includes/jsonwrapper/jsonwrapper.php';
 
-		$js = 'jQuery(window).bind("load", function() {' . NL
-		    . '  jQuery.fn.ffMatrix.lang.addRow = "'.$LANG->line('add_row').'";' . NL
-		    . '  jQuery.fn.ffMatrix.lang.deleteRow = "'.$LANG->line('delete_row').'";' . NL
-		    . '  jQuery.fn.ffMatrix.lang.confirmDeleteRow = "'.$LANG->line('confirm_delete_row').'";' . NL
-		    . '  jQuery.fn.ffMatrix.lang.sortRow = "'.$LANG->line('sort_row').'";' . NL
-		    . '  jQuery("#'.$field_name.'").ffMatrix("'.$field_name.'", '.json_encode($cell_defaults).');' . NL
-		    . '});';
-
-		$this->insert_js($js);
+		$this->insert_js('jQuery(window).bind("load", function() {' . NL
+		               . '  jQuery("#'.$field_name.'").ffMatrix("'.$field_name.'", '.json_encode($cell_defaults).');' . NL
+		               . '});');
 
 		return $r;
 	}

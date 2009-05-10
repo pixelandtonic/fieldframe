@@ -46,26 +46,29 @@ $.fn.ffMatrixConf = function(id, cols) {
 
 			var cellType = $.fn.ffMatrixConf.cellTypes[col.type];
 
-			col.$header = $('<th id="ffMatrixCol'+colId+'">')
-				.appendTo(obj.dom.$trHeaders);
-			col.$headerText = $('<span>').html(col.label).appendTo(col.$header);
+			col.$header = $('<th>').appendTo(obj.dom.$trHeaders)
+				.addClass('th')
+				.attr('id', 'ffMatrixCol'+colId);
+			col.$headerText = $('<span>').appendTo(col.$header)
+				.html(col.label);
 
-			col.$preview = $('<td>').html(col.preview)
-				.appendTo(obj.dom.$trPreviews);
+			col.$preview = $('<td>').appendTo(obj.dom.$trPreviews)
+				.addClass('td')
+				.html(col.preview);
 			if ($.fn.ffMatrix.onDisplayCell[col.type]) {
 				$.fn.ffMatrix.onDisplayCell[col.type](col.$preview);
 			}
 
-			col.$colConf = $('<td>').html(
-				  '<label class="itemWrapper">'
-				+   '<div class="defaultBold">'+$.fn.ffMatrixConf.lang.colName+'</div>'
-				+   '<input type="text" name="'+obj.namespace+'[cols]['+colId+'][name]" value="'+col.name+'" style="font-family:monospace;" />'
-				+ '</label>'
-				+ '<label class="itemWrapper">'
-				+   '<div class="defaultBold">'+$.fn.ffMatrixConf.lang.colLabel+'</div>'
-				+   '<input type="text" class="label" name="'+obj.namespace+'[cols]['+colId+'][label]" value="'+col.label+'" />'
-				+ '</label>')
-				.appendTo(obj.dom.$trColConf);
+			col.$colConf = $('<td>').appendTo(obj.dom.$trColConf)
+				.addClass('td')
+				.html('<label class="itemWrapper">'
+				    +   '<div class="defaultBold">'+$.fn.ffMatrixConf.lang.colName+'</div>'
+				    +   '<input type="text" name="'+obj.namespace+'[cols]['+colId+'][name]" value="'+col.name+'" style="font-family:monospace;" />'
+				    + '</label>'
+				    + '<label class="itemWrapper">'
+				    +   '<div class="defaultBold">'+$.fn.ffMatrixConf.lang.colLabel+'</div>'
+				    +   '<input type="text" class="label" name="'+obj.namespace+'[cols]['+colId+'][label]" value="'+col.label+'" />'
+				    + '</label>');
 			col.$labelInput = col.$colConf.find('input.label')
 				.keydown(function(event) {
 					setTimeout(function() {
@@ -79,18 +82,18 @@ $.fn.ffMatrixConf = function(id, cols) {
 				        + (className == col.type ? ' selected="selected"' : '')
 				        + '>'+this.name+'</option>';
 			});
-			col.$cellType = $('<td>').html(
-				  '<label class="itemWrapper">'
-				+   '<div class="defaultBold">'+$.fn.ffMatrixConf.lang.cellType+'</div>'
-				+   '<select name="'+obj.namespace+'[cols]['+colId+'][type]">'
-				+     select
-				+   '</select>'
-				+ '</label>'
-				)
-				.appendTo(obj.dom.$trCellType);
+			col.$cellType = $('<td>').appendTo(obj.dom.$trCellType)
+				.addClass('td')
+				.html('<label class="itemWrapper">'
+				    +   '<div class="defaultBold">'+$.fn.ffMatrixConf.lang.cellType+'</div>'
+				    +   '<select name="'+obj.namespace+'[cols]['+colId+'][type]">'
+				    +     select
+				    +   '</select>'
+				    + '</label>');
 
-			col.$cellSettings = $('<td>').html(groupCellSettings(obj, col.settings, colId))
-				.appendTo(obj.dom.$trCellSettings)
+			col.$cellSettings = $('<td>').appendTo(obj.dom.$trCellSettings)
+				.addClass('td')
+				.html(groupCellSettings(obj, col.settings, colId));
 
 			col.$delete = $('<td>').appendTo(obj.dom.$trDeletes);
 			col.$deleteBtn = $('<a class="button delete">')
