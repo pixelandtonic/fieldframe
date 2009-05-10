@@ -134,7 +134,7 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 
 		if ( ! $field_data) $field_data = array();
 
-		$r = $DSP->input_hidden($field_name, 'n');
+		$r = $DSP->input_hidden($field_name.'[]', 'temp');
 		foreach($field_settings['options'] as $option_name => $option_label)
 		{
 			$checked = in_array($option_name, $field_data) ? 1 : 0;
@@ -157,7 +157,9 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 	 */
 	function save_field($field_data, $field_settings)
 	{
-		return is_array($field_data) ? $field_data : '';
+		// remove the temp element
+		array_shift($field_data);
+		return $field_data;
 	}
 
 	/**
@@ -171,6 +173,18 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 	function display_cell($cell_name, $cell_data, $cell_settings)
 	{
 		return $this->display_field($cell_name, $cell_data, $cell_settings);
+	}
+
+	/**
+	 * Save Cell
+	 *
+	 * @param  mixed   $cell_data      The cell's data
+	 * @param  array   $cell_settings  The cell's settings
+	 * @return string  Modified $cell_data
+	 */
+	function save_cell($cell_data, $cell_settings)
+	{
+		return $this->save_field($cell_data, $cell_settings);
 	}
 
 	/**
