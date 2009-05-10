@@ -1,16 +1,16 @@
 /*--- FF Matrix generic table styles ---*/
-.ff_matrix { position:relative; margin:5px 0 20px; }
+.ff_matrix { position:relative; margin:5px 0 10px; }
 
 .ff_matrix a.button { display:block; width:16px; height:16px; background:no-repeat 50% 50%; cursor:pointer; }
 .ff_matrix a.button.add { background-image:url(../images/add.png); }
-.ff_matrix a.button.add.row { display:inline-block; margin-top:5px; width:auto; padding-left:18px; background-position:3px 50%; line-height:16px; }
+.ff_matrix a.button.add.row { display:inline-block; margin:5px 0 0 22px; width:auto; padding-left:18px; background-position:3px 50%; line-height:16px; }
 .ff_matrix a.button.sort { margin-right:5px; background-image:url(../images/sort.png); cursor:move; }
 .ff_matrix a.button.delete { margin-left:5px; background-image:url(../images/delete.png); }
 
 .ff_matrix table { width:100%; }
 .ff_matrix table .th,
 .ff_matrix table .td { padding:6px 10px; vertical-align:top; text-align:left; }
-.ff_matrix table .gutter { width:1px; }
+.ff_matrix table .gutter { padding-top:6px; width:1px; vertical-align:top; }
 
 /* headers */
 .ff_matrix table .th { border-top:1px solid #5f7888; border-right:1px dotted #556e7f; white-space:nowrap; font-weight:normal; }

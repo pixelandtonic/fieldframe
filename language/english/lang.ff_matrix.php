@@ -16,6 +16,9 @@ $L = array(
 
 // Field Settings
 
+'max_rows_label' =>
+'Max rows',
+
 'conf_label' =>
 'Matrix Configuration',
 

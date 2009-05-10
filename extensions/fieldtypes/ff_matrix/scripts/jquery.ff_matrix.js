@@ -1,7 +1,7 @@
 (function($){
 
 
-$.fn.ffMatrix = function(fieldName, cellDefaults) {
+$.fn.ffMatrix = function(fieldName, cellDefaults, maxRows) {
 	return this.each(function() {
 
 		// Initialize obj
@@ -24,6 +24,7 @@ $.fn.ffMatrix = function(fieldName, cellDefaults) {
 					if (confirm($.fn.ffMatrix.lang.confirmDeleteRow)) {
 						$tr.remove();
 						resetRows();
+						checkNumRows();
 					}
 				});
 		};
@@ -104,7 +105,32 @@ $.fn.ffMatrix = function(fieldName, cellDefaults) {
 					.addClass('gutter');
 				resetRows();
 				addButtons($tr);
+				checkNumRows();
 			});
+
+		var checkNumRows = function() {
+			var $rows = obj.dom.$table.find('tbody:first > tr:not(.head)');
+
+			// Delete & Sort buttons
+			if ($rows.length == 1) {
+				$rows.find('a.button').hide();
+			}
+			else {
+				$rows.find('a.button').show();
+			}
+
+			// Add Row button
+			if (maxRows) {
+				if ($rows.length < maxRows) {
+					obj.dom.$add.show();
+				}
+				else {
+					obj.dom.$add.hide();
+				}
+			}
+		};
+
+		checkNumRows();
 
 	});
 };

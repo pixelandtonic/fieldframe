@@ -21,6 +21,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 	);
 
 	var $default_field_settings = array(
+		'max_rows' => '',
 		'cols' => array(
 			'1' => array('name' => 'cell_1', 'label' => 'Cell 1', 'type' => 'ff_matrix_text', 'new' => 'y'),
 			'2' => array('name' => 'cell_2', 'label' => 'Cell 2', 'type' => 'ff_matrix_textarea', 'new' => 'y')
@@ -30,9 +31,9 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 	var $default_tag_params = array(
 		'cellspacing' => '1',
 		'cellpadding' => '10',
-		'limit' => '0',
-		'sort' => 'asc',
-		'backspace' => '0'
+		'limit'       => '0',
+		'sort'        => 'asc',
+		'backspace'   => '0'
 	);
 
 	var $postpone_saves = TRUE;
@@ -262,6 +263,16 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 	{
 		global $DSP, $LANG;
 
+		$cell1 = $DSP->div('itemWrapper')
+		       . '<label>'
+		       . NBS.NBS.'<input type="text" name="max_rows" value="'. ($field_settings['max_rows'] ? $field_settings['max_rows'] : '∞').'" maxlength="3"'
+		         . ' style="width:30px;'.($field_settings['max_rows'] ? '' : ' color:#999;').'"'
+		         . ' onfocus="if (this.value == \'∞\'){ this.value = \'\'; this.style.color = \'#000\'; }"'
+		         . ' onblur="if (!parseInt(this.value)){ this.value = \'∞\'; this.style.color = \'#999\'; }"/>'
+		       . NBS.NBS.$LANG->line('max_rows_label')
+		       . '</label>'
+		       . $DSP->div_c();
+
 		$this->include_css('styles/ff_matrix.css');
 		$this->include_js('scripts/jquery.sorttable.js');
 		$this->include_js('scripts/jquery.ff_matrix_conf.js');
@@ -330,21 +341,24 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		$this->insert_js($js);
 
 		// display the config skeleton
-		$preview = $DSP->qdiv('defaultBold', $LANG->line('conf_label'))
-                 . $DSP->qdiv('itemWrapper', $LANG->line('conf_subtext'))
-		         . $DSP->div('ff_matrix ff_matrix_conf')
-		         .   '<a class="button add" title="'.$LANG->line('add_column').'"></a>'
-		         .   '<table cellspacing="0" cellpadding="0">'
-		         .     '<tr class="tableHeading"></tr>'
-		         .     '<tr class="preview"></tr>'
-		         .     '<tr class="conf col"></tr>'
-		         .     '<tr class="conf celltype"></tr>'
-		         .     '<tr class="conf cellsettings"></tr>'
-		         .     '<tr class="delete"></tr>'
-		         .   '</table>'
-		         . $DSP->div_c();
+		$conf = $DSP->qdiv('defaultBold', $LANG->line('conf_label'))
+              . $DSP->qdiv('itemWrapper', $LANG->line('conf_subtext'))
+		      . $DSP->div('ff_matrix ff_matrix_conf')
+		      .   '<a class="button add" title="'.$LANG->line('add_column').'"></a>'
+		      .   '<table cellspacing="0" cellpadding="0">'
+		      .     '<tr class="tableHeading"></tr>'
+		      .     '<tr class="preview"></tr>'
+		      .     '<tr class="conf col"></tr>'
+		      .     '<tr class="conf celltype"></tr>'
+		      .     '<tr class="conf cellsettings"></tr>'
+		      .     '<tr class="delete"></tr>'
+		      .   '</table>'
+		      . $DSP->div_c();
 
-		return array('rows' => array(array($preview)));
+		return array(
+			'cell1' => $cell1,
+			'rows'  => array(array($conf))
+		);
 	}
 
 	/**
@@ -486,7 +500,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		include_once 'includes/jsonwrapper/jsonwrapper.php';
 
 		$this->insert_js('jQuery(window).bind("load", function() {' . NL
-		               . '  jQuery("#'.$field_name.'").ffMatrix("'.$field_name.'", '.json_encode($cell_defaults).');' . NL
+		               . '  jQuery("#'.$field_name.'").ffMatrix("'.$field_name.'", '.json_encode($cell_defaults).', '.$field_settings['max_rows'].');' . NL
 		               . '});');
 
 		return $r;
