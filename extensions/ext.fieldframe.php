@@ -1174,6 +1174,8 @@ class Fieldframe_Main {
 		     . '  #ffsettings .ftsettings table tr td { border-top:1px solid #1d2326; padding-left:8px; padding-right:8px;  }'
 		     . '  #ffsettings .ftsettings table tr td.tableHeading { color:#ddd; background:#232a2e; }' . NL
 		     . '  #ffsettings .ftsettings .defaultBold { color:#ccc; }' . NL
+		     . '  #ffsettings .ftsettings .box { border-color:transparent; }' . NL
+		     . '  #ffsettings .ftsettings .tableCellOne, #ffsettings .ftsettings .tableCellOneBold, #ffsettings .ftsettings .tableCellTwo, #ffsettings .ftsettings .tableCellTwoBold { border-bottom:none; }' . NL
 		     . '</style>';
 
 		$this->snippets['head'][] = $css;
