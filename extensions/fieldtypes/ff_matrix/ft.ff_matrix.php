@@ -371,6 +371,8 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 	 */
 	function save_field_settings($field_settings)
 	{
+		$field_settings['max_rows'] = is_numeric($field_settings['max_rows']) ? $field_settings['max_rows'] : '';
+
 		$ftypes = $this->_get_ftypes();
 
 		foreach($field_settings['cols'] as $col_id => &$col)
