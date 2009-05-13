@@ -593,6 +593,10 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 			{
 				$field_data = array_reverse($field_data);
 			}
+			else if ($params['sort'] == 'random')
+			{
+				shuffle($field_data);
+			}
 
 			if ($params['limit'] AND count($field_data) > $params['limit'])
 			{
