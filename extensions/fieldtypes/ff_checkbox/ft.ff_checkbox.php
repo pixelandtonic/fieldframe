@@ -114,6 +114,18 @@ class Ff_checkbox extends Fieldframe_Fieldtype {
 		return $this->display_field($cell_name, $cell_data, $cell_settings);
 	}
 
+	/**
+	 * Save Cell
+	 *
+	 * @param  string  $cell_data      The cell's data
+	 * @param  array   $cell_settings  The cell's settings
+	 * @return string  Modified $cell_data
+	 */
+	function save_cell($cell_data, $cell_settings)
+	{
+		return $this->save_field($cell_data, $cell_settings);
+	}
+
 }
 
 
