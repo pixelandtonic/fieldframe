@@ -572,8 +572,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 
 		if ($field_settings['cols'] AND $field_data)
 		{
-			$table_mode = $tagdata ? FALSE : TRUE;
-			if ($table_mode)
+			if ($table_mode = $tagdata ? FALSE : TRUE)
 			{
 				$r .= '<table cellspacing="'.$params['cellspacing'].'" cellpadding="'.$params['cellpadding'].'">' . "\n"
 				    . '  <thead>' . "\n"
@@ -601,7 +600,6 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 
 			if ($params['offset'] OR $params['limit'])
 			{
-				if ( ! $params['limit']) $params['limit'] = count($field_data);
 				$field_data = array_splice($field_data, $params['offset'], $params['limit']);
 			}
 
