@@ -31,8 +31,9 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 	var $default_tag_params = array(
 		'cellspacing' => '1',
 		'cellpadding' => '10',
-		'limit'       => '0',
 		'sort'        => 'asc',
+		'limit'       => '0',
+		'offset'      => '0',
 		'backspace'   => '0'
 	);
 
@@ -598,9 +599,10 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 				shuffle($field_data);
 			}
 
-			if ($params['limit'] AND count($field_data) > $params['limit'])
+			if ($params['offset'] OR $params['limit'])
 			{
-				array_splice($field_data, $params['limit']);
+				if ( ! $params['limit']) $params['limit'] = count($field_data);
+				$field_data = array_splice($field_data, $params['offset'], $params['limit']);
 			}
 
 			$ftypes = $this->_get_ftypes();
