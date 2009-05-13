@@ -32,8 +32,8 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		'cellspacing' => '1',
 		'cellpadding' => '10',
 		'sort'        => 'asc',
-		'limit'       => '0',
 		'offset'      => '0',
+		'limit'       => '0',
 		'backspace'   => '0'
 	);
 
