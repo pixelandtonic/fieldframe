@@ -31,6 +31,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 	var $default_tag_params = array(
 		'cellspacing' => '1',
 		'cellpadding' => '10',
+		'orderby'     => '',
 		'sort'        => 'asc',
 		'offset'      => '0',
 		'limit'       => '0',
@@ -556,6 +557,19 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 	}
 
 	/**
+	 * Sort Field Data
+	 * @access private
+	 */
+	function _sort_field_data($row1, $row2)
+	{
+		$a = isset($row1[$this->col_id]) ? $row1[$this->col_id] : '';
+		$b = isset($row2[$this->col_id]) ? $row2[$this->col_id] : '';
+
+		if ($a == $b) return 0;
+		return $this->sort * ($a < $b ? -1 : 1);
+	}
+
+	/**
 	 * Display Tag
 	 *
 	 * @param  array   $params          Name/value pairs from the opening tag
@@ -572,6 +586,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 
 		if ($field_settings['cols'] AND $field_data)
 		{
+			// table mode?
 			if ($table_mode = $tagdata ? FALSE : TRUE)
 			{
 				$r .= '<table cellspacing="'.$params['cellspacing'].'" cellpadding="'.$params['cellpadding'].'">' . "\n"
@@ -589,10 +604,38 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 				$tagdata .= '    </tr>' . "\n";
 			}
 
-			if ($params['sort'] == 'desc')
+			if ($params['orderby'])
+			{
+				// get the col names
+				$col_ids_by_name = array();
+				foreach($field_settings['cols'] as $col_id => $col)
+				{
+					$col_ids_by_name[$col['name']] = $col_id;
+				}
+
+				$orderby = array();
+				$sorts = explode('|', $params['sort']);
+				$orderbys = explode('|', $params['orderby']);
+				foreach(array_reverse($orderbys, TRUE) as $i => $col_name)
+				{
+					// does this column exist?
+					if ( ! isset($col_ids_by_name[$col_name])) continue;
+
+					$this->col_id = $col_ids_by_name[$col_name];
+					$this->sort = (isset($sorts[$i]) AND strtolower($sorts[$i]) == 'desc') ? -1 : 1;
+					usort($field_data, array(&$this, '_sort_field_data'));
+				}
+
+				unset($col_ids_by_name);
+				if (isset($this->col_id)) unset($this->col_id);
+				if (isset($this->sort)) unset($this->sort);
+			}
+
+			else if ($params['sort'] == 'desc')
 			{
 				$field_data = array_reverse($field_data);
 			}
+
 			else if ($params['sort'] == 'random')
 			{
 				shuffle($field_data);
