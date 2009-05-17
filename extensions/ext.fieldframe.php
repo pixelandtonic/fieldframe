@@ -416,7 +416,7 @@ class Fieldframe_Main {
 	 */
 	function _get_ftypes()
 	{
-		global $DB, $PREFS;
+		global $DB;
 
 		if ( ! isset($this->cache['ftypes']))
 		{
@@ -571,7 +571,7 @@ class Fieldframe_Main {
 	 */
 	function _init_ftype($ftype, $req_strict=TRUE)
 	{
-		global $DB, $PREFS, $REGX, $LANG;
+		global $DB, $REGX, $LANG;
 
 		$file = is_array($ftype) ? $ftype['class'] : $ftype;
 		$class_name = ucfirst($file);
@@ -906,7 +906,7 @@ class Fieldframe_Main {
 	 */
 	function settings_form()
 	{
-		global $DB, $DSP, $LANG, $IN, $PREFS, $SD;
+		global $DB, $DSP, $LANG, $IN, $SD;
 
 		// Breadcrumbs
 		$DSP->crumbline = TRUE;
@@ -1218,7 +1218,7 @@ class Fieldframe_Main {
 	 */
 	function save_fieldtypes_manager()
 	{
-		global $DB, $PREFS;
+		global $DB;
 
 		// fieldtype settings
 		if (isset($_POST['ftypes']))
