@@ -8,7 +8,7 @@ if ( ! defined('FF_CLASS'))
 {
 	define('FF_CLASS',   'Fieldframe');
 	define('FF_NAME',    'FieldFrame');
-	define('FF_VERSION', '1.1.2');
+	define('FF_VERSION', '1.1.3');
 }
 
 
@@ -84,7 +84,8 @@ class Fieldframe {
 		if (phpversion() < 5) return;
 
 		// Get settings
-		$settings = Fieldframe_Main::_get_all_settings();
+		$query = $DB->query('SELECT settings FROM exp_extensions WHERE class = "'.FF_CLASS.'" AND settings != "" LIMIT 1');
+		$settings = $query->num_rows ? $this->_unserialize($query->row['settings']) : array();
 		$this->_init_main($settings, TRUE);
 
 		global $FF;
@@ -103,6 +104,59 @@ class Fieldframe {
 		if ( ! $current OR $current == FF_VERSION)
 		{
 			return FALSE;
+		}
+
+		if ($current < '1.1.3')
+		{
+			// no longer saving settings on a per-site basis
+
+			$sql = array();
+
+			// no more per-site FF settings
+			$query = $DB->query('SELECT settings FROM exp_extensions WHERE class = "'.FF_CLASS.'" AND settings != "" LIMIT 1');
+			if ($query->row)
+			{
+				$settings = array_shift(Fieldframe_Main::_unserialize($query->row['settings']));
+				$sql[] = $DB->update_string('exp_extensions', array('settings' => Fieldframe_Main::_serialize($settings)), 'class = "'.FF_CLASS.'"');
+			}
+
+			// collect conversion info
+			$query = $DB->query('SELECT * FROM exp_ff_fieldtypes ORDER BY enabled DESC, site_id ASC');
+			$firsts = array();
+			$conversions = array();
+			foreach ($query->result as $ftype)
+			{
+				if ( ! isset($firsts[$ftype['class']]))
+				{
+					$firsts[$ftype['class']] = $ftype['fieldtype_id'];
+				}
+				else
+				{
+					$conversions[$ftype['fieldtype_id']] = $firsts[$ftype['class']];
+				}
+			}
+
+			if ($conversions)
+			{
+				// remove duplicate ftype rows in exp_ff_fieldtypes
+				$sql[] = 'DELETE FROM exp_ff_fieldtypes WHERE fieldtype_id IN ('.implode(',', array_keys($conversions)).')';
+
+				// update field_type's in exp_weblog_fields
+				foreach($conversions as $old_id => $new_id)
+				{
+					$sql[] = $DB->update_string('exp_weblog_fields', array('field_type' => 'ftype_id_'.$new_id), 'field_type = "ftype_id_'.$old_id.'"');
+				}
+			}
+
+			// remove site_id column from exp_ff_fieldtypes
+			$sql[] = 'ALTER TABLE exp_ff_fieldtypes DROP COLUMN site_id';
+
+			// apply changes
+			foreach($sql as $query)
+			{
+				//$this->log($query);
+				$DB->query($query);
+			}
 		}
 
 		if ($current < '1.1.0')
@@ -144,8 +198,7 @@ class Fieldframe {
 
 	function save_settings()
 	{
-		$settings = Fieldframe_Main::_get_all_settings();
-		$this->_init_main($settings, TRUE);
+		$this->_init_main(array(), TRUE);
 
 		global $FF;
 		$FF->save_settings();
@@ -242,12 +295,28 @@ class Fieldframe_Main {
 
 		$this->hooks = $hooks;
 
-		// get the site-specific settings
-		$this->settings = $this->_get_settings($settings);
+		// merge settings with defaults
+		$default_settings = array(
+			'fieldtypes_url' => '',
+			'fieldtypes_path' => '',
+			'check_for_updates' => 'y'
+		);
+		$this->settings = array_merge($default_settings, $settings);
 
+		// set the FT_PATH and FT_URL constants
+		$this->_define_constants();
+	}
+
+	/**
+	 * Define Constants
+	 *
+	 * @access private
+	 */
+	function _define_constants()
+	{
 		// define fieldtype folder constants
 		if ( ! defined('FT_PATH') AND $this->settings['fieldtypes_path']) define('FT_PATH', $this->settings['fieldtypes_path']);
-		if ( ! defined('FT_URL') AND $this->settings['fieldtypes_url']) 
+		if ( ! defined('FT_URL') AND $this->settings['fieldtypes_url'])
 		{
 			define('FT_URL', $this->settings['fieldtypes_url']);
 			$this->snippets['body'][] = '<script type="text/javascript">FT_URL = "'.FT_URL.'";</script>';
@@ -255,44 +324,8 @@ class Fieldframe_Main {
 	}
 
 	/**
-	 * Get All Settings
-	 *
-	 * @return array  All extension settings
-	 * @access private
-	 */
-	function _get_all_settings()
-	{
-		global $DB;
-		$query = $DB->query('SELECT settings FROM exp_extensions
-		                       WHERE class = "'.FF_CLASS.'" AND settings != "" LIMIT 1');
-		return $query->num_rows
-		  ?  $this->_unserialize($query->row['settings'])
-		  :  array();
-	}
-
-	/**
-	 * Get Settings
-	 *
-	 * @param  array  $settings  All saved settings data
-	 * @return array  Default settings merged with any site-specific settings in $settings
-	 * @access private
-	 */
-	function _get_settings($settings=array())
-	{
-		global $PREFS;
-		$defaults = array(
-			'fieldtypes_url' => '',
-			'fieldtypes_path' => '',
-			'check_for_updates' => 'y'
-		);
-		$site_id = $PREFS->ini('site_id');
-		return isset($settings[$site_id])
-		  ?  array_merge($defaults, $settings[$site_id])
-		  :  $defaults;
-	}
-
-	/**
 	 * Array Ascii to Entities
+	 *
 	 * @access private
 	 */
 	function _array_ascii_to_entities($vals)
@@ -315,6 +348,7 @@ class Fieldframe_Main {
 
 	/**
 	 * Array Ascii to Entities
+	 *
 	 * @access private
 	 */
 	function _array_entities_to_ascii($vals)
@@ -337,6 +371,7 @@ class Fieldframe_Main {
 
 	/**
 	 * Serialize
+	 *
 	 * @access private
 	 */
 	function _serialize($vals)
@@ -353,6 +388,7 @@ class Fieldframe_Main {
 
 	/**
 	 * Unserialize
+	 *
 	 * @access private
 	 */
 	function _unserialize($vals, $convert=TRUE)
@@ -387,9 +423,7 @@ class Fieldframe_Main {
 			$this->cache['ftypes'] = array();
 
 			// get enabled fields from the DB
-			$query = $DB->query('SELECT * FROM exp_ff_fieldtypes
-			                       WHERE site_id = "'.$PREFS->ini('site_id').'"
-			                         AND enabled = "y"');
+			$query = $DB->query('SELECT * FROM exp_ff_fieldtypes WHERE enabled = "y"');
 
 			if ($query->num_rows)
 			{
@@ -670,9 +704,7 @@ class Fieldframe_Main {
 		// do we already know about this fieldtype?
 		if (is_string($ftype))
 		{
-			$query = $DB->query('SELECT * FROM exp_ff_fieldtypes
-			                       WHERE site_id = "'.$PREFS->ini('site_id').'"
-			                         AND class = "'.$file.'"');
+			$query = $DB->query('SELECT * FROM exp_ff_fieldtypes WHERE class = "'.$file.'"');
 			$ftype = $query->row;
 		}
 		if ($ftype)
@@ -711,6 +743,7 @@ class Fieldframe_Main {
 
 	/**
 	 * Insert Fieldtype Hooks
+	 *
 	 * @access private
 	 */
 	function _insert_ftype_hooks($ftype)
@@ -830,7 +863,6 @@ class Fieldframe_Main {
 		{
 			$DB->query("CREATE TABLE exp_ff_fieldtypes (
 			              `fieldtype_id` int(10) unsigned NOT NULL auto_increment,
-			              `site_id`      int(4)  unsigned NOT NULL default '1',
 			              `class`        varchar(50)      NOT NULL default '',
 			              `version`      varchar(10)      NOT NULL default '',
 			              `settings`     text             NOT NULL default '',
@@ -853,10 +885,10 @@ class Fieldframe_Main {
 		}
 
 		// exp_weblog_fields.ff_settings
-		$query = $DB->query("SHOW COLUMNS FROM `{$DB->prefix}weblog_fields` LIKE 'ff_settings'");
+		$query = $DB->query('SHOW COLUMNS FROM `'.$DB->prefix.'weblog_fields` LIKE "ff_settings"');
 		if ( ! $query->num_rows)
 		{
-			$DB->query("ALTER TABLE `{$DB->prefix}weblog_fields` ADD COLUMN `ff_settings` text NOT NULL");
+			$DB->query('ALTER TABLE `'.$DB->prefix.'weblog_fields` ADD COLUMN `ff_settings` text NOT NULL');
 		}
 
 		// reset all ftype hooks
@@ -974,20 +1006,20 @@ class Fieldframe_Main {
 	 */
 	function save_settings()
 	{
-		global $DB, $PREFS;
+		global $DB;
 
-		// get the default FF settings
-		$this->settings = $this->_get_settings();
+		// save new FF site settings
+		$this->settings = array(
+			'fieldtypes_url'    => ($_POST['fieldtypes_url'] ? $this->_add_slash($_POST['fieldtypes_url']) : ''),
+			'fieldtypes_path'   => ($_POST['fieldtypes_path'] ? $this->_add_slash($_POST['fieldtypes_path']) : ''),
+			'check_for_updates' => ($_POST['check_for_updates'] != 'n' ? 'y' : 'n')
+		);
+		$DB->query($DB->update_string('exp_extensions', array('settings' => $this->_serialize($this->settings)), 'class = "'.FF_CLASS.'"'));
 
-		$this->settings['fieldtypes_url'] = $_POST['fieldtypes_url'] ? $this->_add_slash($_POST['fieldtypes_url']) : '';
-		$this->settings['fieldtypes_path'] = $_POST['fieldtypes_path'] ? $this->_add_slash($_POST['fieldtypes_path']) : '';
-		$this->settings['check_for_updates'] = ($_POST['check_for_updates'] != 'n') ? 'y' : 'n';
+		// set the FT_PATH and FT_URL constants
+		$this->_define_constants();
 
-		// save all FF settings
-		$settings = $this->_get_all_settings();
-		$settings[$PREFS->ini('site_id')] = $this->settings;
-		$DB->query($DB->update_string('exp_extensions', array('settings' => $this->_serialize($settings)), 'class = "'.FF_CLASS.'"'));
-
+		// save Fieldtypes Manager data
 		$this->save_fieldtypes_manager();
 	}
 
@@ -1205,15 +1237,12 @@ class Fieldframe_Main {
 					if ($enabled AND $ftype->_is_new)
 					{
 						$DB->query($DB->insert_string('exp_ff_fieldtypes', array(
-							'site_id' => $PREFS->ini('site_id'),
 							'class'   => $file,
 							'version' => $ftype->info['version']
 						)));
 
 						// get the fieldtype_id
-						$query = $DB->query('SELECT fieldtype_id FROM exp_ff_fieldtypes
-						                       WHERE site_id = "'.$PREFS->ini('site_id').'"
-						                         AND class = "'.$file.'"');
+						$query = $DB->query('SELECT fieldtype_id FROM exp_ff_fieldtypes class = "'.$file.'"');
 						$ftype->_fieldtype_id = $query->row['fieldtype_id'];
 
 						// insert hooks
@@ -1857,6 +1886,7 @@ class Fieldframe_Main {
 
 	/**
 	 * Save Fields
+	 *
 	 * @access private
 	 */
 	function _save_fields()
@@ -1957,6 +1987,7 @@ class Fieldframe_Main {
 
 	/**
 	 * Postponed Save
+	 *
 	 * @access private
 	 */
 	function _postponed_save($entry_id)
