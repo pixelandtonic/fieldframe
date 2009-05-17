@@ -54,12 +54,11 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 	 */
 	function display_site_settings()
 	{
-		global $DB, $PREFS, $DSP;
+		global $DB, $DSP;
 
 		$fields_q = $DB->query('SELECT f.field_id, f.field_label, g.group_name
 		                          FROM exp_weblog_fields AS f, exp_field_groups AS g
-		                          WHERE f.site_id = '.$PREFS->ini('site_id').'
-		                            AND f.field_type = "data_matrix"
+		                          WHERE f.field_type = "data_matrix"
 		                            AND f.group_id = g.group_id
 		                          ORDER BY g.group_name, f.field_order, f.field_label');
 		if ($fields_q->num_rows)
