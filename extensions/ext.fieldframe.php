@@ -1242,7 +1242,7 @@ class Fieldframe_Main {
 						)));
 
 						// get the fieldtype_id
-						$query = $DB->query('SELECT fieldtype_id FROM exp_ff_fieldtypes class = "'.$file.'"');
+						$query = $DB->query('SELECT fieldtype_id FROM exp_ff_fieldtypes WHERE class = "'.$file.'"');
 						$ftype->_fieldtype_id = $query->row['fieldtype_id'];
 
 						// insert hooks
