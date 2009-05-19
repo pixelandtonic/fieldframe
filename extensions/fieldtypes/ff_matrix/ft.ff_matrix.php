@@ -642,6 +642,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 
 			if ($params['offset'] OR $params['limit'])
 			{
+				if ( ! $params['limit']) $params['limit'] = count($field_data);
 				$field_data = array_splice($field_data, $params['offset'], $params['limit']);
 			}
 
