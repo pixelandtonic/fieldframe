@@ -613,14 +613,15 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 				$tagdata .= '    </tr>' . "\n";
 			}
 
+			// get the col names
+			$col_ids_by_name = array();
+			foreach($field_settings['cols'] as $col_id => $col)
+			{
+				$col_ids_by_name[$col['name']] = $col_id;
+			}
+
 			if ($params['orderby'])
 			{
-				// get the col names
-				$col_ids_by_name = array();
-				foreach($field_settings['cols'] as $col_id => $col)
-				{
-					$col_ids_by_name[$col['name']] = $col_id;
-				}
 
 				$this->orderby = array();
 				$orderbys = explode('|', $params['orderby']);
