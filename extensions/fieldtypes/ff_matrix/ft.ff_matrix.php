@@ -559,13 +559,23 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 	 * Sort Field Data
 	 * @access private
 	 */
-	function _sort_field_data($row1, $row2)
+	function _sort_field_data(&$row1, &$row2, $orderby_index=0)
 	{
-		$a = isset($row1[$this->col_id]) ? $row1[$this->col_id] : '';
-		$b = isset($row2[$this->col_id]) ? $row2[$this->col_id] : '';
+		$orderby = $this->orderby[$orderby_index][0];
+		$sort = $this->orderby[$orderby_index][1];
 
-		if ($a == $b) return 0;
-		return $this->sort * ($a < $b ? -1 : 1);
+		$a = isset($row1[$orderby]) ? $row1[$orderby] : '';
+		$b = isset($row2[$orderby]) ? $row2[$orderby] : '';
+
+		if ($a == $b)
+		{
+			$next_orderby_index = $orderby_index + 1;
+			return ($next_orderby_index < count($this->orderby))
+			  ?  $this->_sort_field_data($row1, $row2, $next_orderby_index)
+			  :  0;
+		}
+
+		return $sort * ($a < $b ? -1 : 1);
 	}
 
 	/**
@@ -612,22 +622,21 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 					$col_ids_by_name[$col['name']] = $col_id;
 				}
 
-				$orderby = array();
-				$sorts = explode('|', $params['sort']);
+				$this->orderby = array();
 				$orderbys = explode('|', $params['orderby']);
-				foreach(array_reverse($orderbys, TRUE) as $i => $col_name)
+				$sorts = explode('|', $params['sort']);
+				foreach($orderbys as $i => $col_name)
 				{
 					// does this column exist?
-					if ( ! isset($col_ids_by_name[$col_name])) continue;
-
-					$this->col_id = $col_ids_by_name[$col_name];
-					$this->sort = (isset($sorts[$i]) AND strtolower($sorts[$i]) == 'desc') ? -1 : 1;
-					usort($field_data, array(&$this, '_sort_field_data'));
+					if (isset($col_ids_by_name[$col_name]))
+					{
+						$sort = (isset($sorts[$i]) AND strtolower($sorts[$i]) == 'desc') ? -1 : 1;
+						$this->orderby[] = array($col_ids_by_name[$col_name], $sort);
+					}
 				}
 
-				unset($col_ids_by_name);
-				if (isset($this->col_id)) unset($this->col_id);
-				if (isset($this->sort)) unset($this->sort);
+				usort($field_data, array(&$this, '_sort_field_data'));
+				unset($this->orderby);
 			}
 
 			else if ($params['sort'] == 'desc')
