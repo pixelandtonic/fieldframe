@@ -154,7 +154,6 @@ class Fieldframe {
 			// apply changes
 			foreach($sql as $query)
 			{
-				//$this->log($query);
 				$DB->query($query);
 			}
 		}
@@ -216,7 +215,6 @@ class Fieldframe {
 
 		if ( ! isset($FF) OR $force)
 		{
-			//$SESS->cache[FF_CLASS] = array();
 			$FF = new Fieldframe_Main($settings, $this->hooks);
 		}
 	}
@@ -278,7 +276,6 @@ class Fieldframe_Main {
 	}
 
 	var $errors = array();
-	var $cache = array();
 	var $postponed_saves = array();
 	var $snippets = array('head' => array(), 'body' => array());
 
@@ -418,9 +415,9 @@ class Fieldframe_Main {
 	{
 		global $DB;
 
-		if ( ! isset($this->cache['ftypes']))
+		if ( ! isset($this->ftypes))
 		{
-			$this->cache['ftypes'] = array();
+			$this->ftypes = array();
 
 			// get enabled fields from the DB
 			$query = $DB->query('SELECT * FROM exp_ff_fieldtypes WHERE enabled = "y"');
@@ -431,15 +428,15 @@ class Fieldframe_Main {
 				{
 					if (($ftype = $this->_init_ftype($row)) !== FALSE)
 					{
-						$this->cache['ftypes'][] = $ftype;
+						$this->ftypes[] = $ftype;
 					}
 				}
 
-				$this->_sort_ftypes($this->cache['ftypes']);
+				$this->_sort_ftypes($this->ftypes);
 			}
 		}
 
-		return $this->cache['ftypes'];
+		return $this->ftypes;
 	}
 
 	function _get_ftype($class_name)
@@ -524,9 +521,9 @@ class Fieldframe_Main {
 	{
 		global $DB, $REGX;
 
-		if ( ! isset($this->cache['ftypes_by_field_id']))
+		if ( ! isset($this->ftypes_by_field_id))
 		{
-			$this->cache['ftypes_by_field_id'] = array();
+			$this->ftypes_by_field_id = array();
 
 			// get the fieldtypes
 			if ($ftypes = $this->_get_ftypes())
@@ -546,7 +543,7 @@ class Fieldframe_Main {
 					foreach($query->result as $row)
 					{
 						$ftype_id = substr($row['field_type'], 9);
-						$this->cache['ftypes_by_field_id'][$row['field_id']] = array(
+						$this->ftypes_by_field_id[$row['field_id']] = array(
 							'name' => $row['field_name'],
 							'ftype' => $ftypes_by_id[$ftype_id],
 							'settings' => array_merge(
@@ -559,7 +556,7 @@ class Fieldframe_Main {
 			}
 		}
 
-		return $this->cache['ftypes_by_field_id'];
+		return $this->ftypes_by_field_id;
 	}
 
 	/**
@@ -657,13 +654,13 @@ class Fieldframe_Main {
 			// Extensions
 			if (isset($OBJ->requires['ext']))
 			{
-				if ( ! isset($this->cache['req_ext_versions']))
+				if ( ! isset($this->req_ext_versions))
 				{
-					$this->cache['req_ext_versions'] = array();
+					$this->req_ext_versions = array();
 				}
 				foreach($OBJ->requires['ext'] as $ext)
 				{
-					if ( ! isset($this->cache['req_ext_versions'][$ext['class']]))
+					if ( ! isset($this->req_ext_versions[$ext['class']]))
 					{
 						$ext_query = $DB->query('SELECT version FROM exp_extensions
 						                           WHERE class="'.$ext['class'].'"'
@@ -671,11 +668,11 @@ class Fieldframe_Main {
 						                           . ' AND enabled = "y"
 						                           ORDER BY version DESC
 						                           LIMIT 1');
-						$this->cache['req_ext_versions'][$ext['class']] = $ext_query->row
+						$this->req_ext_versions[$ext['class']] = $ext_query->row
 						  ?  $ext_query->row['version']
 						  :  '';
 					}
-					if ($this->cache['req_ext_versions'][$ext['class']] < $ext['version'])
+					if ($this->req_ext_versions[$ext['class']] < $ext['version'])
 					{
 						if ($req_strict) return FALSE;
 						else
@@ -787,18 +784,18 @@ class Fieldframe_Main {
 	{
 		global $DB;
 
-		if ($reset OR ! isset($this->cache['ftype_hooks']))
+		if ($reset OR ! isset($this->ftype_hooks))
 		{
-			$this->cache['ftype_hooks'] = array();
+			$this->ftype_hooks = array();
 
 			$hooks_q = $DB->query('SELECT * FROM exp_ff_fieldtype_hooks');
 			foreach($hooks_q->result as $hook_r)
 			{
-				$this->cache['ftype_hooks'][$hook_r['hook']][$hook_r['priority']][$hook_r['class']] = $hook_r['method'];
+				$this->ftype_hooks[$hook_r['hook']][$hook_r['priority']][$hook_r['class']] = $hook_r['method'];
 			}
 		}
 
-		return $this->cache['ftype_hooks'];
+		return $this->ftype_hooks;
 	}
 
 	/**
