@@ -618,6 +618,98 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 			foreach($field_settings['cols'] as $col_id => $col)
 			{
 				$col_ids_by_name[$col['name']] = $col_id;
+
+				// filtering by this col?
+				if (isset($params['search:'.$col['name']]))
+				{
+					$val = $params['search:'.$col['name']];
+
+					if (substr($val, 0, 1) == '=')
+					{
+						$val = substr($val, 1);
+						$exact_match = TRUE;
+					}
+					else
+					{
+						$exact_match = FALSE;
+					}
+
+					if (substr($val, 0, 4) == 'not ')
+					{
+						$val = substr($val, 4);
+						$negate = TRUE;
+					}
+					else
+					{
+						$negate = FALSE;
+					}
+
+					if (strpos($val, '&&') !== FALSE)
+					{
+						$delimiter = '&&';
+						$find_all = TRUE;
+					}
+					else
+					{
+						$delimiter = '|';
+						$find_all = FALSE;
+					}
+
+					$terms = explode($delimiter, $val);
+					$num_terms = count($terms);
+					$exclude_rows = array();
+
+					foreach($field_data as $row_num => $row)
+					{
+						$cell = $row[$col_id];
+
+						// find the matches
+						$num_matches = 0;
+						foreach($terms as $term)
+						{
+							if ($term == 'IS_EMPTY') $term = '';
+
+							if ( ! $term OR $exact_match)
+							{
+								if ($cell == $term) $num_matches++;
+							}
+							else
+							{
+								if (strpos($cell, $term) !== FALSE) $num_matches++;
+							}
+						}
+
+						$include = FALSE;
+
+						if ($num_matches)
+						{
+							if ($find_all)
+							{
+								if ($num_matches == $num_terms) $include = TRUE;
+							}
+							else
+							{
+								$include = TRUE;
+							}
+						}
+
+						if ($negate)
+						{
+							$include = !$include;
+						}
+
+						if ( ! $include)
+						{
+							$exclude_rows[] = $row_num;
+						}
+					}
+
+					// remove excluded rows
+					foreach(array_reverse($exclude_rows) as $row_num)
+					{
+						array_splice($field_data, $row_num, 1);
+					}
+				}
 			}
 
 			if ($params['orderby'])
