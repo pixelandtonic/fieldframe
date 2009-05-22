@@ -258,6 +258,64 @@ class Ff_checkbox_group extends Fieldframe_Fieldtype {
 		return $r;
 	}
 
+	/**
+	 * All Options
+	 *
+	 * @param  array   $params          Name/value pairs from the opening tag
+	 * @param  string  $tagdata         Chunk of tagdata between field tag pairs
+	 * @param  string  $field_data      Currently saved field value
+	 * @param  array   $field_settings  The field's settings
+	 * @return string  relationship references
+	 */
+	function all_options($params, $tagdata, $field_data, $field_settings)
+	{
+		global $TMPL;
+
+		$r = '';
+
+		if ($field_settings['options'])
+		{
+			// optional sorting
+			if ($sort = strtolower($params['sort']))
+			{
+				if ($sort == 'asc')
+				{
+					asort($field_settings['options']);
+				}
+				else if ($sort == 'desc')
+				{
+					arsort($field_settings['options']);
+				}
+			}
+
+			// prepare for {switch} and {count} tags
+			$this->prep_iterators($tagdata);
+
+			foreach($field_settings['options'] as $option_name => $option)
+			{
+				// copy $tagdata
+				$option_tagdata = $tagdata;
+
+				// simple var swaps
+				$option_tagdata = $TMPL->swap_var_single('option', $option, $option_tagdata);
+				$option_tagdata = $TMPL->swap_var_single('option_name', $option_name, $option_tagdata);
+				$option_tagdata = $TMPL->swap_var_single('selected', (in_array($option_name, $field_data) ? 1 : 0), $option_tagdata);
+
+				// parse {switch} and {count} tags
+				$this->parse_iterators($option_tagdata);
+
+				$r .= $option_tagdata;
+			}
+
+			if ($params['backspace'])
+			{
+				$r = substr($r, 0, -$params['backspace']);
+			}
+		}
+
+		return $r;
+	}
+
 }
 
 
