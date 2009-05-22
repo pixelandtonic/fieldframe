@@ -11,7 +11,7 @@ if ( ! defined('EXT')) exit('Invalid file request');
  * @copyright Copyright (c) 2009 Brandon Kelly
  * @license   http://creativecommons.org/licenses/by-sa/3.0/ Attribution-Share Alike 3.0 Unported
  */
-class Ff_multiselect extends Fieldframe_Fieldtype {
+class Ff_multiselect extends Fieldframe_Multi_Fieldtype {
 
 	/**
 	 * Fieldtype Info
@@ -24,109 +24,6 @@ class Ff_multiselect extends Fieldframe_Fieldtype {
 		'docs_url' => 'http://wiki.github.com/brandonkelly/bk.fieldframe.ee_addon/ff-multi-select',
 		'no_lang'  => TRUE
 	);
-
-	/**
-	 * Default Site Settings
-	 * @var array
-	 */
-	var $default_site_settings = array(
-		'option_tmpl' => '<li>{option}</li>'
-	);
-
-	/**
-	 * Default Field Settings
-	 * @var array
-	 */
-	var $default_field_settings = array(
-		'options' => array(
-			'Option 1' => 'Option 1',
-			'Option 2' => 'Option 2',
-			'Option 3' => 'Option 3'
-		)
-	);
-
-	/**
-	 * Default Cell Settings
-	 * @var array
-	 */
-	var $default_cell_settings = array(
-		'options' => array(
-			'Opt 1' => 'Opt 1',
-			'Opt 2' => 'Opt 2'
-		)
-	);
-
-	/**
-	 * Default Tag Params
-	 * @var array
-	 */
-	var $default_tag_params = array(
-		'sort'      => '',
-		'backspace' => '0'
-	);
-
-	/**
-	 * Display Field Settings
-	 * 
-	 * @param  array  $field_settings  The field's settings
-	 * @return array  Settings HTML (cell1, cell2, rows)
-	 */
-	function display_field_settings($field_settings)
-	{
-		global $DSP, $LANG;
-
-		$cell2 = $DSP->qdiv('defaultBold', $LANG->line('field_list_items'))
-		       . $DSP->qdiv('default', $LANG->line('field_list_instructions'))
-		       . $DSP->input_textarea('options', $this->options_setting($field_settings['options']), '6', 'textarea', '99%')
-		       . $DSP->qdiv('default', $LANG->line('option_setting_examples'));
-
-		return array('cell2' => $cell2);
-	}
-
-	/**
-	 * Display Field Settings
-	 * 
-	 * @param  array  $cell_settings  The cell's settings
-	 * @return string  Settings HTML
-	 */
-	function display_cell_settings($cell_settings)
-	{
-		global $DSP, $LANG;
-
-		$r = '<label class="itemWrapper">'
-		   . $DSP->qdiv('defaultBold', $LANG->line('field_list_items'))
-		   . $DSP->input_textarea('options', $this->options_setting($cell_settings['options']), '3', 'textarea', '140px')
-		   . '</label>';
-
-		return $r;
-	}
-
-	/**
-	 * Save Field Settings
-	 *
-	 * Turn the options textarea value into an array of option names and labels
-	 * 
-	 * @param  array  $field_settings  The user-submitted settings, pulled from $_POST
-	 * @return array  Modified $field_settings
-	 */
-	function save_field_settings($field_settings)
-	{
-		$field_settings['options'] = $this->save_options_setting($field_settings['options']);
-		return $field_settings;
-	}
-
-	/**
-	 * Save Cell Settings
-	 *
-	 * Turn the options textarea value into an array of option names and labels
-	 * 
-	 * @param  array  $cell_settings  The user-submitted settings, pulled from $_POST
-	 * @return array  Modified $cell_settings
-	 */
-	function save_cell_settings($cell_settings)
-	{
-		return $this->save_field_settings($cell_settings);
-	}
 
 	/**
 	 * Display Field
@@ -154,77 +51,6 @@ class Ff_multiselect extends Fieldframe_Fieldtype {
 	{
 		$SD = new Fieldframe_SettingsDisplay();
 		return $SD->multiselect($cell_name.'[]', $cell_data, $cell_settings['options'], array('width' => '145px'));
-	}
-
-	/**
-	 * Display Tag
-	 *
-	 * @param  array   $params          Name/value pairs from the opening tag
-	 * @param  string  $tagdata         Chunk of tagdata between field tag pairs
-	 * @param  string  $field_data      Currently saved field value
-	 * @param  array   $field_settings  The field's settings
-	 * @return string  relationship references
-	 */
-	function display_tag($params, $tagdata, $field_data, $field_settings)
-	{
-		global $TMPL;
-
-		$r = '';
-
-		if ($field_settings['options'] AND $field_data)
-		{
-			$list_mode = $tagdata ? FALSE : TRUE;
-			if ($list_mode)
-			{
-				$tagdata = '  <li>'.LD.'option'.RD.'</li>' . "\n";
-			}
-
-			// optional sorting
-			if ($sort = strtolower($params['sort']))
-			{
-				if ($sort == 'asc')
-				{
-					sort($field_data);
-				}
-				else if ($sort == 'desc')
-				{
-					rsort($field_data);
-				}
-			}
-
-			// prepare for {switch} and {count} tags
-			$this->prep_iterators($tagdata);
-
-			foreach($field_data as $option_name)
-			{
-				if (isset($field_settings['options'][$option_name]))
-				{
-					// copy $tagdata
-					$option_tagdata = $tagdata;
-
-					// simple var swaps
-					$option_tagdata = $TMPL->swap_var_single('option', $field_settings['options'][$option_name], $option_tagdata);
-					$option_tagdata = $TMPL->swap_var_single('option_name', $option_name, $option_tagdata);
-
-					// parse {switch} and {count} tags
-					$this->parse_iterators($option_tagdata);
-
-					$r .= $option_tagdata;
-				}
-			}
-
-			if ($params['backspace'])
-			{
-				$r = substr($r, 0, -$params['backspace']);
-			}
-
-			if ($list_mode)
-			{
-				$r = "<ul>\n" . $r . '</ul>';
-			}
-		}
-
-		return $r;
 	}
 
 }

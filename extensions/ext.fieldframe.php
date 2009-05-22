@@ -2670,5 +2670,231 @@ class Fieldframe_Fieldtype {
 
 }
 
+/**
+ * Fieldframe Multi-select Fieldtype Base Class
+ *
+ * Provides Multi-select fieldtypes with their base functionality
+ *
+ * @package  FieldFrame
+ * @author   Brandon Kelly <me@brandon-kelly.com>
+ */
+class Fieldframe_Multi_Fieldtype extends Fieldframe_Fieldtype {
+
+	var $default_field_settings = array(
+		'options' => array(
+			'Option 1' => 'Option 1',
+			'Option 2' => 'Option 2',
+			'Option 3' => 'Option 3'
+		)
+	);
+
+	var $default_cell_settings = array(
+		'options' => array(
+			'Opt 1' => 'Opt 1',
+			'Opt 2' => 'Opt 2'
+		)
+	);
+
+	var $default_tag_params = array(
+		'sort'      => '',
+		'backspace' => '0'
+	);
+
+	var $settings_label = 'field_list_items';
+
+	/**
+	 * Display Field Settings
+	 * 
+	 * @param  array  $field_settings  The field's settings
+	 * @return array  Settings HTML (cell1, cell2, rows)
+	 */
+	function display_field_settings($field_settings)
+	{
+		global $DSP, $LANG;
+
+		$cell2 = $DSP->qdiv('defaultBold', $LANG->line($this->settings_label))
+		       . $DSP->qdiv('default', $LANG->line('field_list_instructions'))
+		       . $DSP->input_textarea('options', $this->options_setting($field_settings['options']), '6', 'textarea', '99%')
+		       . $DSP->qdiv('default', $LANG->line('option_setting_examples'));
+
+		return array('cell2' => $cell2);
+	}
+
+	/**
+	 * Display Cell Settings
+	 * 
+	 * @param  array  $cell_settings  The cell's settings
+	 * @return string  Settings HTML
+	 */
+	function display_cell_settings($cell_settings)
+	{
+		global $DSP, $LANG;
+
+		$r = '<label class="itemWrapper">'
+		   . $DSP->qdiv('defaultBold', $LANG->line($this->settings_label))
+		   . $DSP->input_textarea('options', $this->options_setting($cell_settings['options']), '3', 'textarea', '140px')
+		   . '</label>';
+
+		return $r;
+	}
+
+	/**
+	 * Save Field Settings
+	 *
+	 * Turn the options textarea value into an array of option names and labels
+	 * 
+	 * @param  array  $field_settings  The user-submitted settings, pulled from $_POST
+	 * @return array  Modified $field_settings
+	 */
+	function save_field_settings($field_settings)
+	{
+		$field_settings['options'] = $this->save_options_setting($field_settings['options']);
+		return $field_settings;
+	}
+
+	/**
+	 * Save Cell Settings
+	 *
+	 * Turn the options textarea value into an array of option names and labels
+	 * 
+	 * @param  array  $cell_settings  The user-submitted settings, pulled from $_POST
+	 * @return array  Modified $cell_settings
+	 */
+	function save_cell_settings($cell_settings)
+	{
+		return $this->save_field_settings($cell_settings);
+	}
+
+	/**
+	 * Display Tag
+	 *
+	 * @param  array   $params          Name/value pairs from the opening tag
+	 * @param  string  $tagdata         Chunk of tagdata between field tag pairs
+	 * @param  string  $field_data      Currently saved field value
+	 * @param  array   $field_settings  The field's settings
+	 * @return string  relationship references
+	 */
+	function display_tag($params, $tagdata, $field_data, $field_settings)
+	{
+		global $TMPL;
+
+		$r = '';
+
+		if ($field_settings['options'] AND $field_data)
+		{
+			$list_mode = $tagdata ? FALSE : TRUE;
+			if ($list_mode)
+			{
+				$tagdata = '  <li>'.LD.'option'.RD.'</li>' . "\n";
+			}
+
+			// optional sorting
+			if ($sort = strtolower($params['sort']))
+			{
+				if ($sort == 'asc')
+				{
+					sort($field_data);
+				}
+				else if ($sort == 'desc')
+				{
+					rsort($field_data);
+				}
+			}
+
+			// prepare for {switch} and {count} tags
+			$this->prep_iterators($tagdata);
+
+			foreach($field_data as $option_name)
+			{
+				if (isset($field_settings['options'][$option_name]))
+				{
+					// copy $tagdata
+					$option_tagdata = $tagdata;
+
+					// simple var swaps
+					$option_tagdata = $TMPL->swap_var_single('option', $field_settings['options'][$option_name], $option_tagdata);
+					$option_tagdata = $TMPL->swap_var_single('option_name', $option_name, $option_tagdata);
+
+					// parse {switch} and {count} tags
+					$this->parse_iterators($option_tagdata);
+
+					$r .= $option_tagdata;
+				}
+			}
+
+			if ($params['backspace'])
+			{
+				$r = substr($r, 0, -$params['backspace']);
+			}
+
+			if ($list_mode)
+			{
+				$r = "<ul>\n" . $r . '</ul>';
+			}
+		}
+
+		return $r;
+	}
+
+	/**
+	 * All Options
+	 *
+	 * @param  array   $params          Name/value pairs from the opening tag
+	 * @param  string  $tagdata         Chunk of tagdata between field tag pairs
+	 * @param  string  $field_data      Currently saved field value
+	 * @param  array   $field_settings  The field's settings
+	 * @return string  relationship references
+	 */
+	function all_options($params, $tagdata, $field_data, $field_settings)
+	{
+		global $TMPL;
+
+		$r = '';
+
+		if ($field_settings['options'])
+		{
+			// optional sorting
+			if ($sort = strtolower($params['sort']))
+			{
+				if ($sort == 'asc')
+				{
+					asort($field_settings['options']);
+				}
+				else if ($sort == 'desc')
+				{
+					arsort($field_settings['options']);
+				}
+			}
+
+			// prepare for {switch} and {count} tags
+			$this->prep_iterators($tagdata);
+
+			foreach($field_settings['options'] as $option_name => $option)
+			{
+				// copy $tagdata
+				$option_tagdata = $tagdata;
+
+				// simple var swaps
+				$option_tagdata = $TMPL->swap_var_single('option', $option, $option_tagdata);
+				$option_tagdata = $TMPL->swap_var_single('option_name', $option_name, $option_tagdata);
+				$option_tagdata = $TMPL->swap_var_single('selected', (in_array($option_name, $field_data) ? 1 : 0), $option_tagdata);
+
+				// parse {switch} and {count} tags
+				$this->parse_iterators($option_tagdata);
+
+				$r .= $option_tagdata;
+			}
+
+			if ($params['backspace'])
+			{
+				$r = substr($r, 0, -$params['backspace']);
+			}
+		}
+
+		return $r;
+	}
+
+}
+
 /* End of file ext.fieldframe.php */
 /* Location: ./system/extensions/ext.fieldframe.php */
