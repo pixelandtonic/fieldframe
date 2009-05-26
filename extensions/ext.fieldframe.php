@@ -2037,6 +2037,7 @@ class Fieldframe_Main {
 
 		// remember this is a SAEF for publish_form_field_unique
 		$this->saef = TRUE;
+		$this->saef_tag_count = 0;
 
 		$args = func_get_args();
 		return $this->forward_ff_hook('weblog_standalone_form_start', $args);
@@ -2060,20 +2061,26 @@ class Fieldframe_Main {
 		// parse fieldtype tags
 		$tagdata = $this->weblog_entries_tagdata($tagdata);
 
-		// apply theme CSS to fieldtypes
-		if ( ! defined('PATH_CP_THEME')) define('PATH_CP_THEME', PATH_THEMES.'cp_themes/');
-		$theme = preg_replace('/(.*\{)/', '.ff-ft $1', $DSP->fetch_stylesheet());
-		$theme = '<style type="text/css">'.NL.$theme.NL.'</style>';
-		array_unshift($this->snippets['head'], $theme);
-
-		// append all snippets to the end of $tagdata
-		foreach($this->snippets as $placement => $snippets)
+		if ($this->saef_tag_count)
 		{
-			foreach(array_unique($snippets) as $snippet)
+			// apply theme CSS to fieldtypes
+			if ( ! defined('PATH_CP_THEME')) define('PATH_CP_THEME', PATH_THEMES.'cp_themes/');
+			$theme = preg_replace('/(.*\{)/', '.ff-ft $1', $DSP->fetch_stylesheet());
+			$theme = '<style type="text/css">'.NL.$theme.NL.'</style>';
+			array_unshift($this->snippets['head'], $theme);
+
+			// append all snippets to the end of $tagdata
+			foreach($this->snippets as $placement => $snippets)
 			{
-				$tagdata .= NL.$snippet.NL;
+				foreach(array_unique($snippets) as $snippet)
+				{
+					$tagdata .= NL.$snippet.NL;
+				}
 			}
 		}
+
+		$this->saef = FALSE;
+		unset($this->saef_tag_count);
 
 		$args = func_get_args();
 		return $this->forward_ff_hook('weblog_standalone_form_start', $args, $tagdata);
@@ -2157,6 +2164,9 @@ class Fieldframe_Main {
 			{
 				// call display_field rather than display_tag
 				$new_tagdata = $DSP->qdiv('ff-ft', $field['ftype']->display_field('field_id_'.$field['helpers']['field_id'], $field['data'], $field['settings']));
+
+				// update the tag count
+				$this->saef_tag_count++;
 			}
 			else
 			{
