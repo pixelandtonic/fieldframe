@@ -2061,8 +2061,8 @@ class Fieldframe_Main {
 		// parse fieldtype tags
 		$tagdata = $this->weblog_entries_tagdata($tagdata);
 
-		if ($this->saef_tag_count)
-		{
+		//if ($this->saef_tag_count)
+		//{
 			// apply theme CSS to fieldtypes
 			if ( ! defined('PATH_CP_THEME')) define('PATH_CP_THEME', PATH_THEMES.'cp_themes/');
 			$theme = preg_replace('/(.*\{)/', '.ff-ft $1', $DSP->fetch_stylesheet());
@@ -2077,7 +2077,7 @@ class Fieldframe_Main {
 					$tagdata .= NL.$snippet.NL;
 				}
 			}
-		}
+		//}
 
 		$this->saef = FALSE;
 		unset($this->saef_tag_count);
