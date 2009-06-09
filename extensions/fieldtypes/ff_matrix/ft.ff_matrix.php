@@ -238,6 +238,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 
 			// Get the FF fieldtyes with display_cell
 			$ftypes = array();
+			if ( ! $FF->ftypes) $FF->_get_ftypes();
 			foreach($FF->ftypes as $class_name => $ftype)
 			{
 				if (method_exists($ftype, 'display_cell'))

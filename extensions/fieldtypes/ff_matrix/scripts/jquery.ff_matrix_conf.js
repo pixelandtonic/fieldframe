@@ -53,7 +53,7 @@ $.fn.ffMatrixConf = function(id, cols) {
 				.html(col.label);
 
 			col.$preview = $('<td>').appendTo(obj.dom.$trPreviews)
-				.addClass('td')
+				.addClass('td '+col.type)
 				.html(col.preview);
 			if ($.fn.ffMatrix.onDisplayCell[col.type]) {
 				$.fn.ffMatrix.onDisplayCell[col.type](col.$preview);
@@ -117,7 +117,7 @@ $.fn.ffMatrixConf = function(id, cols) {
 				.change(function() {
 					col.type = this.value;
 					var cellType = $.fn.ffMatrixConf.cellTypes[col.type];
-					col.$preview.html(cellType.preview);
+					col.$preview.html(cellType.preview).attr('className', 'td '+col.type)
 					if ($.fn.ffMatrix.onDisplayCell[col.type]) {
 						$.fn.ffMatrix.onDisplayCell[col.type](col.$preview);
 					}
