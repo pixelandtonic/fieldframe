@@ -53,7 +53,7 @@ $.fn.ffMatrix = function(fieldName, cellDefaults, maxRows) {
 
 		for (var cellType in $.fn.ffMatrix.onDisplayCell) {
 			obj.dom.$table.find('td.'+cellType).each(function() {
-				$.fn.ffMatrix.onDisplayCell[cellType]($(this));
+				$.fn.ffMatrix.onDisplayCell[cellType]($(this), obj);
 			});
 		}
 
