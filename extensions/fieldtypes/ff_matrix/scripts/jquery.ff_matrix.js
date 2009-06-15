@@ -72,6 +72,7 @@ $.fn.ffMatrix.useTableDnD = false;
 
 $.fn.ffMatrix.onDisplayCell = {};
 $.fn.ffMatrix.onSortRow = {};
+$.fn.ffMatrix.onDeleteRow = {};
 
 
 function addButtons(obj, $tr) {
@@ -86,6 +87,7 @@ function addButtons(obj, $tr) {
 		.attr('title', $.fn.ffMatrix.lang.deleteRow)
 		.click(function() {
 			if (confirm($.fn.ffMatrix.lang.confirmDeleteRow)) {
+				callback(obj, $tr, 'onDeleteRow');
 				$tr.remove();
 				resetRows(obj);
 				checkNumRows(obj);
