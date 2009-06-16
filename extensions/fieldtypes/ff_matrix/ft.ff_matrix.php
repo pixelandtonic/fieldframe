@@ -417,12 +417,14 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		$first_col_id = $col_ids[0];
 		$last_col_id = $col_ids[count($col_ids)-1];
 
-		foreach($field_settings['cols'] as $col_id => $col)
+		$this->row_count = -1;
+
+		foreach($field_settings['cols'] as $this->col_id => $col)
 		{
 			// add the header
 			$class = '';
-			if ($col_id == $first_col_id) $class .= ' first';
-			if ($col_id == $last_col_id) $class .= ' last';
+			if ($this->col_id == $first_col_id) $class .= ' first';
+			if ($this->col_id == $last_col_id) $class .= ' last';
 			$r .=  '<th class="tableHeading th'.$class.'">'.$col['label'].'</th>';
 
 			// get the default state
@@ -438,7 +440,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 			);
 			$cell_defaults[] = array(
 				'type' => $col['type'],
-				'cell' => $ftype->display_cell($field_name.'[0]['.$col_id.']', '', $cell_settings)
+				'cell' => $ftype->display_cell($field_name.'[0]['.$this->col_id.']', '', $cell_settings)
 			);
 		}
 		$r .=      '<td class="gutter"></td>'
@@ -450,35 +452,35 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		}
 
 		$num_cols = count($field_settings['cols']);
-		foreach($field_data as $row_count => $row)
+		foreach($field_data as $this->row_count => $row)
 		{
 			$r .= '<tr>'
 			    .   '<td class="gutter tableDnD-sort"></td>';
 			$col_count = 0;
-			foreach($field_settings['cols'] as $col_id => $col)
+			foreach($field_settings['cols'] as $this->col_id => $col)
 			{
 				if ( ! isset($ftypes[$col['type']]))
 				{
 					$col['type'] = 'ff_matrix_textarea';
 					$col['settings'] = array('rows' => 1);
-					if (isset($row[$col_id]) AND is_array($row[$col_id]))
+					if (isset($row[$this->col_id]) AND is_array($row[$this->col_id]))
 					{
-						$row[$col_id] = serialize($row[$col_id]);
+						$row[$this->col_id] = serialize($row[$this->col_id]);
 					}
 				}
 				$ftype = $ftypes[$col['type']];
-				$cell_name = $field_name.'['.$row_count.']['.$col_id.']';
+				$cell_name = $field_name.'['.$this->row_count.']['.$this->col_id.']';
 				$cell_settings = array_merge(
 					(isset($ftype->default_cell_settings) ? $ftype->default_cell_settings : array()),
 					(isset($col['settings']) ? $col['settings'] : array())
 				);
 
 				$class = '';
-				if ($col_id == $first_col_id) $class .= ' first';
-				if ($col_id == $last_col_id) $class .= ' last';
+				if ($this->col_id == $first_col_id) $class .= ' first';
+				if ($this->col_id == $last_col_id) $class .= ' last';
 
-				$cell_data = isset($row[$col_id]) ? $row[$col_id] : '';
-				$r .= '<td class="'.($row_count % 2 ? 'tableCellTwo' : 'tableCellOne').' '.$col['type'].' td'.$class.'">'
+				$cell_data = isset($row[$this->col_id]) ? $row[$this->col_id] : '';
+				$r .= '<td class="'.($this->row_count % 2 ? 'tableCellTwo' : 'tableCellOne').' '.$col['type'].' td'.$class.'">'
 				    .   $ftype->display_cell($cell_name, $cell_data, $cell_settings)
 				    . '</td>';
 				$col_count++;
@@ -486,6 +488,8 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 			$r .=   '<td class="gutter"></td>'
 			    . '</tr>';
 		}
+		if (isset($this->row_count)) unset($this->row_count);
+		if (isset($this->col_id)) unset($this->col_id);
 
 		$r .=   '</table>'
 		    . '</div>';
@@ -551,7 +555,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		}
 
 		if (isset($this->row_count)) unset($this->row_count);
-		if (Isset($this->col_id)) unset($this->col_id);
+		if (isset($this->col_id)) unset($this->col_id);
 
 		return $r;
 	}

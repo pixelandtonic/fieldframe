@@ -1,9 +1,10 @@
 (function($){
 
 
-$.fn.ffMatrix = {
-	onDisplayCell: {}
-};
+$.fn.ffMatrix = new Object();
+$.fn.ffMatrix.onDisplayCell = {};
+$.fn.ffMatrix.onSortRow = {};
+$.fn.ffMatrix.onDeleteRow = {};
 
 
 $.fn.ffMatrixConf = function(id, cols) {
@@ -56,7 +57,7 @@ $.fn.ffMatrixConf = function(id, cols) {
 				.addClass('td '+col.type)
 				.html(col.preview);
 			if ($.fn.ffMatrix.onDisplayCell[col.type]) {
-				$.fn.ffMatrix.onDisplayCell[col.type](col.$preview);
+				$.fn.ffMatrix.onDisplayCell[col.type](col.$preview, obj);
 			}
 
 			col.$colConf = $('<td>').appendTo(obj.dom.$trColConf)
