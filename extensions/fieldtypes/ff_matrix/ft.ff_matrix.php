@@ -596,13 +596,6 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 	{
 		global $FF, $TMPL;
 
-		$args = func_get_args();
-		if ($tmp_field_data = $FF->forward_hook('ff_matrix_tag_field_data', 10, $args))
-		{
-			$field_data = $tmp_field_data;
-			unset($tmp_field_data);
-		}
-
 		$r = '';
 
 		if ($field_settings['cols'] AND $field_data)
@@ -722,6 +715,13 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 						array_splice($field_data, $row_num, 1);
 					}
 				}
+			}
+
+			if ($tmp_field_data = $FF->forward_hook('ff_matrix_tag_field_data', 10, array('field_data'     => $field_data,
+			                                                                              'field_settings' => $field_settings)))
+			{
+				$field_data = $tmp_field_data;
+				unset($tmp_field_data);
 			}
 
 			if ($params['orderby'])
