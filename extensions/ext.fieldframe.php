@@ -312,7 +312,10 @@ class Fieldframe_Main {
 	function _define_constants()
 	{
 		// define fieldtype folder constants
-		if ( ! defined('FT_PATH') AND $this->settings['fieldtypes_path']) define('FT_PATH', $this->settings['fieldtypes_path']);
+		if ( ! defined('FT_PATH') AND $this->settings['fieldtypes_path'])
+		{
+			define('FT_PATH', str_replace(LD.'DOCUMENT_ROOT'.RD, $_SERVER['DOCUMENT_ROOT'], $this->settings['fieldtypes_path']));
+		}
 		if ( ! defined('FT_URL') AND $this->settings['fieldtypes_url'])
 		{
 			define('FT_URL', $this->settings['fieldtypes_url']);
