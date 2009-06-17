@@ -304,7 +304,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		}
 
 		$cols = array();
-		if ( ! (isset($field_settings['cols']) && is_array($field_settings['cols'])))
+		if ( ! is_array($field_settings['cols']))
 		{
 			$field_settings['cols'] = array();
 		}
