@@ -304,6 +304,10 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		}
 
 		$cols = array();
+		if ( ! (isset($field_settings['cols']) && is_array($field_settings['cols'])))
+		{
+			$field_settings['cols'] = array();
+		}
 		foreach($field_settings['cols'] as $col_id => $col)
 		{
 			// Get the fieldtype. If it doesn't exist, use a textarea in an attempt to preserve the data
