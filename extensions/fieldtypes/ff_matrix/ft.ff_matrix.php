@@ -606,20 +606,24 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 			return $this->table($params, $tagdata, $field_data, $field_settings);
 		}
 
+		$this->params = $params;
+		$this->tagdata = $tagdata;
+		$this->field_settings = $field_settings;
+
 		$r = '';
 
-		if ($field_settings['cols'] AND $field_data)
+		if ($this->field_settings['cols'] AND $field_data)
 		{
 			// get the col names
 			$col_ids_by_name = array();
-			foreach($field_settings['cols'] as $col_id => $col)
+			foreach($this->field_settings['cols'] as $col_id => $col)
 			{
 				$col_ids_by_name[$col['name']] = $col_id;
 
 				// filtering by this col?
-				if (isset($params['search:'.$col['name']]))
+				if (isset($this->params['search:'.$col['name']]))
 				{
-					$val = $params['search:'.$col['name']];
+					$val = $this->params['search:'.$col['name']];
 
 					if (substr($val, 0, 1) == '=')
 					{
@@ -710,18 +714,18 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 			}
 
 			if ($tmp_field_data = $FF->forward_hook('ff_matrix_tag_field_data', 10, array('field_data'     => $field_data,
-			                                                                              'field_settings' => $field_settings)))
+			                                                                              'field_settings' => $this->field_settings)))
 			{
 				$field_data = $tmp_field_data;
 				unset($tmp_field_data);
 			}
 
-			if ($params['orderby'])
+			if ($this->params['orderby'])
 			{
 
 				$this->orderby = array();
-				$orderbys = explode('|', $params['orderby']);
-				$sorts = explode('|', $params['sort']);
+				$orderbys = explode('|', $this->params['orderby']);
+				$sorts = explode('|', $this->params['sort']);
 				foreach($orderbys as $i => $col_name)
 				{
 					// does this column exist?
@@ -736,37 +740,37 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 				unset($this->orderby);
 			}
 
-			else if ($params['sort'] == 'desc')
+			else if ($this->params['sort'] == 'desc')
 			{
 				$field_data = array_reverse($field_data);
 			}
 
-			else if ($params['sort'] == 'random')
+			else if ($this->params['sort'] == 'random')
 			{
 				shuffle($field_data);
 			}
 
-			if ($params['offset'] OR $params['limit'])
+			if ($this->params['offset'] OR $this->params['limit'])
 			{
-				if ( ! $params['limit']) $params['limit'] = count($field_data);
-				$field_data = array_splice($field_data, $params['offset'], $params['limit']);
+				$limit = $this->params['limit'] ? $this->params['limit'] : count($field_data);
+				$field_data = array_splice($field_data, $this->params['offset'], $limit);
 			}
 
 			$ftypes = $this->_get_ftypes();
 			$total_rows = count($field_data);
 
 			// prepare for {switch} and {row_count} tags
-			$this->prep_iterators($tagdata);
+			$this->prep_iterators($this->tagdata);
 			$this->_count_tag = 'row_count';
 
 			foreach($field_data as $row_count => $row)
 			{
-				$row_tagdata = $tagdata;
+				$row_tagdata = $this->tagdata;
 
-				if ($field_settings['cols'])
+				if ($this->field_settings['cols'])
 				{
 					$cols = array();
-					foreach($field_settings['cols'] as $col_id => $col)
+					foreach($this->field_settings['cols'] as $col_id => $col)
 					{
 						$ftype = $ftypes[$col['type']];
 						$cols[$col['name']] = array(
@@ -792,11 +796,15 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 				$r .= $row_tagdata;
 			}
 
-			if ($params['backspace'])
+			if ($this->params['backspace'])
 			{
-				$r = substr($r, 0, -$params['backspace']);
+				$r = substr($r, 0, -$this->params['backspace']);
 			}
 		}
+
+		unset($this->params);
+		unset($this->tagdata);
+		unset($this->field_settings);
 
 		return $r;
 	}
