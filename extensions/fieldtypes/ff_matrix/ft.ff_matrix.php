@@ -600,28 +600,16 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 	{
 		global $FF, $TMPL;
 
+		// return table if single tag
+		if ( ! $tagdata)
+		{
+			return $this->table($params, $tagdata, $field_data, $field_settings);
+		}
+
 		$r = '';
 
 		if ($field_settings['cols'] AND $field_data)
 		{
-			// table mode?
-			if ($table_mode = $tagdata ? FALSE : TRUE)
-			{
-				$r .= '<table cellspacing="'.$params['cellspacing'].'" cellpadding="'.$params['cellpadding'].'">' . "\n"
-				    . '  <thead>' . "\n"
-				    . '    <tr>' . "\n";
-				$tagdata = '    <tr>' . "\n";
-				foreach($field_settings['cols'] as $col_id => $col)
-				{
-					$r .= '      <th scope="col">'.$col['label'].'</th>' . "\n";
-					$tagdata .= '      <td>'.LD.$col['name'].RD.'</td>' . "\n";
-				}
-				$r .= '    </tr>' . "\n"
-				    . '  </thead>' . "\n"
-				    . '  <tbody>' . "\n";
-				$tagdata .= '    </tr>' . "\n";
-			}
-
 			// get the col names
 			$col_ids_by_name = array();
 			foreach($field_settings['cols'] as $col_id => $col)
@@ -804,12 +792,6 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 				$r .= $row_tagdata;
 			}
 
-			if ($table_mode)
-			{
-				$r .= '  </tbody>' . "\n"
-				    . '</table>';
-			}
-
 			if ($params['backspace'])
 			{
 				$r = substr($r, 0, -$params['backspace']);
@@ -817,6 +799,40 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		}
 
 		return $r;
+	}
+
+	/**
+	 * Table
+	 *
+	 * @param  array   $params          Name/value pairs from the opening tag
+	 * @param  string  $tagdata         Chunk of tagdata between field tag pairs
+	 * @param  string  $field_data      Currently saved field value
+	 * @param  array   $field_settings  The field's settings
+	 * @return string  Table
+	 */
+	function table($params, $tagdata, $field_data, $field_settings)
+	{
+		$thead = '';
+		$tagdata = '    <tr>' . "\n";
+
+		foreach($field_settings['cols'] as $col_id => $col)
+		{
+			$thead .= '      <th scope="col">'.$col['label'].'</th>' . "\n";
+			$tagdata .= '      <td>'.LD.$col['name'].RD.'</td>' . "\n";
+		}
+
+		$tagdata .= '    </tr>' . "\n";
+
+		return '<table cellspacing="'.$params['cellspacing'].'" cellpadding="'.$params['cellpadding'].'">' . "\n"
+		     . '  <thead>' . "\n"
+		     . '    <tr>' . "\n"
+		     .        $thead
+		     . '    </tr>' . "\n"
+		     . '  </thead>' . "\n"
+		     . '  <tbody>' . "\n"
+		     .      $this->display_tag($params, $tagdata, $field_data, $field_settings)
+		     . '  </tbody>' . "\n"
+		     . '</table>';
 	}
 
 	/**
