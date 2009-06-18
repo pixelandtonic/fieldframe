@@ -311,14 +311,16 @@ class Fieldframe_Main {
 	 */
 	function _define_constants()
 	{
-		// define fieldtype folder constants
-		if ( ! defined('FT_PATH') AND $this->settings['fieldtypes_path'])
+		global $PREFS;
+
+		if ( ! defined('FT_PATH') AND ($ft_path = isset($PREFS->core_ini['ft_path']) ? $PREFS->core_ini['ft_path'] : $this->settings['fieldtypes_path']))
 		{
-			define('FT_PATH', str_replace(LD.'DOCUMENT_ROOT'.RD, $_SERVER['DOCUMENT_ROOT'], $this->settings['fieldtypes_path']));
+			define('FT_PATH', $ft_path);
 		}
-		if ( ! defined('FT_URL') AND $this->settings['fieldtypes_url'])
+
+		if ( ! defined('FT_URL') AND ($ft_path = isset($PREFS->core_ini['ft_url']) ? $PREFS->core_ini['ft_url'] : $this->settings['fieldtypes_url']))
 		{
-			define('FT_URL', $this->settings['fieldtypes_url']);
+			define('FT_URL', $ft_path);
 			$this->snippets['body'][] = '<script type="text/javascript">FT_URL = "'.FT_URL.'";</script>';
 		}
 	}
@@ -906,7 +908,7 @@ class Fieldframe_Main {
 	 */
 	function settings_form()
 	{
-		global $DB, $DSP, $LANG, $IN, $SD;
+		global $DB, $DSP, $LANG, $IN, $SD, $PREFS;
 
 		// Breadcrumbs
 		$DSP->crumbline = TRUE;
@@ -945,13 +947,17 @@ class Fieldframe_Main {
 		$DSP->body .= $SD->block('fieldtypes_folder_title')
 		            . $SD->info_row('fieldtypes_folder_info')
 		            . $SD->row(array(
-		                           $SD->label('fieldtypes_url_label', 'fieldtypes_url_subtext'),
-		                           $SD->text('fieldtypes_url', $this->settings['fieldtypes_url'])
-		                         ))
+		                         $SD->label('fieldtypes_path_label', 'fieldtypes_path_subtext'),
+		                         $SD->text('fieldtypes_path',
+		                                       (isset($PREFS->core_ini['ft_path']) ? $PREFS->core_ini['ft_path'] : $this->settings['fieldtypes_path']),
+		                                       array('extras' => (isset($PREFS->core_ini['ft_path']) ? ' disabled="disabled" ' : '')))
+		                       ))
 		            . $SD->row(array(
-		                           $SD->label('fieldtypes_path_label', 'fieldtypes_path_subtext'),
-		                           $SD->text('fieldtypes_path', $this->settings['fieldtypes_path'])
-		                         ))
+		                         $SD->label('fieldtypes_url_label', 'fieldtypes_url_subtext'),
+		                         $SD->text('fieldtypes_url',
+		                                       (isset($PREFS->core_ini['ft_url']) ? $PREFS->core_ini['ft_url'] : $this->settings['fieldtypes_url']),
+		                                       array('extras' => (isset($PREFS->core_ini['ft_url']) ? ' disabled="disabled" ' : '')))
+		                       ))
 		            . $SD->block_c();
 
 		// Check for Updates
