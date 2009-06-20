@@ -1,5 +1,5 @@
 /*--- FF Matrix generic table styles ---*/
-.ff_matrix { position:relative; margin:5px 0 10px; }
+.ff_matrix { position:relative; margin:5px 0 10px -8px; }
 
 .ff_matrix a.button { display:block; width:16px; height:16px; background:no-repeat 50% 50%; cursor:pointer; }
 .ff_matrix a.button.add { background-image:url(../images/add.png); }
@@ -10,7 +10,7 @@
 .ff_matrix table { width:100%; }
 .ff_matrix table .th,
 .ff_matrix table .td { padding:6px 10px; vertical-align:top; text-align:left; }
-.ff_matrix table .gutter { padding-top:6px; width:1px; vertical-align:top; }
+.ff_matrix table .gutter { vertical-align:middle; width:21px; }
 
 /* headers */
 .ff_matrix table .th { border-top:1px solid #5f7888; border-right:1px dotted #556e7f; white-space:nowrap; font-weight:normal; }
@@ -20,7 +20,7 @@
 .ff_matrix_conf table .th:last-child { border-right:1px solid #6c8494; }
 
 /* data cells */
-.ff_matrix table .td { border-right:1px dotted #c5cfda; padding:10px; }
+.ff_matrix table .td { border-right:1px dotted #c5cfda; padding:5px 10px; }
 .ff_matrix table td.first,
 .ff_matrix_conf table .td:first-child { border-left:1px solid #c5cfda; }
 .ff_matrix table td.last,

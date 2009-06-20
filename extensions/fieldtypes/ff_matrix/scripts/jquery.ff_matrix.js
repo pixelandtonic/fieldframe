@@ -62,7 +62,7 @@ $.fn.ffMatrix = function(fieldName, cellDefaults, maxRows) {
 				addRow(obj);
 			});
 
-		checkNumRows(obj);
+		toggleAddRowBtn(obj);
 	});
 };
 
@@ -79,20 +79,33 @@ function addButtons(obj, $tr) {
 	// Sort button
 	$('<a>').appendTo($('> td:eq(0)', $tr))
 		.addClass('button sort')
+		.fadeOut(0)
 		.attr('title', $.fn.ffMatrix.lang.sortRow);
 
 	// Delete button
 	$('<a>').appendTo($('> td:last-child', $tr))
 		.addClass('button delete')
+		.fadeOut(0)
 		.attr('title', $.fn.ffMatrix.lang.deleteRow)
 		.click(function() {
 			if (confirm($.fn.ffMatrix.lang.confirmDeleteRow)) {
 				callback(obj, $tr, 'onDeleteRow');
 				$tr.remove();
 				resetRows(obj);
-				checkNumRows(obj);
+				toggleAddRowBtn(obj);
 			}
 		});
+
+	$tr.hover(
+		function(){
+			if (getNumRows(obj) > 1) {
+				$('a.button', $tr).fadeIn(100);
+			}
+		},
+		function(){
+			$('a.button', $tr).fadeOut(100);
+		}
+	);
 }
 
 function resetRows(obj) {
@@ -138,25 +151,18 @@ function addRow(obj) {
 	// admin
 	resetRows(obj);
 	addButtons(obj, $tr);
-	checkNumRows(obj);
+	toggleAddRowBtn(obj);
 
 	callback(obj, $tr, 'onDisplayCell');
 }
 
-function checkNumRows(obj) {
-	var $rows = obj.dom.$table.find('tbody:first > tr:not(.head)');
+function getNumRows(obj) {
+	return  obj.dom.$table.find('tbody:first > tr:not(.head)').length;
+}
 
-	// Delete & Sort buttons
-	if ($rows.length == 1) {
-		$rows.find('a.button').hide();
-	}
-	else {
-		$rows.find('a.button').show();
-	}
-
-	// Add Row button
+function toggleAddRowBtn(obj) {
 	if (obj.maxRows) {
-		if ($rows.length < obj.maxRows) {
+		if (getNumRows(obj) < obj.maxRows) {
 			obj.dom.$add.show();
 		}
 		else {
