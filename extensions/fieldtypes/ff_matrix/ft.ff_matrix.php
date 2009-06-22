@@ -596,7 +596,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 	 * @param  array   $field_settings  The field's settings
 	 * @return string  Modified $tagdata
 	 */
-	function display_tag($params, $tagdata, $field_data, $field_settings)
+	function display_tag($params, $tagdata, $field_data, $field_settings, $call_hook=TRUE)
 	{
 		global $FF, $TMPL;
 
@@ -713,7 +713,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 				}
 			}
 
-			if ($tmp_field_data = $FF->forward_hook('ff_matrix_tag_field_data', 10, array('field_data'     => $field_data,
+			if ($call_hook AND $tmp_field_data = $FF->forward_hook('ff_matrix_tag_field_data', 10, array('field_data'     => $field_data,
 			                                                                              'field_settings' => $this->field_settings)))
 			{
 				$field_data = $tmp_field_data;
