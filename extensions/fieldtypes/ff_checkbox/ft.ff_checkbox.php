@@ -126,6 +126,20 @@ class Ff_checkbox extends Fieldframe_Fieldtype {
 		return $this->save_field($cell_data, $cell_settings);
 	}
 
+	/**
+	 * Label
+	 *
+	 * @param  array   $params          Name/value pairs from the opening tag
+	 * @param  string  $tagdata         Chunk of tagdata between field tag pairs
+	 * @param  string  $field_data      Currently saved field value
+	 * @param  array   $field_settings  The field's settings
+	 * @return string  relationship references
+	 */
+	function label($params, $tagdata, $field_data, $field_settings)
+	{
+		return $field_settings['label'];
+	}
+
 }
 
 

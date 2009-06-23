@@ -65,9 +65,21 @@ class Ff_radio_group extends Fieldframe_Multi_Fieldtype {
 	 */
 	function display_tag($params, $tagdata, $field_data, $field_settings)
 	{
-		return $tagdata
-		  ?  parent::display_tag($params, $tagdata, array($field_data), $field_settings)
-		  :  $field_data;
+		return $field_data;
+	}
+
+	/**
+	 * Option Label
+	 *
+	 * @param  array   $params          Name/value pairs from the opening tag
+	 * @param  string  $tagdata         Chunk of tagdata between field tag pairs
+	 * @param  string  $field_data      Currently saved field value
+	 * @param  array   $field_settings  The field's settings
+	 * @return string  relationship references
+	 */
+	function option_label($params, $tagdata, $field_data, $field_settings)
+	{
+		return $field_settings['options'][$field_data];
 	}
 
 	/**
