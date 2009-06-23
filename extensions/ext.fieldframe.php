@@ -2797,16 +2797,15 @@ class Fieldframe_Multi_Fieldtype extends Fieldframe_Fieldtype {
 	{
 		global $TMPL;
 
+		if ( ! $tagdata)
+		{
+			return $this->ul($params, $tagdata, $field_data, $field_settings);
+		}
+
 		$r = '';
 
 		if ($field_settings['options'] AND $field_data)
 		{
-			$list_mode = $tagdata ? FALSE : TRUE;
-			if ($list_mode)
-			{
-				$tagdata = '  <li>'.LD.'option'.RD.'</li>' . "\n";
-			}
-
 			// optional sorting
 			if ($sort = strtolower($params['sort']))
 			{
@@ -2845,14 +2844,41 @@ class Fieldframe_Multi_Fieldtype extends Fieldframe_Fieldtype {
 			{
 				$r = substr($r, 0, -$params['backspace']);
 			}
-
-			if ($list_mode)
-			{
-				$r = "<ul>\n" . $r . '</ul>';
-			}
 		}
 
 		return $r;
+	}
+
+	/**
+	 * Unordered List
+	 *
+	 * @param  array   $params          Name/value pairs from the opening tag
+	 * @param  string  $tagdata         Chunk of tagdata between field tag pairs
+	 * @param  string  $field_data      Currently saved field value
+	 * @param  array   $field_settings  The field's settings
+	 * @return string  relationship references
+	 */
+	function ul($params, $tagdata, $field_data, $field_settings)
+	{
+		return "<ul>\n"
+		     .   $this->display_tag($params, "  <li>{option}</li>\n", $field_data, $field_settings)
+		     . '</ul>';
+	}
+
+	/**
+	 * Ordered List
+	 *
+	 * @param  array   $params          Name/value pairs from the opening tag
+	 * @param  string  $tagdata         Chunk of tagdata between field tag pairs
+	 * @param  string  $field_data      Currently saved field value
+	 * @param  array   $field_settings  The field's settings
+	 * @return string  relationship references
+	 */
+	function ol($params, $tagdata, $field_data, $field_settings)
+	{
+		return "<ol>\n"
+		     .   $this->display_tag($params, "  <li>{option}</li>\n", $field_data, $field_settings)
+		     . '</ol>';
 	}
 
 	/**
