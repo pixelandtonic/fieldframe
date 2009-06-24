@@ -587,6 +587,104 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		return $sort * ($a < $b ? -1 : 1);
 	}
 
+	function filter_field_data(&$field_data)
+	{
+		foreach($this->field_settings['cols'] as $col_id => $col)
+		{
+			// filtering by this col?
+			if (isset($this->params['search:'.$col['name']]))
+			{
+				$val = $this->params['search:'.$col['name']];
+
+				if (substr($val, 0, 1) == '=')
+				{
+					$val = substr($val, 1);
+					$exact_match = TRUE;
+				}
+				else
+				{
+					$exact_match = FALSE;
+				}
+
+				if (substr($val, 0, 4) == 'not ')
+				{
+					$val = substr($val, 4);
+					$negate = TRUE;
+				}
+				else
+				{
+					$negate = FALSE;
+				}
+
+				if (strpos($val, '&&') !== FALSE)
+				{
+					$delimiter = '&&';
+					$find_all = TRUE;
+				}
+				else
+				{
+					$delimiter = '|';
+					$find_all = FALSE;
+				}
+
+				$terms = explode($delimiter, $val);
+				$num_terms = count($terms);
+				$exclude_rows = array();
+
+				foreach($field_data as $row_num => $row)
+				{
+					$cell = $row[$col_id];
+
+					// find the matches
+					$num_matches = 0;
+					foreach($terms as $term)
+					{
+						if ($term == 'IS_EMPTY') $term = '';
+
+						if ( ! $term OR $exact_match)
+						{
+							if ($cell == $term) $num_matches++;
+						}
+						else
+						{
+							if (strpos($cell, $term) !== FALSE) $num_matches++;
+						}
+					}
+
+					$include = FALSE;
+
+					if ($num_matches)
+					{
+						if ($find_all)
+						{
+							if ($num_matches == $num_terms) $include = TRUE;
+						}
+						else
+						{
+							$include = TRUE;
+						}
+					}
+
+					if ($negate)
+					{
+						$include = !$include;
+					}
+
+					if ( ! $include)
+					{
+						$exclude_rows[] = $row_num;
+					}
+				}
+
+				// remove excluded rows
+				foreach(array_reverse($exclude_rows) as $row_num)
+				{
+					array_splice($field_data, $row_num, 1);
+				}
+			}
+		}
+	}
+
 	/**
 	 * Display Tag
 	 *
@@ -619,99 +717,10 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 			foreach($this->field_settings['cols'] as $col_id => $col)
 			{
 				$col_ids_by_name[$col['name']] = $col_id;
-
-				// filtering by this col?
-				if (isset($this->params['search:'.$col['name']]))
-				{
-					$val = $this->params['search:'.$col['name']];
-
-					if (substr($val, 0, 1) == '=')
-					{
-						$val = substr($val, 1);
-						$exact_match = TRUE;
-					}
-					else
-					{
-						$exact_match = FALSE;
-					}
-
-					if (substr($val, 0, 4) == 'not ')
-					{
-						$val = substr($val, 4);
-						$negate = TRUE;
-					}
-					else
-					{
-						$negate = FALSE;
-					}
-
-					if (strpos($val, '&&') !== FALSE)
-					{
-						$delimiter = '&&';
-						$find_all = TRUE;
-					}
-					else
-					{
-						$delimiter = '|';
-						$find_all = FALSE;
-					}
-
-					$terms = explode($delimiter, $val);
-					$num_terms = count($terms);
-					$exclude_rows = array();
-
-					foreach($field_data as $row_num => $row)
-					{
-						$cell = $row[$col_id];
-
-						// find the matches
-						$num_matches = 0;
-						foreach($terms as $term)
-						{
-							if ($term == 'IS_EMPTY') $term = '';
-
-							if ( ! $term OR $exact_match)
-							{
-								if ($cell == $term) $num_matches++;
-							}
-							else
-							{
-								if (strpos($cell, $term) !== FALSE) $num_matches++;
-							}
-						}
-
-						$include = FALSE;
-
-						if ($num_matches)
-						{
-							if ($find_all)
-							{
-								if ($num_matches == $num_terms) $include = TRUE;
-							}
-							else
-							{
-								$include = TRUE;
-							}
-						}
-
-						if ($negate)
-						{
-							$include = !$include;
-						}
-
-						if ( ! $include)
-						{
-							$exclude_rows[] = $row_num;
-						}
-					}
-
-					// remove excluded rows
-					foreach(array_reverse($exclude_rows) as $row_num)
-					{
-						array_splice($field_data, $row_num, 1);
-					}
-				}
 			}
+
+			// search: params
+			$this->filter_field_data($field_data);
 
 			if ($call_hook AND $tmp_field_data = $FF->forward_hook('ff_matrix_tag_field_data', 10, array('field_data'     => $field_data,
 			                                                                              'field_settings' => $this->field_settings)))
@@ -854,6 +863,17 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 	 */
 	function total_rows($params, $tagdata, $field_data, $field_settings)
 	{
+		$this->params = $params;
+		$this->tagdata = $tagdata;
+		$this->field_settings = $field_settings;
+
+		// search: params
+		$this->filter_field_data($field_data);
+
+		unset($this->params);
+		unset($this->tagdata);
+		unset($this->field_settings);
+
 		return count($field_data);
 	}
 
