@@ -2229,7 +2229,7 @@ class Fieldframe_Main {
 			$this->ftype = $field['ftype'];
 			$this->field_data = isset($field['data']) ? $field['data'] : '';
 			$this->field_settings = $field['settings'];
-			$tagdata = preg_replace_callback('/('.LD.'if(:elseif)?\s+(.*\s+)?)('.$field_name.')(:(\w+))?((\s+.*)?'.RD.')/isU', array(&$this, '_parse_conditional'), $tagdata);
+			$tagdata = preg_replace_callback('/('.LD.'if(:elseif)?\s+(.*\s+)?)('.$field_name.')(:(\w+))?((\s+.*)?'.RD.')/iU', array(&$this, '_parse_conditional'), $tagdata);
 			unset($this->ftype);
 			unset($this->field_data);
 			unset($this->field_settings);
