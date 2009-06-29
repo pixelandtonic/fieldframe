@@ -21,7 +21,7 @@ class Ff_checkbox extends Fieldframe_Fieldtype {
 		'name'     => 'FF Checkbox',
 		'version'  => FF_VERSION,
 		'desc'     => 'Provides a single checkbox fieldtype',
-		'docs_url' => 'http://wiki.github.com/brandonkelly/bk.fieldframe.ee_addon/ff-checkbox',
+		'docs_url' => 'http://brandon-kelly.com/fieldframe/docs/ff-checkbox',
 		'no_lang'  => TRUE
 	);
 

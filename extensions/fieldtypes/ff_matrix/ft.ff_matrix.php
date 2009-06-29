@@ -17,7 +17,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		'name'     => 'FF Matrix',
 		'version'  => FF_VERSION,
 		'desc'     => 'Provides a tabular data fieldtype',
-		'docs_url' => 'http://wiki.github.com/brandonkelly/bk.fieldframe.ee_addon/ff-matrix'
+		'docs_url' => 'http://brandon-kelly.com/fieldframe/docs/ff-matrix'
 	);
 
 	var $default_field_settings = array(
