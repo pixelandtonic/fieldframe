@@ -21,7 +21,7 @@ class Ff_checkbox_group extends Fieldframe_Multi_Fieldtype {
 		'name'     => 'FF Checkbox Group',
 		'version'  => FF_VERSION,
 		'desc'     => 'Provides a checkbox group fieldtype',
-		'docs_url' => 'http://wiki.github.com/brandonkelly/bk.fieldframe.ee_addon/ff-checkbox-group',
+		'docs_url' => 'http://brandon-kelly.com/fieldframe/docs/ff-checkbox-group',
 		'no_lang'  => TRUE
 	);
 

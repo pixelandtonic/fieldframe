@@ -8,7 +8,7 @@ if ( ! defined('FF_CLASS'))
 {
 	define('FF_CLASS',   'Fieldframe');
 	define('FF_NAME',    'FieldFrame');
-	define('FF_VERSION', '1.1.3');
+	define('FF_VERSION', '1.2.0');
 }
 
 
@@ -28,7 +28,7 @@ class Fieldframe {
 	var $version        = FF_VERSION;
 	var $description    = 'Fieldtype Framework';
 	var $settings_exist = 'y';
-	var $docs_url       = 'http://brandon-kelly.com/apps/fieldframe';
+	var $docs_url       = 'http://brandon-kelly.com/fieldframe/docs';
 
 	var $hooks = array(
 		'sessions_start' => array('priority' => 1),
