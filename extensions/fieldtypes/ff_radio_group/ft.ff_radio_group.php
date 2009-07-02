@@ -77,7 +77,7 @@ class Ff_radio_group extends Fieldframe_Multi_Fieldtype {
 	 * @param  array   $field_settings  The field's settings
 	 * @return string  relationship references
 	 */
-	function option_label($params, $tagdata, $field_data, $field_settings)
+	function label($params, $tagdata, $field_data, $field_settings)
 	{
 		return $field_settings['options'][$field_data];
 	}
