@@ -1922,7 +1922,10 @@ class Fieldframe_Main {
 
 				if (isset($_POST[$this->field_name]) AND is_array($_POST[$this->field_name]))
 				{
-					$_POST[$this->field_name] = $this->_serialize($_POST[$this->field_name]);
+					// serialize for DB storage
+					$_POST[$this->field_name] = $_POST[$this->field_name]
+					  ?  $this->_serialize($_POST[$this->field_name])
+					  :  '';
 				}
 
 				// unset extra FF post vars
@@ -2005,9 +2008,12 @@ class Fieldframe_Main {
 			$this->field_name = 'field_id_'.$field_id;
 
 			$_POST[$this->field_name] = $field['ftype']->save_field($field['data'], $field['settings'], $entry_id);
+
 			if (is_array($_POST[$this->field_name]))
 			{
-				$_POST[$this->field_name] = $this->_serialize($_POST[$this->field_name]);
+				$_POST[$this->field_name] = $_POST[$this->field_name]
+				  ?  $this->_serialize($_POST[$this->field_name])
+				  :  '';
 			}
 
 			// manually save it to the db

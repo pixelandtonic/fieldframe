@@ -40,8 +40,8 @@ class Ff_checkbox_group extends Fieldframe_Multi_Fieldtype {
 		global $DSP;
 
 		if ( ! $field_data) $field_data = array();
+		$r = '';
 
-		$r = $DSP->input_hidden($field_name.'[]', 'temp');
 		foreach($field_settings['options'] as $option_name => $option_label)
 		{
 			$checked = in_array($option_name, $field_data) ? 1 : 0;
@@ -50,7 +50,8 @@ class Ff_checkbox_group extends Fieldframe_Multi_Fieldtype {
 			    . NBS.$option_label
 			    . '</label> ';
 		}
-		$r .= '<div style="clear:left"></div>';
+		$r .= $DSP->input_hidden($field_name.'[]', 'temp')
+		    . '<div style="clear:left"></div>';
 
 		return $r;
 	}
@@ -65,7 +66,7 @@ class Ff_checkbox_group extends Fieldframe_Multi_Fieldtype {
 	function save_field($field_data, $field_settings)
 	{
 		// remove the temp element
-		array_shift($field_data);
+		@array_pop($field_data);
 		return $field_data;
 	}
 
