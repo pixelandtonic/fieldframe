@@ -4,7 +4,7 @@ if ( ! defined('EXT')) exit('Invalid file request');
 
 
 /**
- * Checkbox Class
+ * FF Checkbox Class
  *
  * @package   FieldFrame
  * @author    Brandon Kelly <me@brandon-kelly.com>
