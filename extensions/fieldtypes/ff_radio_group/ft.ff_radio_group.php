@@ -4,7 +4,7 @@ if ( ! defined('EXT')) exit('Invalid file request');
 
 
 /**
- * Radio Group Class
+ * FF Radio Group Class
  *
  * @package   FieldFrame
  * @author    Brandon Kelly <me@brandon-kelly.com>

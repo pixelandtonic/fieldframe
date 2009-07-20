@@ -4,26 +4,28 @@ if ( ! defined('EXT')) exit('Invalid file request');
 
 
 /**
- * FF Multi-select Class
+ * FF Select Class
  *
  * @package   FieldFrame
  * @author    Brandon Kelly <me@brandon-kelly.com>
  * @copyright Copyright (c) 2009 Brandon Kelly
  * @license   http://creativecommons.org/licenses/by-sa/3.0/ Attribution-Share Alike 3.0 Unported
  */
-class Ff_multiselect extends Fieldframe_Multi_Fieldtype {
+class Ff_select extends Fieldframe_Multi_Fieldtype {
 
 	/**
 	 * Fieldtype Info
 	 * @var array
 	 */
 	var $info = array(
-		'name'     => 'FF Multi-select',
+		'name'     => 'FF Select',
 		'version'  => FF_VERSION,
-		'desc'     => 'Provides a multi-select fieldtype',
-		'docs_url' => 'http://brandon-kelly.com/fieldframe/docs/ff-multi-select',
+		'desc'     => 'Provides a more robust select fieldtype',
+		'docs_url' => 'http://brandon-kelly.com/fieldframe/docs/ff-select',
 		'no_lang'  => TRUE
 	);
+
+	var $settings_label = 'select_options_label';
 
 	/**
 	 * Display Field
@@ -35,8 +37,12 @@ class Ff_multiselect extends Fieldframe_Multi_Fieldtype {
 	 */
 	function display_field($field_name, $field_data, $field_settings)
 	{
+		global $DSP;
+
+		if ( ! $field_data) $field_data = array();
+
 		$SD = new Fieldframe_SettingsDisplay();
-		return $SD->multiselect($field_name.'[]', $field_data, $field_settings['options']);
+		return $SD->select($field_name, $field_data, $field_settings['options']);
 	}
 
 	/**
@@ -49,12 +55,11 @@ class Ff_multiselect extends Fieldframe_Multi_Fieldtype {
 	 */
 	function display_cell($cell_name, $cell_data, $cell_settings)
 	{
-		$SD = new Fieldframe_SettingsDisplay();
-		return $SD->multiselect($cell_name.'[]', $cell_data, $cell_settings['options'], array('width' => '145px'));
+		return $this->display_field($cell_name, $cell_data, $cell_settings);
 	}
 
 }
 
 
-/* End of file ft.ff_multiselect.php */
-/* Location: ./system/fieldtypes/ff_multiselect/ft.ff_multiselect.php */
+/* End of file ft.ff_select.php */
+/* Location: ./system/fieldtypes/ff_select/ft.ff_select.php */

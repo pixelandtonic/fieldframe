@@ -117,6 +117,17 @@ $L = array(
 'Radio Options',
 
 
+/** ---------------------------------
+/** FF Select
+/** ---------------------------------*/
+
+
+// Field Settings
+
+'select_options_label' =>
+'Select Options',
+
+
 /* END */
 ''=>''
 );
