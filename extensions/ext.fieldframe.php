@@ -2642,17 +2642,32 @@ class Fieldframe_Fieldtype {
 		return $r;
 	}
 
-	function save_options_setting($options='')
+	function save_options_setting($options='', $optgroups=FALSE)
 	{
 		$r = array();
 		$options = preg_split('/[\r\n]+/', $options);
-		foreach($options as $option)
+
+		$indent_index = array();
+
+		while ($options)
 		{
-			$option = explode(':', $option);
+			$option = explode(':', array_shift($options));
+			$option_indent = preg_match('/^\s+/', $option[0], $matches) ? count($matches[0]) : 0;
 			$option_name = trim($option[0]);
 			$option_value = isset($option[1]) ? trim($option[1]) : $option_name;
-			$r[$option_name] = $option_value;
+
+			$parent = &$r;
+
+			//if (isset($last_indent) AND $indent > $last_indent)
+			//{
+			//	$parent = &$option_index[$last_indent];
+			//	$parent = array();
+			//}
+
+			$parent[$option_name] = $option_value;
+			$last_indent = $indent;
 		}
+
 		return $r;
 	}
 
@@ -2726,6 +2741,7 @@ class Fieldframe_Multi_Fieldtype extends Fieldframe_Fieldtype {
 	);
 
 	var $settings_label = 'field_list_items';
+	var $optgroups = TRUE;
 
 	/**
 	 * Display Field Settings
@@ -2773,7 +2789,7 @@ class Fieldframe_Multi_Fieldtype extends Fieldframe_Fieldtype {
 	 */
 	function save_field_settings($field_settings)
 	{
-		$field_settings['options'] = $this->save_options_setting($field_settings['options']);
+		$field_settings['options'] = $this->save_options_setting($field_settings['options'], $this->optgroups);
 		return $field_settings;
 	}
 
