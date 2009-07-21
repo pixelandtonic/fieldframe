@@ -122,6 +122,12 @@ $L = array(
 /** ---------------------------------*/
 
 
+// Site Settings
+
+'convert_sarge_label' =>
+'Convert Sarge-based drop-down lists and disable Sarge?',
+
+
 // Field Settings
 
 'select_options_label' =>
