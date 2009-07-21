@@ -2509,6 +2509,37 @@ class Fieldframe_SettingsDisplay {
 	}
 
 	/**
+	 * Select Options
+	 *
+	 * @param  string  $value    initial selected value(s)
+	 * @param  array   $options  list of the options
+	 * @return string  the select/multi-select options HTML
+	 */
+	function _select_options($value, $options)
+	{
+		global $DSP;
+
+		$r = '';
+		foreach($options as $option_value => $option_line)
+		{
+			if (is_array($option_line))
+			{
+				$r .= '<optgroup label="'.$option_value.'">'."\n"
+				    .   $this->_select_options($value, $option_line)
+				    . '</optgroup>'."\n";
+			}
+			else
+			{
+				$selected = is_array($value)
+				              ?  in_array($option_value, $value)
+				              :  ($option_value == $value);
+				$r .= $DSP->input_select_option($option_value, $this->get_line($option_line), $selected ? 1 : 0);
+			}
+		}
+		return $r;
+	}
+
+	/**
 	 * Select input
 	 *
 	 * @param  string  $name     Name of the select
@@ -2521,16 +2552,9 @@ class Fieldframe_SettingsDisplay {
 	{
 		global $DSP;
 		$attr = array_merge(array('multi'=>0, 'size'=>0, 'width'=>''), $attr);
-		$r = $DSP->input_select_header($name, $attr['multi'], $attr['size'], $attr['width']);
-		foreach($options as $option_value => $option_line)
-		{
-			$selected = is_array($value)
-			 ? in_array($option_value, $value)
-			 : ($option_value == $value);
-			$r .= $DSP->input_select_option($option_value, $this->get_line($option_line), $selected ? 1 : 0);
-		}
-		$r .= $DSP->input_select_footer();
-		return $r;
+		return $DSP->input_select_header($name, $attr['multi'], $attr['size'], $attr['width'])
+		     . $this->_select_options($value, $options)
+		     . $DSP->input_select_footer();
 	}
 
 	/**
