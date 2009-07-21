@@ -1035,7 +1035,3 @@ class Ff_matrix_date extends Fieldframe_Fieldtype {
 	}
 
 }
-
-
-/* End of file ft.ff_matrix.php */
-/* Location: ./system/fieldtypes/ff_matrix/ft.ff_matrix.php */

@@ -81,7 +81,3 @@ class Ff_select extends Fieldframe_Multi_Fieldtype {
 	}
 
 }
-
-
-/* End of file ft.ff_select.php */
-/* Location: ./system/fieldtypes/ff_select/ft.ff_select.php */

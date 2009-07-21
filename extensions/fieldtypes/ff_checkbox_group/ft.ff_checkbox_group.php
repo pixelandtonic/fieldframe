@@ -95,7 +95,3 @@ class Ff_checkbox_group extends Fieldframe_Multi_Fieldtype {
 	}
 
 }
-
-
-/* End of file ft.ff_checkbox_group.php */
-/* Location: ./system/fieldtypes/ff_checkbox_group/ft.ff_checkbox_group.php */

@@ -137,6 +137,3 @@ $L = array(
 /* END */
 ''=>''
 );
-
-/* End of file lang.fieldframe.php */
-/* Location: ./system/language/english/lang.fieldframe.php */

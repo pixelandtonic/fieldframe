@@ -2998,6 +2998,3 @@ class Fieldframe_Multi_Fieldtype extends Fieldframe_Fieldtype {
 	}
 
 }
-
-/* End of file ext.fieldframe.php */
-/* Location: ./system/extensions/ext.fieldframe.php */
