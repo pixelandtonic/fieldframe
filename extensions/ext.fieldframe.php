@@ -2644,33 +2644,23 @@ class Fieldframe_Fieldtype {
 		return $r;
 	}
 
-	function save_options_setting($options = '', $optgroups = FALSE)
+	function save_options_setting($options = '', $total_levels = 1)
 	{
-		if ( ! $optgroups) $r = array();
-
 		// prepare options
 		$options = preg_split('/[\r\n]+/', $options);
 		foreach($options as &$option)
 		{
 			$option_parts = explode(':', $option);
 			$option = array();
+			$option['indent'] = preg_match('/^\s+/', $option_parts[0], $matches) ? strlen($matches[0]) : 0;
 			$option['name']   = trim($option_parts[0]);
 			$option['value']  = isset($option_parts[1]) ? trim($option_parts[1]) : $option['name'];
-
-			if ($optgroups)
-			{
-				$option['indent'] = preg_match('/^\s+/', $option_parts[0], $matches) ? strlen($matches[0]) : 0;
-			}
-			else
-			{
-				$r[$option['name']] = $option['value'];
-			}
 		}
 
-		return $optgroups ? $this->_structure_options($options) : $r;
+		return $this->_structure_options($options, $total_levels);
 	}
 
-	function _structure_options(&$options, $indent = -1)
+	function _structure_options(&$options, $total_levels, $level = 1, $indent = -1)
 	{
 		$r = array();
 
@@ -2679,7 +2669,9 @@ class Fieldframe_Fieldtype {
 			if ($indent == -1 || $options[0]['indent'] > $indent)
 			{
 				$option = array_shift($options);
-				$children = $this->_structure_options($options, $option['indent']+1);
+				$children = ( ! $total_levels OR $level < $total_levels)
+				              ?  $this->_structure_options($options, $total_levels, $level+1, $option['indent']+1)
+				              :  FALSE;
 				$r[$option['name']] = $children ? $children : $option['value'];
 			}
 			else if ($options[0]['indent'] <= $indent)
@@ -2761,7 +2753,7 @@ class Fieldframe_Multi_Fieldtype extends Fieldframe_Fieldtype {
 	);
 
 	var $settings_label = 'field_list_items';
-	var $optgroups = TRUE;
+	var $total_option_levels = 2;
 
 	/**
 	 * Display Field Settings
@@ -2809,7 +2801,7 @@ class Fieldframe_Multi_Fieldtype extends Fieldframe_Fieldtype {
 	 */
 	function save_field_settings($field_settings)
 	{
-		$field_settings['options'] = $this->save_options_setting($field_settings['options'], $this->optgroups);
+		$field_settings['options'] = $this->save_options_setting($field_settings['options'], $this->total_option_levels);
 		return $field_settings;
 	}
 
