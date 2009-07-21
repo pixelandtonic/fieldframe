@@ -19,8 +19,7 @@ class Ff_checkbox_group extends Fieldframe_Multi_Fieldtype {
 	 */
 	var $info = array(
 		'name'     => 'FF Checkbox Group',
-		'version'  => FF_VERSION,
-		'desc'     => 'Provides a checkbox group fieldtype',
+		'version'  => '1.2',
 		'docs_url' => 'http://brandon-kelly.com/fieldframe/docs/ff-checkbox-group',
 		'no_lang'  => TRUE
 	);

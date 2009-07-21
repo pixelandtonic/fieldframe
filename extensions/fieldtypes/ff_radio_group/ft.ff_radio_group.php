@@ -19,8 +19,7 @@ class Ff_radio_group extends Fieldframe_Multi_Fieldtype {
 	 */
 	var $info = array(
 		'name'     => 'FF Radio Group',
-		'version'  => FF_VERSION,
-		'desc'     => 'Provides a radio group fieldtype',
+		'version'  => '1.2.1',
 		'docs_url' => 'http://brandon-kelly.com/fieldframe/docs/ff-radio-group',
 		'no_lang'  => TRUE
 	);
