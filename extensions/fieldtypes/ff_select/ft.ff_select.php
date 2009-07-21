@@ -19,8 +19,8 @@ class Ff_select extends Fieldframe_Multi_Fieldtype {
 	 */
 	var $info = array(
 		'name'     => 'FF Select',
-		'version'  => FF_VERSION,
-		'desc'     => 'Provides a more robust select fieldtype',
+		'version'  => '1.0',
+		'desc'     => 'A more capable drop-down field',
 		'docs_url' => 'http://brandon-kelly.com/fieldframe/docs/ff-select',
 		'no_lang'  => TRUE
 	);

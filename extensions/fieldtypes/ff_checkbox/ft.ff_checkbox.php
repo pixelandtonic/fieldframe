@@ -19,8 +19,7 @@ class Ff_checkbox extends Fieldframe_Fieldtype {
 	 */
 	var $info = array(
 		'name'     => 'FF Checkbox',
-		'version'  => FF_VERSION,
-		'desc'     => 'Provides a single checkbox fieldtype',
+		'version'  => '1.2',
 		'docs_url' => 'http://brandon-kelly.com/fieldframe/docs/ff-checkbox',
 		'no_lang'  => TRUE
 	);
