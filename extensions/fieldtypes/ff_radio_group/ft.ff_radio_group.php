@@ -96,7 +96,3 @@ class Ff_radio_group extends Fieldframe_Multi_Fieldtype {
 	}
 
 }
-
-
-/* End of file ft.ff_radio_group.php */
-/* Location: ./system/fieldtypes/ff_radio_group/ft.ff_radio_group.php */

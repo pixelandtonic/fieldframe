@@ -140,7 +140,3 @@ class Ff_checkbox extends Fieldframe_Fieldtype {
 	}
 
 }
-
-
-/* End of file ft.ff_checkbox.php */
-/* Location: ./system/fieldtypes/ff_checkbox/ft.ff_checkbox.php */
