@@ -2631,41 +2631,61 @@ class Fieldframe_Fieldtype {
 		$this->insert('body', '<script type="text/javascript" src="'.FT_URL.$this->_class_name.'/'.$filename.'" charset="utf-8"></script>');
 	}
 
-	function options_setting($options=array())
+	function options_setting($options=array(), $indent = '')
 	{
 		$r = '';
 		foreach($options as $name => $label)
 		{
 			if ($r) $r .= "\n";
-			$r .= $name . ($name != $label ? ' : '.$label : '');
+			$r .= $indent.$name;
+			if (is_array($label)) $r .= "\n".$this->options_setting($label, $indent.'    ');
+			else if ($name != $label) $r .= ' : '.$label;
 		}
 		return $r;
 	}
 
-	function save_options_setting($options='', $optgroups=FALSE)
+	function save_options_setting($options = '', $optgroups = FALSE)
+	{
+		if ( ! $optgroups) $r = array();
+
+		// prepare options
+		$options = preg_split('/[\r\n]+/', $options);
+		foreach($options as &$option)
+		{
+			$option_parts = explode(':', $option);
+			$option = array();
+			$option['name']   = trim($option_parts[0]);
+			$option['value']  = isset($option_parts[1]) ? trim($option_parts[1]) : $option['name'];
+
+			if ($optgroups)
+			{
+				$option['indent'] = preg_match('/^\s+/', $option_parts[0], $matches) ? strlen($matches[0]) : 0;
+			}
+			else
+			{
+				$r[$option['name']] = $option['value'];
+			}
+		}
+
+		return $optgroups ? $this->_structure_options($options) : $r;
+	}
+
+	function _structure_options(&$options, $indent = -1)
 	{
 		$r = array();
-		$options = preg_split('/[\r\n]+/', $options);
-
-		$indent_index = array();
 
 		while ($options)
 		{
-			$option = explode(':', array_shift($options));
-			$option_indent = preg_match('/^\s+/', $option[0], $matches) ? count($matches[0]) : 0;
-			$option_name = trim($option[0]);
-			$option_value = isset($option[1]) ? trim($option[1]) : $option_name;
-
-			$parent = &$r;
-
-			//if (isset($last_indent) AND $indent > $last_indent)
-			//{
-			//	$parent = &$option_index[$last_indent];
-			//	$parent = array();
-			//}
-
-			$parent[$option_name] = $option_value;
-			$last_indent = $indent;
+			if ($indent == -1 || $options[0]['indent'] > $indent)
+			{
+				$option = array_shift($options);
+				$children = $this->_structure_options($options, $option['indent']+1);
+				$r[$option['name']] = $children ? $children : $option['value'];
+			}
+			else if ($options[0]['indent'] <= $indent)
+			{
+				break;
+			}
 		}
 
 		return $r;
