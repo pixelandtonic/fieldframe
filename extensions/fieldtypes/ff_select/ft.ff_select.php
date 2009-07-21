@@ -20,12 +20,34 @@ class Ff_select extends Fieldframe_Multi_Fieldtype {
 	var $info = array(
 		'name'     => 'FF Select',
 		'version'  => '1.0',
-		'desc'     => 'A more capable drop-down field',
+		'desc'     => 'A better drop-down list',
 		'docs_url' => 'http://brandon-kelly.com/fieldframe/docs/ff-select',
 		'no_lang'  => TRUE
 	);
 
 	var $settings_label = 'select_options_label';
+
+	/**
+	 * Display Site Settings
+	 */
+	function display_site_settings()
+	{
+		global $DB;
+
+		$fields_q = $DB->query('SELECT COUNT(*) FROM exp_extensions WHERE class = "Sarge"');
+		if ($fields_q->row)
+		{
+			$SD = new Fieldframe_SettingsDisplay();
+			return $SD->block()
+			     . $SD->row(array(
+			                  $SD->label('convert_sarge_label'),
+			                  $SD->select('convert_sarge', 'n', array('n' => 'no', 'y' => 'yes'))
+			                ))
+			     . $SD->block_c();
+		}
+
+		return FALSE;
+	}
 
 	/**
 	 * Display Field
