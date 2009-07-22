@@ -533,7 +533,7 @@ class Fieldframe_Main {
 			// get the fieldtypes
 			if ($ftypes = $this->_get_ftypes())
 			{
-				// sort them by ID rather than class
+				// index them by ID rather than class
 				$ftypes_by_id = array();
 				foreach($ftypes as $class_name => $ftype)
 				{
@@ -541,10 +541,21 @@ class Fieldframe_Main {
 				}
 
 				// get the field info
-				$query = $DB->query("SELECT field_id, field_name, field_type, ff_settings FROM exp_weblog_fields
+				$query = $DB->query("SELECT field_id, site_id, field_name, field_type, ff_settings FROM exp_weblog_fields
 				                       WHERE field_type IN ('ftype_id_".implode("', 'ftype_id_", array_keys($ftypes_by_id))."')");
 				if ($query->num_rows)
 				{
+					// sort the current site's fields on top
+					function sort_fields($a, $b)
+					{
+						global $PREFS;
+						if ($a['site_id'] == $b['site_id']) return 0;
+						if ($a['site_id'] == $PREFS->ini('site_id')) return 1;
+						if ($b['site_id'] == $PREFS->ini('site_id')) return -1;
+						return 0;
+					}
+					usort($query->result, 'sort_fields');
+
 					foreach($query->result as $row)
 					{
 						$ftype_id = substr($row['field_type'], 9);
