@@ -34,19 +34,42 @@ class Ff_select extends Fieldframe_Multi_Fieldtype {
 	{
 		global $DB;
 
-		$fields_q = $DB->query('SELECT COUNT(*) FROM exp_extensions WHERE class = "Sarge"');
-		if ($fields_q->row)
+		$query = $DB->query('SELECT extension_id FROM exp_extensions WHERE class = "Sarge" AND enabled = "y" LIMIT 1');
+		if ($query->num_rows)
 		{
 			$SD = new Fieldframe_SettingsDisplay();
 			return $SD->block()
 			     . $SD->row(array(
 			                  $SD->label('convert_sarge_label'),
-			                  $SD->select('convert_sarge', 'n', array('n' => 'no', 'y' => 'yes'))
+			                  $SD->select('convert', 'n', array('n' => 'no', 'y' => 'yes'))
 			                ))
 			     . $SD->block_c();
 		}
 
 		return FALSE;
+	}
+
+	/**
+	 * Save Site Settings
+	 *
+	 * @param  array  $site_settings  The site settings post data
+	 * @return array  The modified $site_settings
+	 */
+	function save_site_settings($site_settings)
+	{
+		global $DB;
+
+		if (isset($site_settings['convert']) AND $site_settings['convert'] == 'y')
+		{
+			$query = $DB->query('SELECT field_id, field_list_items FROM exp_weblog_fields WHERE field_type = "select"');
+			if ($query->num_rows)
+			{
+				foreach ($query->result as $field)
+				{
+					
+				}
+			}
+		}
 	}
 
 	/**
