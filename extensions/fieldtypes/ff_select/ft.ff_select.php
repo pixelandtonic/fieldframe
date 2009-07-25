@@ -57,18 +57,57 @@ class Ff_select extends Fieldframe_Multi_Fieldtype {
 	 */
 	function save_site_settings($site_settings)
 	{
-		global $DB;
+		global $DB, $FF;
 
 		if (isset($site_settings['convert']) AND $site_settings['convert'] == 'y')
 		{
+			// convert Sarge-based drop-down lists
 			$query = $DB->query('SELECT field_id, field_list_items FROM exp_weblog_fields WHERE field_type = "select"');
 			if ($query->num_rows)
 			{
 				foreach ($query->result as $field)
 				{
-					
+					$options = preg_split('/[\r\n]+/', $field['field_list_items']);
+					$ff_settings = array('options' => array());
+					$optgroup = FALSE;
+					$convert = FALSE;
+
+					foreach ($options as $option)
+					{
+						$values = $values = preg_split("/\s*=\s*/", trim($option));
+						if ( ! isset($values[1])) $values[1] = $values[0];
+						else $convert = TRUE;
+
+						if ($optgroup)
+						{
+							if ($values[0] == '[/optgroup]') $optgroup = FALSE;
+							else $ff_settings['options'][$optgroup][$values[1]] = $values[0];
+						}
+						else
+						{
+							if ($values[0] == '[optgroup]')
+							{
+								$optgroup = $values[1];
+								$ff_settings['options'][$values[1]] = array();
+							}
+							else $ff_settings['options'][$values[1]] = $values[0];
+						}
+					}
+
+					if ($convert)
+					{
+						$data = array(
+							'field_type' => 'ftype_id_'.$this->_fieldtype_id,
+							'ff_settings' => $FF->_serialize($ff_settings),
+							'field_list_items' => ''
+						);
+						$DB->query($DB->update_string('exp_weblog_fields', $data, 'field_id = '.$field['field_id']));
+					}
 				}
 			}
+
+			// disable Sarge
+			$DB->query($DB->update_string('exp_extensions', array('enabled' => 'n'), 'class = "Sarge"'));
 		}
 	}
 
