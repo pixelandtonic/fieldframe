@@ -173,7 +173,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 					$field_settings['cols'][$col_id] = $col_settings;
 				}
 
-				$field_data['ff_settings'] = addslashes(serialize($field_settings));
+				$field_data['ff_settings'] = $FF->_serialize($field_settings);
 				$field_data['lg_field_conf'] = '';
 				$sql[] = $DB->update_string('exp_weblog_fields', $field_data, 'field_id = '.$field['field_id']);
 
@@ -205,7 +205,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 						}
 					}
 
-					$entry_data = array('field_id_'.$field['field_id'].'' => addslashes(serialize($entry_rows)));
+					$entry_data = array('field_id_'.$field['field_id'].'' => $FF->_serialize($entry_rows));
 					$sql[] = $DB->update_string('exp_weblog_data', $entry_data, 'entry_id = '.$entry['entry_id']);
 				}
 			}
