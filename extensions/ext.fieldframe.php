@@ -3017,7 +3017,7 @@ class Fieldframe_Multi_Fieldtype extends Fieldframe_Fieldtype {
 	 * @param  array   $field_settings  The field's settings
 	 * @return bool    whether or not the option is selected
 	 */
-	function is_selected($params, $tagdata, $field_data, $field_settings)
+	function selected($params, $tagdata, $field_data, $field_settings)
 	{
 		return (isset($params['option']) AND in_array($params['option'], $field_data)) ? TRUE : FALSE;
 	}
