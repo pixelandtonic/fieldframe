@@ -2860,7 +2860,7 @@ class Fieldframe_Multi_Fieldtype extends Fieldframe_Fieldtype {
 	 * @param  string  $tagdata         Chunk of tagdata between field tag pairs
 	 * @param  string  $field_data      Currently saved field value
 	 * @param  array   $field_settings  The field's settings
-	 * @return string  relationship references
+	 * @return string  Modified $tagdata
 	 */
 	function display_tag($params, $tagdata, $field_data, $field_settings)
 	{
@@ -2925,7 +2925,7 @@ class Fieldframe_Multi_Fieldtype extends Fieldframe_Fieldtype {
 	 * @param  string  $tagdata         Chunk of tagdata between field tag pairs
 	 * @param  string  $field_data      Currently saved field value
 	 * @param  array   $field_settings  The field's settings
-	 * @return string  relationship references
+	 * @return string  unordered list of options
 	 */
 	function ul($params, $tagdata, $field_data, $field_settings)
 	{
@@ -2941,7 +2941,7 @@ class Fieldframe_Multi_Fieldtype extends Fieldframe_Fieldtype {
 	 * @param  string  $tagdata         Chunk of tagdata between field tag pairs
 	 * @param  string  $field_data      Currently saved field value
 	 * @param  array   $field_settings  The field's settings
-	 * @return string  relationship references
+	 * @return string  ordered list of options
 	 */
 	function ol($params, $tagdata, $field_data, $field_settings)
 	{
@@ -2957,7 +2957,7 @@ class Fieldframe_Multi_Fieldtype extends Fieldframe_Fieldtype {
 	 * @param  string  $tagdata         Chunk of tagdata between field tag pairs
 	 * @param  string  $field_data      Currently saved field value
 	 * @param  array   $field_settings  The field's settings
-	 * @return string  relationship references
+	 * @return string  Modified $tagdata
 	 */
 	function all_options($params, $tagdata, $field_data, $field_settings)
 	{
@@ -3006,6 +3006,20 @@ class Fieldframe_Multi_Fieldtype extends Fieldframe_Fieldtype {
 		}
 
 		return $r;
+	}
+
+	/**
+	 * Is Selected?
+	 *
+	 * @param  array   $params          Name/value pairs from the opening tag
+	 * @param  string  $tagdata         Chunk of tagdata between field tag pairs
+	 * @param  string  $field_data      Currently saved field value
+	 * @param  array   $field_settings  The field's settings
+	 * @return bool    whether or not the option is selected
+	 */
+	function is_selected($params, $tagdata, $field_data, $field_settings)
+	{
+		return (isset($params['option']) AND in_array($params['option'], $field_data)) ? TRUE : FALSE;
 	}
 
 }
