@@ -633,6 +633,11 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 
 				foreach($field_data as $row_num => $row)
 				{
+					if ( ! isset($row[$col_id]))
+					{
+						$row[$col_id] = '';
+					}
+
 					$cell = $row[$col_id];
 
 					// find the matches
