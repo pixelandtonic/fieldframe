@@ -1027,8 +1027,8 @@ class Fieldframe_Main {
 
 		// save new FF site settings
 		$this->settings = array(
-			'fieldtypes_url'    => ($_POST['fieldtypes_url'] ? $this->_add_slash($_POST['fieldtypes_url']) : ''),
-			'fieldtypes_path'   => ($_POST['fieldtypes_path'] ? $this->_add_slash($_POST['fieldtypes_path']) : ''),
+			'fieldtypes_url'    => ((isset($_POST['fieldtypes_url']) AND $_POST['fieldtypes_url']) ? $this->_add_slash($_POST['fieldtypes_url']) : ''),
+			'fieldtypes_path'   => ((isset($_POST['fieldtypes_path']) AND $_POST['fieldtypes_path']) ? $this->_add_slash($_POST['fieldtypes_path']) : ''),
 			'check_for_updates' => ($_POST['check_for_updates'] != 'n' ? 'y' : 'n')
 		);
 		$DB->query($DB->update_string('exp_extensions', array('settings' => $this->_serialize($this->settings)), 'class = "'.FF_CLASS.'"'));
