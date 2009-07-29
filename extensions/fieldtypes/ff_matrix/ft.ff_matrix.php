@@ -280,6 +280,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		$this->include_js('scripts/jquery.ff_matrix_conf.js');
 
 		$ftypes = $this->_get_ftypes();
+		$preview_name = 'ftype[ftype_id_'.$this->_fieldtype_id.'][preview]';
 
 		$cell_types = array();
 		foreach($ftypes as $class_name => $ftype)
@@ -298,7 +299,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 
 			$cell_types[$class_name] = array(
 				'name' => $ftype->info['name'],
-				'preview' => $ftype->display_cell('', '', $cell_settings),
+				'preview' => $ftype->display_cell($preview_name, '', $cell_settings),
 				'settings' => $settings_display
 			);
 		}
@@ -322,7 +323,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 				'name' => $col['name'],
 				'label' => $col['label'],
 				'type' => $col['type'],
-				'preview' => $ftype->display_cell('', '', $cell_settings),
+				'preview' => $ftype->display_cell($preview_name.'['.rand().']', '', $cell_settings),
 				'settings' => (method_exists($ftype, 'display_cell_settings') ? $ftype->display_cell_settings($cell_settings) : ''),
 				'isNew' => isset($col['new'])
 			);
@@ -388,6 +389,11 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 			{
 				$col['settings'] = $ftype->save_cell_settings($col['settings']);
 			}
+		}
+
+		if (isset($field_settings['preview']))
+		{
+			unset($field_settings['preview']);
 		}
 
 		return $field_settings;
