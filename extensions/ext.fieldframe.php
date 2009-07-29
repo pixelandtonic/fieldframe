@@ -3019,7 +3019,7 @@ class Fieldframe_Multi_Fieldtype extends Fieldframe_Fieldtype {
 	 */
 	function selected($params, $tagdata, $field_data, $field_settings)
 	{
-		return (isset($params['option']) AND in_array($params['option'], $field_data)) ? TRUE : FALSE;
+		return (isset($params['option']) AND in_array($params['option'], $field_data)) ? 1 : 0;
 	}
 
 }
