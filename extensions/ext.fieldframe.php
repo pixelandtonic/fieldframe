@@ -2089,12 +2089,6 @@ class Fieldframe_Main {
 
 		//if ($this->saef_tag_count)
 		//{
-			// apply theme CSS to fieldtypes
-			if ( ! defined('PATH_CP_THEME')) define('PATH_CP_THEME', PATH_THEMES.'cp_themes/');
-			$theme = preg_replace('/(.*\{)/', '.ff-ft $1', $DSP->fetch_stylesheet());
-			$theme = '<style type="text/css">'.NL.$theme.NL.'</style>';
-			array_unshift($this->snippets['head'], $theme);
-
 			// append all snippets to the end of $tagdata
 			foreach($this->snippets as $placement => $snippets)
 			{
