@@ -602,25 +602,30 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 			{
 				$val = $this->params['search:'.$col['name']];
 
-				if (substr($val, 0, 1) == '=')
-				{
-					$val = substr($val, 1);
-					$exact_match = TRUE;
-				}
-				else
-				{
-					$exact_match = FALSE;
-				}
+				preg_match('/(=)?(not )?(.*)/', $val, $matches);
+				$exact_match = !! $matches[1];
+				$negate = !! $matches[2];
+				$val = $matches[3];
 
-				if (substr($val, 0, 4) == 'not ')
-				{
-					$val = substr($val, 4);
-					$negate = TRUE;
-				}
-				else
-				{
-					$negate = FALSE;
-				}
+//				if (substr($val, 0, 1) == '=')
+//				{
+//					$val = substr($val, 1);
+//					$exact_match = TRUE;
+//				}
+//				else
+//				{
+//					$exact_match = FALSE;
+//				}
+//
+//				if (substr($val, 0, 4) == 'not ')
+//				{
+//					$val = substr($val, 4);
+//					$negate = TRUE;
+//				}
+//				else
+//				{
+//					$negate = FALSE;
+//				}
 
 				if (strpos($val, '&&') !== FALSE)
 				{
@@ -656,7 +661,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 						{
 							if ($cell == $term) $num_matches++;
 						}
-						else if (preg_match('/^([<>]=?)(.+)$/', $term, $matches) !== FALSE)
+						else if (preg_match('/^([<>]=?)(.+)$/', $term, $matches) AND isset($matches[1]) AND isset($matches[2]))
 						{
 							eval('if ("'.$cell.'"'.$matches[1].'"'.$matches[2].'") $num_matches++;');
 						}
