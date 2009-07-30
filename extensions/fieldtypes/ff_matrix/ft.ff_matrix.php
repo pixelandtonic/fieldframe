@@ -656,10 +656,11 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 						{
 							if ($cell == $term) $num_matches++;
 						}
-						else
+						else if (preg_match('/^([<>]=?)(.+)$/', $term, $matches) !== FALSE)
 						{
-							if (strpos($cell, $term) !== FALSE) $num_matches++;
+							eval('if ("'.$cell.'"'.$matches[1].'"'.$matches[2].'") $num_matches++;');
 						}
+						else if (strpos($cell, $term) !== FALSE) $num_matches++;
 					}
 
 					$include = FALSE;
