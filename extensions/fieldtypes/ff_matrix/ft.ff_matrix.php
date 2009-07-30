@@ -607,26 +607,6 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 				$negate = !! $matches[2];
 				$val = $matches[3];
 
-//				if (substr($val, 0, 1) == '=')
-//				{
-//					$val = substr($val, 1);
-//					$exact_match = TRUE;
-//				}
-//				else
-//				{
-//					$exact_match = FALSE;
-//				}
-//
-//				if (substr($val, 0, 4) == 'not ')
-//				{
-//					$val = substr($val, 4);
-//					$negate = TRUE;
-//				}
-//				else
-//				{
-//					$negate = FALSE;
-//				}
-
 				if (strpos($val, '&&') !== FALSE)
 				{
 					$delimiter = '&&';
