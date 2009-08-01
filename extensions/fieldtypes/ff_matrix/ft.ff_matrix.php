@@ -311,8 +311,8 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		}
 		foreach($field_settings['cols'] as $col_id => $col)
 		{
-			// Get the fieldtype. If it doesn't exist, use a textarea in an attempt to preserve the data
-			$ftype = isset($ftypes[$col['type']]) ? $ftypes[$col['type']] : $ftypes['ff_matrix_textarea'];
+			// Get the fieldtype. If it doesn't exist, use a text input in an attempt to preserve the data
+			$ftype = isset($ftypes[$col['type']]) ? $ftypes[$col['type']] : $ftypes['ff_matrix_text'];
 
 			$cell_settings = array_merge(
 				(isset($ftype->default_cell_settings) ? $ftype->default_cell_settings : array()),
@@ -384,7 +384,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 
 		foreach($field_settings['cols'] as $col_id => &$col)
 		{
-			$ftype = $ftypes[$col['type']];
+			$ftype = isset($ftypes[$col['type']]) ? $ftypes[$col['type']] : $ftypes['ff_matrix_text'];
 			if (method_exists($ftype, 'save_cell_settings'))
 			{
 				$col['settings'] = $ftype->save_cell_settings($col['settings']);
@@ -440,7 +440,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 			// get the default state
 			if ( ! isset($ftypes[$col['type']]))
 			{
-				$col['type'] = 'ff_matrix_textarea';
+				$col['type'] = 'ff_matrix_text';
 				$col['settings'] = array('rows' => 1);
 			}
 			$ftype = $ftypes[$col['type']];
@@ -471,7 +471,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 			{
 				if ( ! isset($ftypes[$col['type']]))
 				{
-					$col['type'] = 'ff_matrix_textarea';
+					$col['type'] = 'ff_matrix_text';
 					$col['settings'] = array('rows' => 1);
 					if (isset($row[$this->col_id]) AND is_array($row[$this->col_id]))
 					{
@@ -548,7 +548,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 			foreach($row as $this->col_id => &$cell_data)
 			{
 				$col = $field_settings['cols'][$this->col_id];
-				$ftype = $ftypes[$col['type']];
+				$ftype = isset($ftypes[$col['type']]) ? $ftypes[$col['type']] : $ftypes['ff_matrix_text'];
 				if (method_exists($ftype, 'save_cell'))
 				{
 					$cell_settings = array_merge(
@@ -778,7 +778,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 					$cols = array();
 					foreach($this->field_settings['cols'] as $col_id => $col)
 					{
-						$ftype = $ftypes[$col['type']];
+						$ftype = isset($ftypes[$col['type']]) ? $ftypes[$col['type']] : $ftypes['ff_matrix_text'];
 						$cols[$col['name']] = array(
 							'data'     => (isset($row[$col_id]) ? $row[$col_id] : ''),
 							'settings' => array_merge(
