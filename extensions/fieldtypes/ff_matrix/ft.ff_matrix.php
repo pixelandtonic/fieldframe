@@ -15,7 +15,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 
 	var $info = array(
 		'name'     => 'FF Matrix',
-		'version'  => '1.2',
+		'version'  => '1.3',
 		'desc'     => 'A customizable, expandable, and sortable table',
 		'docs_url' => 'http://brandon-kelly.com/fieldframe/docs/ff-matrix'
 	);
@@ -47,6 +47,50 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 	{
 		global $FFM;
 		$FFM = $this;
+	}
+
+	/**
+	 * Update Fieldtype
+	 *
+	 * @param string  $from  The currently installed version
+	 */
+	function update($from)
+	{
+		global $DB, $FF;
+
+		if ($from AND version_compare($from, '1.3', '<'))
+		{
+			// convert any Select columns to FF Select
+			$enable_ff_select = FALSE;
+
+			$fields = $DB->query('SELECT field_id, ff_settings FROM exp_weblog_fields WHERE field_type = "ftype_id_'.$this->_fieldtype_id.'"');
+			foreach ($fields as $field)
+			{
+				$update = FALSE;
+				$settings = $FF->_unserialize($field['ff_settings']);
+				foreach ($settings['cols'] as &$col)
+				{
+					if ($col['type'] == 'ff_matrix_select')
+					{
+						$col['type'] = 'ff_select';
+						$update = TRUE;
+					}
+				}
+				if ($update)
+				{
+					$DB->query($DB->update_string('exp_weblog_fields', array('ff_settings' => $FF->_serialize($settings)), 'field_id = "'.$field['field_id'].'"'));
+					$enable_ff_select = TRUE;
+				}
+			}
+
+			if ($enable_ff_select AND (($ff_select = $FF->_init_ftype('ff_select')) !== FALSE))
+			{
+				$DB->query($DB->insert_string('exp_ff_fieldtypes', array(
+					'class'   => 'ff_select',
+					'version' => $ff_select->info['version']
+				)));
+			}
+		}
 	}
 
 	/**
@@ -232,7 +276,6 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 			$this->ftypes = array(
 				'ff_matrix_text' => new Ff_matrix_text(),
 				'ff_matrix_textarea' => new Ff_matrix_textarea(),
-				'ff_matrix_select' => new Ff_matrix_select(),
 				'ff_matrix_date' => new Ff_matrix_date()
 			);
 
@@ -940,49 +983,6 @@ class Ff_matrix_textarea extends Fieldframe_Fieldtype {
 	{
 		global $DSP;
 		return $DSP->input_textarea($cell_name, $cell_data, $cell_settings['rows'], '', '95%');
-	}
-
-}
-
-
-class Ff_matrix_select extends Fieldframe_Fieldtype {
-
-	var $_class_name = 'ff_matrix_select';
-
-	var $info = array(
-		'name' => 'Select',
-		'no_lang' => TRUE
-	);
-
-	var $default_cell_settings = array(
-		'options' => array(
-			'Opt 1' => 'Opt 1',
-			'Opt 2' => 'Opt 2'
-		)
-	);
-
-	function display_cell_settings($cell_settings)
-	{
-		global $DSP, $LANG;
-
-		$r = '<label class="itemWrapper">'
-		   . $DSP->qdiv('defaultBold', $LANG->line('field_list_items'))
-		   . $DSP->input_textarea('options', $this->options_setting($cell_settings['options']), '3', 'textarea', '140px')
-		   . '</label>';
-
-		return $r;
-	}
-
-	function save_cell_settings($cell_settings)
-	{
-		$cell_settings['options'] = $this->save_options_setting($cell_settings['options']);
-		return $cell_settings;
-	}
-
-	function display_cell($cell_name, $cell_data, $cell_settings)
-	{
-		$SD = new Fieldframe_SettingsDisplay();
-		return $SD->select($cell_name, $cell_data, $cell_settings['options']);
 	}
 
 }
