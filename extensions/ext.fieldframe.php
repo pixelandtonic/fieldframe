@@ -2985,7 +2985,7 @@ class Fieldframe_Multi_Fieldtype extends Fieldframe_Fieldtype {
 				// simple var swaps
 				$option_tagdata = $TMPL->swap_var_single('option', $option, $option_tagdata);
 				$option_tagdata = $TMPL->swap_var_single('option_name', $option_name, $option_tagdata);
-				$option_tagdata = $TMPL->swap_var_single('selected', (in_array($option_name, $field_data) ? 'y' : ''), $option_tagdata);
+				$option_tagdata = $TMPL->swap_var_single('selected', (in_array($option_name, $field_data) ? 1 : 0), $option_tagdata);
 
 				// parse {switch} and {count} tags
 				$this->parse_iterators($option_tagdata);
