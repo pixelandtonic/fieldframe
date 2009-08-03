@@ -24,6 +24,8 @@ class Ff_multiselect extends Fieldframe_Multi_Fieldtype {
 		'no_lang'  => TRUE
 	);
 
+	var $total_option_levels = 2;
+
 	/**
 	 * Display Field
 	 * 

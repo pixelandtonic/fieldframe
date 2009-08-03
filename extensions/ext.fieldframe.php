@@ -2782,7 +2782,7 @@ class Fieldframe_Multi_Fieldtype extends Fieldframe_Fieldtype {
 	);
 
 	var $settings_label = 'field_list_items';
-	var $total_option_levels = 2;
+	var $total_option_levels = 1;
 
 	/**
 	 * Display Field Settings

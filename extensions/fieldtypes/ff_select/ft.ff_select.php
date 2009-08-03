@@ -26,6 +26,7 @@ class Ff_select extends Fieldframe_Multi_Fieldtype {
 	);
 
 	var $settings_label = 'select_options_label';
+	var $total_option_levels = 2;
 
 	/**
 	 * Display Site Settings
