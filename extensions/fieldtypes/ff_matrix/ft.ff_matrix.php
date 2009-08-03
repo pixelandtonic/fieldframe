@@ -15,7 +15,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 
 	var $info = array(
 		'name'     => 'FF Matrix',
-		'version'  => '1.3',
+		'version'  => '1.3.0',
 		'desc'     => 'A customizable, expandable, and sortable table',
 		'docs_url' => 'http://brandon-kelly.com/fieldframe/docs/ff-matrix'
 	);
@@ -58,7 +58,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 	{
 		global $DB, $FF;
 
-		if ($from AND version_compare($from, '1.3', '<'))
+		if ($from AND version_compare($from, '1.3.0', '<'))
 		{
 			// convert any Select columns to FF Select
 			$enable_ff_select = FALSE;
