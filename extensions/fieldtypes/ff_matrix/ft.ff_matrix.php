@@ -352,25 +352,28 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		{
 			$field_settings['cols'] = array();
 		}
-		foreach($field_settings['cols'] as $col_id => $col)
+		foreach($field_settings['cols'] as $this->col_id => $this->col)
 		{
 			// Get the fieldtype. If it doesn't exist, use a text input in an attempt to preserve the data
-			$ftype = isset($ftypes[$col['type']]) ? $ftypes[$col['type']] : $ftypes['ff_matrix_text'];
+			$ftype = isset($ftypes[$this->col['type']]) ? $ftypes[$this->col['type']] : $ftypes['ff_matrix_text'];
 
 			$cell_settings = array_merge(
 				(isset($ftype->default_cell_settings) ? $ftype->default_cell_settings : array()),
-				(isset($col['settings']) ? $col['settings'] : array())
+				(isset($this->col['settings']) ? $this->col['settings'] : array())
 			);
 
-			$cols[$col_id] = array(
-				'name' => $col['name'],
-				'label' => $col['label'],
-				'type' => $col['type'],
+			$cols[$this->col_id] = array(
+				'name' => $this->col['name'],
+				'label' => $this->col['label'],
+				'type' => $this->col['type'],
 				'preview' => $ftype->display_cell($preview_name.'['.rand().']', '', $cell_settings),
 				'settings' => (method_exists($ftype, 'display_cell_settings') ? $ftype->display_cell_settings($cell_settings) : ''),
-				'isNew' => isset($col['new'])
+				'isNew' => isset($this->col['new'])
 			);
 		}
+
+		if (isset($this->col_id)) unset($this->col_id);
+		if (isset($this->col)) unset($this->col);
 
 		// add json lib if < PHP 5.2
 		include_once 'includes/jsonwrapper/jsonwrapper.php';
@@ -425,19 +428,19 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 
 		$ftypes = $this->_get_ftypes();
 
-		foreach($field_settings['cols'] as $col_id => &$col)
+		foreach($field_settings['cols'] as $this->col_id => &$this->col)
 		{
-			$ftype = isset($ftypes[$col['type']]) ? $ftypes[$col['type']] : $ftypes['ff_matrix_text'];
+			$ftype = isset($ftypes[$this->col['type']]) ? $ftypes[$this->col['type']] : $ftypes['ff_matrix_text'];
 			if (method_exists($ftype, 'save_cell_settings'))
 			{
-				$col['settings'] = $ftype->save_cell_settings($col['settings']);
+				$this->col['settings'] = $ftype->save_cell_settings($this->col['settings']);
 			}
 		}
 
-		if (isset($field_settings['preview']))
-		{
-			unset($field_settings['preview']);
-		}
+		if (isset($this->col_id)) unset($this->col_id);
+		if (isset($this->col)) unset($this->col);
+
+		if (isset($field_settings['preview'])) unset($field_settings['preview']);
 
 		return $field_settings;
 	}
@@ -472,27 +475,27 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 
 		$this->row_count = -1;
 
-		foreach($field_settings['cols'] as $this->col_id => $col)
+		foreach($field_settings['cols'] as $this->col_id => $this->col)
 		{
 			// add the header
 			$class = '';
 			if ($this->col_id == $first_col_id) $class .= ' first';
 			if ($this->col_id == $last_col_id) $class .= ' last';
-			$r .=  '<th class="tableHeading th'.$class.'">'.$col['label'].'</th>';
+			$r .=  '<th class="tableHeading th'.$class.'">'.$this->col['label'].'</th>';
 
 			// get the default state
-			if ( ! isset($ftypes[$col['type']]))
+			if ( ! isset($ftypes[$this->col['type']]))
 			{
-				$col['type'] = 'ff_matrix_text';
-				$col['settings'] = array('rows' => 1);
+				$this->col['type'] = 'ff_matrix_text';
+				$this->col['settings'] = array('rows' => 1);
 			}
-			$ftype = $ftypes[$col['type']];
+			$ftype = $ftypes[$this->col['type']];
 			$cell_settings = array_merge(
 				(isset($ftype->default_cell_settings) ? $ftype->default_cell_settings : array()),
-				(isset($col['settings']) ? $col['settings'] : array())
+				(isset($this->col['settings']) ? $this->col['settings'] : array())
 			);
 			$cell_defaults[] = array(
-				'type' => $col['type'],
+				'type' => $this->col['type'],
 				'cell' => $ftype->display_cell($field_name.'[0]['.$this->col_id.']', '', $cell_settings)
 			);
 		}
@@ -510,22 +513,22 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 			$r .= '<tr>'
 			    .   '<td class="gutter tableDnD-sort"></td>';
 			$col_count = 0;
-			foreach($field_settings['cols'] as $this->col_id => $col)
+			foreach($field_settings['cols'] as $this->col_id => $this->col)
 			{
-				if ( ! isset($ftypes[$col['type']]))
+				if ( ! isset($ftypes[$this->col['type']]))
 				{
-					$col['type'] = 'ff_matrix_text';
-					$col['settings'] = array('rows' => 1);
+					$this->col['type'] = 'ff_matrix_text';
+					$this->col['settings'] = array('rows' => 1);
 					if (isset($row[$this->col_id]) AND is_array($row[$this->col_id]))
 					{
 						$row[$this->col_id] = serialize($row[$this->col_id]);
 					}
 				}
-				$ftype = $ftypes[$col['type']];
+				$ftype = $ftypes[$this->col['type']];
 				$cell_name = $field_name.'['.$this->row_count.']['.$this->col_id.']';
 				$cell_settings = array_merge(
 					(isset($ftype->default_cell_settings) ? $ftype->default_cell_settings : array()),
-					(isset($col['settings']) ? $col['settings'] : array())
+					(isset($this->col['settings']) ? $this->col['settings'] : array())
 				);
 
 				$class = '';
@@ -533,7 +536,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 				if ($this->col_id == $last_col_id) $class .= ' last';
 
 				$cell_data = isset($row[$this->col_id]) ? $row[$this->col_id] : '';
-				$r .= '<td class="'.($this->row_count % 2 ? 'tableCellTwo' : 'tableCellOne').' '.$col['type'].' td'.$class.'">'
+				$r .= '<td class="'.($this->row_count % 2 ? 'tableCellTwo' : 'tableCellOne').' '.$this->col['type'].' td'.$class.'">'
 				    .   $ftype->display_cell($cell_name, $cell_data, $cell_settings)
 				    . '</td>';
 				$col_count++;
@@ -541,8 +544,10 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 			$r .=   '<td class="gutter"></td>'
 			    . '</tr>';
 		}
+
 		if (isset($this->row_count)) unset($this->row_count);
 		if (isset($this->col_id)) unset($this->col_id);
+		if (isset($this->col)) unset($this->col);
 
 		$r .=   '</table>'
 		    . '</div>';
@@ -590,13 +595,13 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 
 			foreach($row as $this->col_id => &$cell_data)
 			{
-				$col = $field_settings['cols'][$this->col_id];
-				$ftype = isset($ftypes[$col['type']]) ? $ftypes[$col['type']] : $ftypes['ff_matrix_text'];
+				$this->col = $field_settings['cols'][$this->col_id];
+				$ftype = isset($ftypes[$this->col['type']]) ? $ftypes[$this->col['type']] : $ftypes['ff_matrix_text'];
 				if (method_exists($ftype, 'save_cell'))
 				{
 					$cell_settings = array_merge(
 						(isset($ftype->default_cell_settings) ? $ftype->default_cell_settings : array()),
-						(isset($col['settings']) ? $col['settings'] : array())
+						(isset($this->col['settings']) ? $this->col['settings'] : array())
 					);
 					$cell_data = $ftype->save_cell($cell_data, $cell_settings, $entry_id);
 				}
@@ -609,6 +614,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 
 		if (isset($this->row_count)) unset($this->row_count);
 		if (isset($this->col_id)) unset($this->col_id);
+		if (isset($this->col)) unset($this->col);
 
 		return $r;
 	}
