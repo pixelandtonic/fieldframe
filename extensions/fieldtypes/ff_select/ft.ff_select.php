@@ -113,6 +113,19 @@ class Ff_select extends Fieldframe_Multi_Fieldtype {
 	}
 
 	/**
+	 * Prep Field Data
+	 *
+	 * @param  mixed  &$field_data  The currently-saved $field_data
+	 */
+	function prep_field_data(&$field_data)
+	{
+		if (is_array($field_data))
+		{
+			$field_data = array_shift($field_data);
+		}
+	}
+
+	/**
 	 * Display Field
 	 * 
 	 * @param  string  $field_name      The field's name
@@ -124,7 +137,7 @@ class Ff_select extends Fieldframe_Multi_Fieldtype {
 	{
 		global $DSP;
 
-		if ( ! $field_data) $field_data = array();
+		$this->prep_field_data($field_data);
 
 		$SD = new Fieldframe_SettingsDisplay();
 		return $SD->select($field_name, $field_data, $field_settings['options']);
@@ -154,6 +167,8 @@ class Ff_select extends Fieldframe_Multi_Fieldtype {
 	 */
 	function display_tag($params, $tagdata, $field_data, $field_settings)
 	{
+		$this->prep_field_data($field_data);
+
 		return $field_data;
 	}
 
@@ -168,6 +183,8 @@ class Ff_select extends Fieldframe_Multi_Fieldtype {
 	 */
 	function label($params, $tagdata, $field_data, $field_settings)
 	{
+		$this->prep_field_data($field_data);
+
 		return $field_settings['options'][$field_data];
 	}
 
@@ -182,6 +199,8 @@ class Ff_select extends Fieldframe_Multi_Fieldtype {
 	 */
 	function all_options($params, $tagdata, $field_data, $field_settings)
 	{
+		$this->prep_field_data($field_data);
+
 		return parent::all_options($params, $tagdata, array($field_data), $field_settings);
 	}
 
