@@ -960,6 +960,7 @@ class Ff_matrix_text extends Fieldframe_Fieldtype {
 	{
 		global $DSP;
 		$size = $cell_settings['size'] ? $cell_settings['size'] : '95%';
+		if (substr($size, -2) != 'px' && substr($size, -1) != '%') $size .= 'px';
 		return $DSP->input_text($cell_name, $cell_data, '', $cell_settings['maxl'], '', $size);
 	}
 
@@ -976,7 +977,8 @@ class Ff_matrix_textarea extends Fieldframe_Fieldtype {
 	);
 
 	var $default_cell_settings = array(
-		'rows' => '2'
+		'rows' => '2',
+		'size' => ''
 	);
 
 	function display_cell_settings($cell_settings)
@@ -986,6 +988,10 @@ class Ff_matrix_textarea extends Fieldframe_Fieldtype {
 		$r = '<label class="itemWrapper">'
 		   . $DSP->input_text('rows', $cell_settings['rows'], '3', '3', 'input', '30px') . NBS
 		   . $LANG->line('textarea_rows')
+		   . '</label>'
+		   . '<label class="itemWrapper">'
+		   . $DSP->input_text('size', $cell_settings['size'], '3', '3', 'input', '30px') . NBS
+		   . $LANG->line('size')
 		   . '</label>';
 
 		return $r;
@@ -994,7 +1000,9 @@ class Ff_matrix_textarea extends Fieldframe_Fieldtype {
 	function display_cell($cell_name, $cell_data, $cell_settings)
 	{
 		global $DSP;
-		return $DSP->input_textarea($cell_name, $cell_data, $cell_settings['rows'], '', '95%');
+		$size = $cell_settings['size'] ? $cell_settings['size'] : '95%';
+		if (substr($size, -2) != 'px' && substr($size, -1) != '%') $size .= 'px';
+		return $DSP->input_textarea($cell_name, $cell_data, $cell_settings['rows'], '', $size);
 	}
 
 }
