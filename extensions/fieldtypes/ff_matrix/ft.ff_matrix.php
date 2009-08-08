@@ -945,11 +945,11 @@ class Ff_matrix_text extends Fieldframe_Fieldtype {
 		global $DSP, $LANG;
 
 		$r = '<label class="itemWrapper">'
-		   . $DSP->input_text('maxl', $cell_settings['maxl'], '3', '3', 'input', '30px') . NBS
+		   . $DSP->input_text('maxl', $cell_settings['maxl'], '3', '5', 'input', '30px') . NBS
 		   . $LANG->line('field_max_length')
 		   . '</label>'
 		   . '<label class="itemWrapper">'
-		   . $DSP->input_text('size', $cell_settings['size'], '3', '3', 'input', '30px') . NBS
+		   . $DSP->input_text('size', $cell_settings['size'], '3', '5', 'input', '30px') . NBS
 		   . $LANG->line('size')
 		   . '</label>';
 
@@ -960,7 +960,7 @@ class Ff_matrix_text extends Fieldframe_Fieldtype {
 	{
 		global $DSP;
 		$size = $cell_settings['size'] ? $cell_settings['size'] : '95%';
-		if (substr($size, -2) != 'px' && substr($size, -1) != '%') $size .= 'px';
+		if (is_numeric($size)) $size .= 'px';
 		return $DSP->input_text($cell_name, $cell_data, '', $cell_settings['maxl'], '', $size);
 	}
 
@@ -986,11 +986,11 @@ class Ff_matrix_textarea extends Fieldframe_Fieldtype {
 		global $DSP, $LANG;
 
 		$r = '<label class="itemWrapper">'
-		   . $DSP->input_text('rows', $cell_settings['rows'], '3', '3', 'input', '30px') . NBS
+		   . $DSP->input_text('rows', $cell_settings['rows'], '3', '5', 'input', '30px') . NBS
 		   . $LANG->line('textarea_rows')
 		   . '</label>'
 		   . '<label class="itemWrapper">'
-		   . $DSP->input_text('size', $cell_settings['size'], '3', '3', 'input', '30px') . NBS
+		   . $DSP->input_text('size', $cell_settings['size'], '3', '5', 'input', '30px') . NBS
 		   . $LANG->line('size')
 		   . '</label>';
 
@@ -1001,7 +1001,7 @@ class Ff_matrix_textarea extends Fieldframe_Fieldtype {
 	{
 		global $DSP;
 		$size = $cell_settings['size'] ? $cell_settings['size'] : '95%';
-		if (substr($size, -2) != 'px' && substr($size, -1) != '%') $size .= 'px';
+		if (is_numeric($size)) $size .= 'px';
 		return $DSP->input_textarea($cell_name, $cell_data, $cell_settings['rows'], '', $size);
 	}
 
