@@ -936,7 +936,8 @@ class Ff_matrix_text extends Fieldframe_Fieldtype {
 	);
 
 	var $default_cell_settings = array(
-		'maxl' => '128'
+		'maxl' => '128',
+		'size' => ''
 	);
 
 	function display_cell_settings($cell_settings)
@@ -946,6 +947,10 @@ class Ff_matrix_text extends Fieldframe_Fieldtype {
 		$r = '<label class="itemWrapper">'
 		   . $DSP->input_text('maxl', $cell_settings['maxl'], '3', '3', 'input', '30px') . NBS
 		   . $LANG->line('field_max_length')
+		   . '</label>'
+		   . '<label class="itemWrapper">'
+		   . $DSP->input_text('size', $cell_settings['size'], '3', '3', 'input', '30px') . NBS
+		   . $LANG->line('size')
 		   . '</label>';
 
 		return $r;
@@ -954,7 +959,8 @@ class Ff_matrix_text extends Fieldframe_Fieldtype {
 	function display_cell($cell_name, $cell_data, $cell_settings)
 	{
 		global $DSP;
-		return $DSP->input_text($cell_name, $cell_data, '', $cell_settings['maxl'], '', '95%');
+		$size = $cell_settings['size'] ? $cell_settings['size'] : '95%';
+		return $DSP->input_text($cell_name, $cell_data, '', $cell_settings['maxl'], '', $size);
 	}
 
 }
