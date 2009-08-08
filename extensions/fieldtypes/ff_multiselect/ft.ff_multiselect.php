@@ -34,10 +34,12 @@ class Ff_multiselect extends Fieldframe_Multi_Fieldtype {
 	 * @param  array   $field_settings  The field's settings
 	 * @return string  The field's HTML
 	 */
-	function display_field($field_name, $field_data, $field_settings)
+	function display_field($field_name, $field_data, $field_settings, $config = array())
 	{
+		$this->prep_field_data($field_data);
+
 		$SD = new Fieldframe_SettingsDisplay();
-		return $SD->multiselect($field_name.'[]', $field_data, $field_settings['options']);
+		return $SD->multiselect($field_name.'[]', $field_data, $field_settings['options'], $config);
 	}
 
 	/**
@@ -50,8 +52,7 @@ class Ff_multiselect extends Fieldframe_Multi_Fieldtype {
 	 */
 	function display_cell($cell_name, $cell_data, $cell_settings)
 	{
-		$SD = new Fieldframe_SettingsDisplay();
-		return $SD->multiselect($cell_name.'[]', $cell_data, $cell_settings['options'], array('width' => '145px'));
+		return $this->display_field($cell_name, $cell_data, $cell_settings, array('width' => '145px'));
 	}
 
 }

@@ -2848,6 +2848,21 @@ class Fieldframe_Multi_Fieldtype extends Fieldframe_Fieldtype {
 	}
 
 	/**
+	 * Prep Field Data
+	 *
+	 * Ensures $field_data is an array.
+	 *
+	 * @param  mixed  &$field_data  The currently-saved $field_data
+	 */
+	function prep_field_data(&$field_data)
+	{
+		if ( ! is_array($field_data))
+		{
+			$field_data = array_filter(preg_split("/[\r\n]+/", $field_data));
+		}
+	}
+
+	/**
 	 * Display Tag
 	 *
 	 * @param  array   $params          Name/value pairs from the opening tag
@@ -2865,6 +2880,7 @@ class Fieldframe_Multi_Fieldtype extends Fieldframe_Fieldtype {
 			return $this->ul($params, $tagdata, $field_data, $field_settings);
 		}
 
+		$this->prep_field_data($field_data);
 		$r = '';
 
 		if ($field_settings['options'] AND $field_data)
@@ -2957,6 +2973,7 @@ class Fieldframe_Multi_Fieldtype extends Fieldframe_Fieldtype {
 	{
 		global $TMPL;
 
+		$this->prep_field_data($field_data);
 		$r = '';
 
 		if ($field_settings['options'])
@@ -3013,6 +3030,8 @@ class Fieldframe_Multi_Fieldtype extends Fieldframe_Fieldtype {
 	 */
 	function selected($params, $tagdata, $field_data, $field_settings)
 	{
+		$this->prep_field_data($field_data);
+
 		return (isset($params['option']) AND in_array($params['option'], $field_data)) ? 1 : 0;
 	}
 

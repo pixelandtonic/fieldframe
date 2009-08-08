@@ -38,7 +38,7 @@ class Ff_checkbox_group extends Fieldframe_Multi_Fieldtype {
 	{
 		global $DSP;
 
-		if ( ! $field_data) $field_data = array();
+		$this->prep_field_data($field_data);
 		$r = '';
 
 		foreach($field_settings['options'] as $option_name => $option_label)
