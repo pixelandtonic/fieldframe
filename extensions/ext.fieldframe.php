@@ -991,15 +991,16 @@ class Fieldframe_Main {
 		            . $DSP->form_c();
 
 
-		// CSS
-		$css = '<style type="text/css" charset="utf-8">' . NL
-		     . '  .donations { float:right; }' . NL
-		     . '  .donations a { display:block; margin:-2px 10px 0 0; padding:5px 0 5px 67px; width:193px; height:15px; font-size:12px; line-height:15px;'
-		                     . ' background:url(http://brandon-kelly.com/images/shared/donations.png) no-repeat 0 0; color:#000; font-weight:bold; }' . NL
-		     . '  h1 { padding:7px 0; }' . NL
-		     . '</style>';
-
-		$this->snippets['head'][] = $css;
+		ob_start();
+?>
+<style type="text/css" charset="utf-8">
+  .donations { float:right; }
+  .donations a { display:block; margin:-2px 10px 0 0; padding:5px 0 5px 67px; width:193px; height:15px; font-size:12px; line-height:15px; background:url(http://brandon-kelly.com/images/shared/donations.png) no-repeat 0 0; color:#000; font-weight:bold; }
+  h1 { padding:7px 0; }
+</style>
+<?php
+		$this->snippets['head'][] = ob_get_contents();
+		ob_end_clean();
 	}
 
 	/**
@@ -1145,49 +1146,52 @@ class Fieldframe_Main {
 				}
 			}
 
-			$js = '<script type="text/javascript" charset="utf-8">' . NL
-			    . '  function ffEnable(ft) {' . NL
-			    . '    ft.show.className = "toggle show";' . NL
-			    . '    ft.show.onclick = function() {' . NL
-			    . '      ft.show.style.display = "none";' . NL
-			    . '      ft.hide.style.display = "block";' . NL
-			    . '      ft.settings.style.display = "table-row";' . NL
-			    . '    };' . NL
-			    . '    ft.hide.onclick = function() {' . NL
-			    . '      ft.show.style.display = "block";' . NL
-			    . '      ft.hide.style.display = "none";' . NL
-			    . '      ft.settings.style.display = "none";' . NL
-			    . '    };' . NL
-			    . '  }' . NL
-			    . '  function ffDisable(ft) {' . NL
-			    . '    ft.show.className = "toggle show disabled";' . NL
-			    . '    ft.show.onclick = null;' . NL
-			    . '    ft.show.style.display = "block";' . NL
-			    . '    ft.hide.style.display = "none";' . NL
-			    . '    ft.settings.style.display = "none";' . NL
-			    . '  }' . NL
-			    . '  function ffInitRow(rowId) {' . NL
-			    . '    var ft = {' . NL
-			    . '      tr: document.getElementById(rowId),' . NL
-			    . '      show: document.getElementById(rowId+"_show"),' . NL
-			    . '      hide: document.getElementById(rowId+"_hide"),' . NL
-			    . '      settings: document.getElementById(rowId+"_settings")' . NL
-			    . '    };' . NL
-			    . '    if (ft.settings) {' . NL
-			    . '      ft.toggles = ft.tr.getElementsByTagName("input");' . NL
-			    . '      ft.toggles[0].onchange = function() { ffEnable(ft); };' . NL
-			    . '      ft.toggles[1].onchange = function() { ffDisable(ft); };' . NL
-			    . '      if (ft.toggles[0].checked) ffEnable(ft);' . NL
-			    . '      else ffDisable(ft);' . NL
-			    . '    }' . NL
-			    . '  }' . NL
-			    . '  var ffRowIds = ['.implode(',', $row_ids).'];' . NL
-			    . '  for (var i = 0; i < ffRowIds.length; i++) {' . NL
-			    . '    ffInitRow(ffRowIds[i]);' . NL
-			    . '  }' . NL
-			    . '</script>';
-
-			$this->snippets['body'][] = $js;
+			ob_start();
+?>
+<script type="text/javascript" charset="utf-8">
+	function ffEnable(ft) {
+		ft.show.className = "toggle show";
+		ft.show.onclick = function() {
+			ft.show.style.display = "none";
+			ft.hide.style.display = "block";
+			ft.settings.style.display = "table-row";
+		};
+		ft.hide.onclick = function() {
+			ft.show.style.display = "block";
+			ft.hide.style.display = "none";
+			ft.settings.style.display = "none";
+		};
+	}
+	function ffDisable(ft) {
+		ft.show.className = "toggle show disabled";
+		ft.show.onclick = null;
+		ft.show.style.display = "block";
+		ft.hide.style.display = "none";
+		ft.settings.style.display = "none";
+	}
+	function ffInitRow(rowId) {
+		var ft = {
+			tr: document.getElementById(rowId),
+			show: document.getElementById(rowId+"_show"),
+			hide: document.getElementById(rowId+"_hide"),
+			settings: document.getElementById(rowId+"_settings")
+		};
+		if (ft.settings) {
+			ft.toggles = ft.tr.getElementsByTagName("input");
+			ft.toggles[0].onchange = function() { ffEnable(ft); };
+			ft.toggles[1].onchange = function() { ffDisable(ft); };
+			if (ft.toggles[0].checked) ffEnable(ft);
+			else ffDisable(ft);
+		}
+	}
+	var ffRowIds = [<?php echo implode(',', $row_ids) ?>];
+	for (var i = 0; i < ffRowIds.length; i++) {
+		ffInitRow(ffRowIds[i]);
+	}
+</script>
+<?php
+			$this->snippets['body'][] = ob_get_contents();
+			ob_end_clean();
 		}
 		else if ( ! defined('FT_PATH'))
 		{
@@ -1211,23 +1215,27 @@ class Fieldframe_Main {
 			            . $DSP->form_c();
 		}
 
-		// CSS
-		$css = '<style type="text/css" charset="utf-8">' . NL
-		     . '  #ffsettings a.toggle { display:block; cursor:pointer; }' . NL
-		     . '  #ffsettings a.toggle.hide { display:none; }' . NL
-		     . '  #ffsettings a.toggle.disabled { color:#000; opacity:0.4; cursor:default; }'
-		     . '  #ffsettings .ftsettings { margin:-3px -1px -1px; }'
-		     . '  #ffsettings .ftsettings, #ffsettings .ftsettings * { background:#262e33; color:#999; }' . NL
-		     . '  #ffsettings .ftsettings input.input, #ffsettings .ftsettings textarea { background:#fff; color:#333; }' . NL
-		     . '  #ffsettings .ftsettings table { border:none; }' . NL
-		     . '  #ffsettings .ftsettings table tr td { border-top:1px solid #1d2326; padding-left:8px; padding-right:8px;  }'
-		     . '  #ffsettings .ftsettings table tr td.tableHeading { color:#ddd; background:#232a2e; }' . NL
-		     . '  #ffsettings .ftsettings .defaultBold { color:#ccc; }' . NL
-		     . '  #ffsettings .ftsettings .box { border-color:transparent; }' . NL
-		     . '  #ffsettings .ftsettings .tableCellOne, #ffsettings .ftsettings .tableCellOneBold, #ffsettings .ftsettings .tableCellTwo, #ffsettings .ftsettings .tableCellTwoBold { border-bottom:none; }' . NL
-		     . '</style>';
-
-		$this->snippets['head'][] = $css;
+		ob_start();
+?>
+<style type="text/css" charset="utf-8">
+	#ffsettings a.toggle { display:block; cursor:pointer; }
+	#ffsettings a.toggle.hide { display:none; }
+	#ffsettings a.toggle.disabled { color:#000; opacity:0.4; cursor:default; }
+	#ffsettings .ftsettings { margin:-3px -1px -1px; }
+	#ffsettings .ftsettings, #ffsettings .ftsettings .tableCellOne, #ffsettings .ftsettings .tableCellTwo, #ffsettings .ftsettings .box { background:#262e33; color:#999; }
+	#ffsettings .ftsettings .box { margin: 0; padding: 10px 15px; border: none; border-top: 1px solid #283036; background: -webkit-gradient(linear, 0 0, 0 100%, from(#262e33), to(#22292e)); }
+	#ffsettings .ftsettings table tr td .box { margin: -1px -8px; }
+	#ffsettings .ftsettings a, #ffsettings .ftsettings p, #ffsettings .ftsettings .subtext { color: #999; }
+	#ffsettings .ftsettings input.input, #ffsettings .ftsettings textarea { background:#fff; color:#333; }
+	#ffsettings .ftsettings table { border:none; }
+	#ffsettings .ftsettings table tr td { border-top:1px solid #1d2326; padding-left:8px; padding-right:8px;  }
+	#ffsettings .ftsettings table tr td.tableHeading { color:#ddd; background:#232a2e; }
+	#ffsettings .ftsettings .defaultBold { color:#ccc; }
+	#ffsettings .ftsettings .tableCellOne, #ffsettings .ftsettings .tableCellOneBold, #ffsettings .ftsettings .tableCellTwo, #ffsettings .ftsettings .tableCellTwoBold { border-bottom:none; }
+</style>
+<?php
+		$this->snippets['head'][] = ob_get_contents();
+		ob_end_clean();
 	}
 
 	/**
