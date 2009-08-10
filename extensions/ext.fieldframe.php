@@ -2467,10 +2467,10 @@ class Fieldframe_SettingsDisplay {
 	 * @param  string  $info_line  Info text
 	 * @return string  The settings info row
 	 */
-	function info_row($info_line)
+	function info_row($info_line, $styles=TRUE)
 	{
 		return $this->row(array(
-		                   '<div class="box" style="border-width:0 0 1px 0; margin:0; padding:10px 5px">'
+		                   '<div class="box"' . ($styles ? ' style="border-width:0 0 1px 0; margin:0; padding:10px 5px"' : '') . '>'
 		                 . '<p>'.$this->get_line($info_line).'</p>'
 		                 . '</div>'
 		                  ), '');
