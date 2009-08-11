@@ -768,7 +768,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 			// search: params
 			$this->filter_field_data($field_data);
 
-			if ($call_hook AND $tmp_field_data = $FF->forward_hook('ff_matrix_tag_field_data', 10, array('field_data'     => $field_data,
+			if ($call_hook AND $tmp_field_data = $FF->forward_hook('ff_matrix_tag_field_data', 10, array('field_data' => $field_data,
 			                                                                              'field_settings' => $this->field_settings)))
 			{
 				$field_data = $tmp_field_data;
