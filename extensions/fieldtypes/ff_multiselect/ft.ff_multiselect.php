@@ -39,7 +39,7 @@ class Ff_multiselect extends Fieldframe_Multi_Fieldtype {
 		$this->prep_field_data($field_data);
 
 		$SD = new Fieldframe_SettingsDisplay();
-		return $SD->multiselect($field_name.'[]', $field_data, $field_settings['options'], array('width' => 'auto'));
+		return $SD->multiselect($field_name.'[]', $field_data, $field_settings['options'], array('width' => ';'));
 	}
 
 	/**
