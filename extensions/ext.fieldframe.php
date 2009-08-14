@@ -1149,6 +1149,9 @@ class Fieldframe_Main {
 			ob_start();
 ?>
 <script type="text/javascript" charset="utf-8">
+	var urlParts = document.location.href.split('#'),
+		anchor = urlParts[1];
+		console.log(anchor);
 	function ffEnable(ft) {
 		ft.show.className = "toggle show";
 		ft.show.onclick = function() {
@@ -1182,6 +1185,9 @@ class Fieldframe_Main {
 			ft.toggles[1].onchange = function() { ffDisable(ft); };
 			if (ft.toggles[0].checked) ffEnable(ft);
 			else ffDisable(ft);
+			if (anchor == rowId+'_settings') {
+				ft.show.onclick();
+			}
 		}
 	}
 	var ffRowIds = [<?php echo implode(',', $row_ids) ?>];
