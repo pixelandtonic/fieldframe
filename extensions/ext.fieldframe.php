@@ -8,7 +8,7 @@ if ( ! defined('FF_CLASS'))
 {
 	define('FF_CLASS',   'Fieldframe');
 	define('FF_NAME',    'FieldFrame');
-	define('FF_VERSION', '1.3.0');
+	define('FF_VERSION', '1.3.1');
 }
 
 
@@ -2138,12 +2138,12 @@ class Fieldframe_Main {
 		$this->row = $row;
 		$this->weblog = &$weblog;
 
-		$fields = array();
 		if ($fields = $this->_get_fields())
 		{
+			$fields_by_name = array();
 			foreach($fields as $field_id => $field)
 			{
-				$fields[$field['name']] = array(
+				$fields_by_name[$field['name']] = array(
 					'data'     => (isset($row['field_id_'.$field_id]) ? $this->_unserialize($row['field_id_'.$field_id], FALSE) : ''),
 					'settings' => $field['settings'],
 					'ftype'    => $field['ftype'],
@@ -2151,7 +2151,7 @@ class Fieldframe_Main {
 				);
 			}
 
-			$this->_parse_tagdata($this->tagdata, $fields);
+			$this->_parse_tagdata($this->tagdata, $fields_by_name);
 		}
 
 		// unset temporary helper vars
