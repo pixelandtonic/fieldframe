@@ -90,7 +90,7 @@
 }
 .ff-ft .helpLinks { 
 	color: #3D525F; 
-	background: #27343C url({path:image_url}bg_top.gif) repeat-x left top;
+	background: #27343C url(images/bg_top.gif) repeat-x left top;
 	text-align: right; 
 	font-size: 10px; 
 	padding: 25px 30px 10px 0px; 
@@ -280,7 +280,7 @@ color:#fff;
 	font-weight: bold; 
 	color: #fff; 
 	padding: 6px 6px 6px 6px; 
-	background: #6D0000 url({path:image_url}bg_alert.jpg) repeat-x left top; 
+	background: #6D0000 url(images/bg_alert.jpg) repeat-x left top; 
 	border-top: 1px solid #660000; 
 	border-bottom: 1px solid #660000; 
 }
@@ -353,7 +353,7 @@ color:#fff;
 	text-decoration: none; 
 }
 .ff-ft .cpNavOff, .ff-ft .cpNavLocked { 
-	background: #142129 url({path:image_url}tab_inactive.gif) repeat-x left bottom; 
+	background: #142129 url(images/tab_inactive.gif) repeat-x left bottom; 
 	font-size: 12px; 
 	color: #ADC0CB ; 
 	text-align: center; 
@@ -367,7 +367,7 @@ color:#fff;
 .ff-ft .cpNavHover { 
 	font-size: 12px; 
 	color: #fff; 
-	background: #101B22 url({path:image_url}tab_inactive.gif) repeat-x left bottom;	text-align: center; 
+	background: #101B22 url(images/tab_inactive.gif) repeat-x left bottom;	text-align: center; 
 	padding: 6px 4px 5px 4px; 
 	margin: 0; 
 	border-left: #27343C 1px solid; 
@@ -378,7 +378,7 @@ color:#fff;
 .ff-ft .cpNavOn { 
 	font-size: 12px; 
 	color: #666; 
-	background: #fff url({path:image_url}tab_selected.gif) repeat-x right top; ; 
+	background: #fff url(images/tab_selected.gif) repeat-x right top; ; 
 	padding: 8px 4px 3px 4px; 
 	margin: 0; 
 	text-align: center; 
@@ -463,7 +463,7 @@ color:#fff;
 	text-shadow: 1px 1px 1px #85AD45;
 }
 .ff-ft .breadcrumbRight a {
-.ff-ft     background: transparent url({path:image_url}bg_button_a.gif) no-repeat scroll top right;
+.ff-ft     background: transparent url(images/bg_button_a.gif) no-repeat scroll top right;
     color: #f93d00;
     display: block;
     font: normal 12px arial, sans-serif;
@@ -476,7 +476,7 @@ color:#fff;
 }
 .breadcrumbRight a div,
 .ff-ft .breadcrumbRight a span {
-.ff-ft     background: transparent url({path:image_url}bg_button_div.gif) no-repeat;
+.ff-ft     background: transparent url(images/bg_button_div.gif) no-repeat;
     display: block;
     line-height: 17px;
     padding: 5px 0 5px 20px;
@@ -784,7 +784,7 @@ html>body #boardsdropmenu,
 .ff-ft html>body .navCell #boardsdropmenu li:hover { background-color: #C2DBEB; }
 .ff-ft .altTabs {
 	cursor: pointer;
-	background: #546167 url({path:image_url}alt_tab_inactive.gif) repeat-x left bottom;
+	background: #546167 url(images/alt_tab_inactive.gif) repeat-x left bottom;
 	font-size: 12px; 
 	color: #fff ; 
 	text-align: center; 
@@ -802,7 +802,7 @@ html>body #boardsdropmenu,
 .ff-ft .altTabsHover { 
 	font-size: 12px; 
 	color: #ADC0CB; 
-	background: #546167 url({path:image_url}alt_tab_inactive.gif) repeat-x left bottom;
+	background: #546167 url(images/alt_tab_inactive.gif) repeat-x left bottom;
 	text-align: center; 
 	padding: 6px 4px 5px 4px; 
 	margin: 0; 
@@ -812,7 +812,7 @@ html>body #boardsdropmenu,
 .ff-ft .altTabSelected { 
 	font-size: 12px; 
 	color: #666; 
-	background: #fff url({path:image_url}alt_tab_selected.gif) right top no-repeat;  
+	background: #fff url(images/alt_tab_selected.gif) right top no-repeat;  
 	padding: 8px 4px 3px 4px; 
 	margin: 0; 
 	text-align: center; 
@@ -823,7 +823,7 @@ html>body #boardsdropmenu,
 	margin-bottom: 4px; 
 }
 .ff-ft .buttonInsert { 
-	background: #fff url({path:image_url}gradient_bg.jpg) repeat-x left top; 
+	background: #fff url(images/gradient_bg.jpg) repeat-x left top; 
 	border: #6F7CA2 1px solid; 
 	padding: 6px; 
 	margin: 3px 0 2px 8px; 
@@ -992,7 +992,7 @@ html>body #boardsdropmenu,
 	font-weight: bold; 
 	color: #fff; 
 	padding: 4px 4px 4px 10px; 
-	background: #7E7EB3 url({path:image_url}bg_profile_heading.jpg) repeat-x left top; 
+	background: #7E7EB3 url(images/bg_profile_heading.jpg) repeat-x left top; 
 	border-top: 1px solid #D9DBE7; 
 	border-bottom: 1px solid #636A96; 
 	margin: 0 0 0 0; 
@@ -1080,7 +1080,7 @@ html>body #boardsdropmenu,
 	font-weight: normal; 
 }
 .ff-ft .box { 
-	background: #fff url({path:image_url}box_bg.gif) top left repeat-x; 
+	background: #fff url(images/box_bg.gif) top left repeat-x; 
 	border: #CCC9A4 1px solid; 
 	padding: 8px 10px 8px 10px; 
 	margin: 0px 0 10px 0; 
@@ -1093,7 +1093,7 @@ html>body #boardsdropmenu,
 	margin-top: 8px; 
 }
 .ff-ft .box320 { 
-	background: #F7F8FA url({path:image_url}box_bg.jpg) repeat-x left top; 
+	background: #F7F8FA url(images/box_bg.jpg) repeat-x left top; 
 	border: #B1B6D2 1px solid; 
 	padding: 12px; 
 	width: 320px; 
@@ -1101,7 +1101,7 @@ html>body #boardsdropmenu,
 	margin-top: 2px; 
 }
 .ff-ft .box450 { 
-	background: #F7F8FA url({path:image_url}box_bg.jpg) repeat-x left top; 
+	background: #F7F8FA url(images/box_bg.jpg) repeat-x left top; 
 	border: #B1B6D2 1px solid; 
 	padding: 12px; 
 	width: 450px; 
@@ -1214,7 +1214,7 @@ html>body #boardsdropmenu,
 	margin: 4px 0 4px 0; 
 }
 .ff-ft .commentBox { 
-	background: #F7F8FA url({path:image_url}box_bg.jpg) repeat-x left top; 
+	background: #F7F8FA url(images/box_bg.jpg) repeat-x left top; 
 	border: #B1B6D2 1px solid; 
 	padding: 1px 5px 1px 1px; 
 	margin: 1px 0 1px 0; 
@@ -1284,7 +1284,7 @@ html>body #boardsdropmenu,
 	font-weight: bold; 
 	color: #fff; 
 	padding: 7px 6px 7px 6px; 
-	background: #768E9D url({path:image_url}bg_table_heading.gif) repeat-x left bottom;
+	background: #768E9D url(images/bg_table_heading.gif) repeat-x left bottom;
 }
 .ff-ft .tableHeadingAlt { 
 	font-size: 11px; 
@@ -1292,7 +1292,7 @@ html>body #boardsdropmenu,
 	white-space: nowrap; 
 	color: #0C1216; 
 	padding: 5px 6px 5px 6px; 
-	background: #B8C6CE url({path:image_url}bg_table_heading_alt.gif) repeat-x left bottom;
+	background: #B8C6CE url(images/bg_table_heading_alt.gif) repeat-x left bottom;
 }
 .ff-ft .default .tableHeadingAlt { 
 	font-size: 11px; 
@@ -1334,7 +1334,7 @@ html>body #boardsdropmenu,
 	white-space: nowrap; 
 	color: #0C1216; 
 	padding: 5px 6px 5px 6px; 
-	background: #B8C6CE url({path:image_url}bg_table_heading_alt.gif) repeat-x left bottom;
+	background: #B8C6CE url(images/bg_table_heading_alt.gif) repeat-x left bottom;
 }
 .ff-ft .tableCellOne, .ff-ft .tableCellOneBold { 
 	color: #333; 
@@ -1576,7 +1576,7 @@ border:1px solid #ccc;
 }
 .ff-ft .roundBox { 
 	margin: 0 5px; 
-	background: #FBFBFD url({path:image_url}gradient_bg.jpg) repeat-x left top; 
+	background: #FBFBFD url(images/gradient_bg.jpg) repeat-x left top; 
 	font-size:12px;
 }
 .ff-ft .roundBox ul li { 
