@@ -15,7 +15,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 
 	var $info = array(
 		'name'     => 'FF Matrix',
-		'version'  => '1.3.0',
+		'version'  => '1.3.1',
 		'desc'     => 'A customizable, expandable, and sortable table',
 		'docs_url' => 'http://brandon-kelly.com/fieldframe/docs/ff-matrix'
 	);
