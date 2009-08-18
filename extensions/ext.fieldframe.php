@@ -1120,7 +1120,7 @@ class Fieldframe_Main {
 				                            ?  '--'
 				                            :  $SD->radio_group('ftypes['.$class_name.'][enabled]', ($ftype->_is_enabled ? 'y' : 'n'), array('y'=>'yes', 'n'=>'no'))),
 				                         ($site_settings
-				                            ?  '<a class="toggle show" id="'.$row_id.'_show"><img src="'.$PREFS->ini('theme_folder_url', 1).'cp_global_images/expand.gif" border="0">  '.$LANG->line('show').'</a>'
+				                            ?  '<a class="toggle show" id="'.$row_id.'_show" href="#ft_'.$class_name.'_settings"><img src="'.$PREFS->ini('theme_folder_url', 1).'cp_global_images/expand.gif" border="0">  '.$LANG->line('show').'</a>'
 				                               . '<a class="toggle hide" id="'.$row_id.'_hide"><img src="'.$PREFS->ini('theme_folder_url', 1).'cp_global_images/collapse.gif" border="0">  '.$LANG->line('hide').'</a>'
 				                            :  '--'),
 				                         ($ftype->info['docs_url'] ? '<a href="'.stripslashes($ftype->info['docs_url']).'">'.$LANG->line('documentation').'</a>' : '--')
