@@ -116,7 +116,7 @@
 color:#fff;
 }
 .ff-ft .helpLinksLeft a:link { 
-        color:#fff;
+		color:#fff;
 }
 .ff-ft .altLink { 
 	font-size: 11px; 
@@ -128,7 +128,7 @@ color:#fff;
 	text-decoration: none; 
 	white-space: nowrap; 
 }
-.ff-ft .altLink  a:visited { 
+.ff-ft .altLink	 a:visited { 
 	text-decoration: none; 
 	color: #fff; 
 }
@@ -463,38 +463,38 @@ color:#fff;
 	text-shadow: 1px 1px 1px #85AD45;
 }
 .ff-ft .breadcrumbRight a {
-.ff-ft     background: transparent url(images/bg_button_a.gif) no-repeat scroll top right;
-    color: #f93d00;
-    display: block;
-    font: normal 12px arial, sans-serif;
-    height: 27px;
-    margin-right: 6px;
-    padding-right: 20px; /* sliding doors padding */
-    text-decoration: none;
+	background: transparent url(images/bg_button_a.gif) no-repeat scroll top right;
+	color: #f93d00;
+	display: block;
+	font: normal 12px arial, sans-serif;
+	height: 27px;
+	margin-right: 6px;
+	padding-right: 20px; /* sliding doors padding */
+	text-decoration: none;
 	outline: none;
 	overflow: hidden;
 }
-.breadcrumbRight a div,
+.ff-ft .breadcrumbRight a div,
 .ff-ft .breadcrumbRight a span {
-.ff-ft     background: transparent url(images/bg_button_div.gif) no-repeat;
-    display: block;
-    line-height: 17px;
-    padding: 5px 0 5px 20px;
+	background: transparent url(images/bg_button_div.gif) no-repeat;
+	display: block;
+	line-height: 17px;
+	padding: 5px 0 5px 20px;
 }
 .ff-ft .breadcrumbRight a:active {
-    background-position: bottom right;
-    color: #b53910;
-    outline: none; /* hide dotted outline in Firefox */
+	background-position: bottom right;
+	color: #b53910;
+	outline: none; /* hide dotted outline in Firefox */
 }
-.breadcrumbRight a:active div,
+.ff-ft .breadcrumbRight a:active div,
 .ff-ft .breadcrumbRight a:active span {
-    background-position: bottom left;
-    padding: 6px 0 4px 20px; /* push text down 1px */
+	background-position: bottom left;
+	padding: 6px 0 4px 20px; /* push text down 1px */
 }
 .ff-ft .publishBox { 
 	background-color: #E4EAF1; 
 	border: #C5CFDA 1px solid; 
-        border-top:none; 
+		border-top:none; 
 	padding: 6px 6px 2px 6px; 
 	margin: 0; 
 }
@@ -540,7 +540,7 @@ color:#fff;
 }
 .ff-ft .uploadBox { 
 	background-color: #C5CFDa; 
-	border: #A6B3C0 1px solid;  
+	border: #A6B3C0 1px solid;	
 	font-size: 11px; 
 	color: #000; 
 	text-align: center; 
@@ -558,7 +558,7 @@ color:#fff;
 }
 
 .ff-ft .uploadBox img {
-	vertical-align:	bottom;
+	vertical-align: bottom;
 	margin-bottom: -2px;
 }
 .ff-ft .previewBox { 
@@ -602,12 +602,10 @@ color:#fff;
 	border-bottom: #C5CFDA 1px solid; 
 	margin: 0; 
 }
-.ff-ft .publishTabs { 
-
-
+.ff-ft .publishTabs {
 	border: #A6B3C0 1px solid; 
 	border-bottom: #A6B3C0 2px solid; 
-border-left: none; 
+	border-left: none; 
 	background-color: #C5CFDa ;
 	font-size: 11px; 
 	text-align: center; 
@@ -622,7 +620,6 @@ border-left: none;
 }
 .ff-ft .publishTabsHover { 
 	border-top: #9BA7B4 1px solid; 
-
 	border-right: #9BA7B4 1px solid; 
 	border-bottom: #9BA7B4 2px solid; 
 	font-size: 11px; 
@@ -635,9 +632,8 @@ border-left: none;
 	background-color: #A9B7C5;
 }
 .ff-ft .publishTabSelected { 
-
 	border: #C5CFDA 1px solid;
-border-right: #A6B3C0 1px solid; 
+	border-right: #A6B3C0 1px solid; 
 	border-bottom: #E4EAF1 2px solid; 
 	background-color: #E4EAF1; 
 	font-size: 11px; 
@@ -750,38 +746,38 @@ border-right: #A6B3C0 1px solid;
 	background-color: #C2DBEB; 
 	text-decoration: none;
 }
-.ff-ft html>body .navCell:{publish_tab_selector} #publishdropmenu { {publish_tab_display} }
-.ff-ft html>body .navCell:{publish_tab_selector} #publishdropmenu ul { {publish_tab_ul_display} }
-.ff-ft html>body #publishdropmenu { display:none; position:absolute; }
-html>body #publishdropmenu,
-.ff-ft html>body #publishdropmenu * { list-style:none; width:200px; }
-html>body #publishdropmenu,
-.ff-ft html>body #publishdropmenu * { margin:0; padding:0; }
-.ff-ft html>body #publishdropmenu li { position: relative; }
-.ff-ft html>body #publishdropmenu ul { display:none; position:absolute; top:5px; left:190px; border-top:1px solid #B2B3CE; }
-.ff-ft html>body .navCell #publishdropmenu li:hover { background-color: #C2DBEB; }
+html>body .ff-ft .navCell:{publish_tab_selector} #publishdropmenu { {publish_tab_display} }
+html>body .ff-ft .navCell:{publish_tab_selector} #publishdropmenu ul { {publish_tab_ul_display} }
+html>body .ff-ft #publishdropmenu { display:none; position:absolute; }
+html>body .ff-ft #publishdropmenu,
+html>body .ff-ft #publishdropmenu * { list-style:none; width:200px; }
+html>body .ff-ft #publishdropmenu,
+html>body .ff-ft #publishdropmenu * { margin:0; padding:0; }
+html>body .ff-ft #publishdropmenu li { position: relative; }
+html>body .ff-ft #publishdropmenu ul { display:none; position:absolute; top:5px; left:190px; border-top:1px solid #B2B3CE; }
+html>body .ff-ft .navCell #publishdropmenu li:hover { background-color: #C2DBEB; }
 
-.ff-ft html>body .navCell:{sites_tab_selector} #sitesdropmenu { {sites_tab_display} }
-.ff-ft html>body .navCell:{sites_tab_selector} #sitesdropmenu ul { {sites_tab_ul_display} }
-.ff-ft html>body #sitesdropmenu { display:none; position:absolute; }
-html>body #sitesdropmenu,
-.ff-ft html>body #sitesdropmenu * { list-style:none; width:200px; }
-html>body #sitesdropmenu,
-.ff-ft html>body #sitesdropmenu * { margin:0; padding:0; }
-.ff-ft html>body #sitesdropmenu li { position: relative; }
-.ff-ft html>body #sitesdropmenu ul { display:none; position:absolute; top:5px; left:190px; border-top:1px solid #B2B3CE; }
-.ff-ft html>body .navCell #sitesdropmenu li:hover { background-color: #C2DBEB; }
+html>body .ff-ft .navCell:{sites_tab_selector} #sitesdropmenu { {sites_tab_display} }
+html>body .ff-ft .navCell:{sites_tab_selector} #sitesdropmenu ul { {sites_tab_ul_display} }
+html>body .ff-ft #sitesdropmenu { display:none; position:absolute; }
+html>body .ff-ft #sitesdropmenu,
+html>body .ff-ft #sitesdropmenu * { list-style:none; width:200px; }
+html>body .ff-ft #sitesdropmenu,
+html>body .ff-ft #sitesdropmenu * { margin:0; padding:0; }
+html>body .ff-ft #sitesdropmenu li { position: relative; }
+html>body .ff-ft #sitesdropmenu ul { display:none; position:absolute; top:5px; left:190px; border-top:1px solid #B2B3CE; }
+html>body .ff-ft .navCell #sitesdropmenu li:hover { background-color: #C2DBEB; }
 
-.ff-ft html>body .navCell:hover #boardsdropmenu { display:block; visibility: visible; }
-.ff-ft html>body .navCell:hover #boardsdropmenu ul { display:none; }
-.ff-ft html>body #boardsdropmenu { display:none; position:absolute; }
-html>body #boardsdropmenu,
-.ff-ft html>body #boardsdropmenu * { list-style:none; width: 275px;}
-html>body #boardsdropmenu,
-.ff-ft html>body #boardsdropmenu * { margin:0; padding:0; }
-.ff-ft html>body #boardsdropmenu li { position: relative; }
-.ff-ft html>body #boardsdropmenu ul { display:none; position:absolute; top:5px; left:190px; border-top:1px solid #B2B3CE; }
-.ff-ft html>body .navCell #boardsdropmenu li:hover { background-color: #C2DBEB; }
+html>body .ff-ft .navCell:hover #boardsdropmenu { display:block; visibility: visible; }
+html>body .ff-ft .navCell:hover #boardsdropmenu ul { display:none; }
+html>body .ff-ft #boardsdropmenu { display:none; position:absolute; }
+html>body .ff-ft #boardsdropmenu,
+html>body .ff-ft #boardsdropmenu * { list-style:none; width: 275px;}
+html>body .ff-ft #boardsdropmenu,
+html>body .ff-ft #boardsdropmenu * { margin:0; padding:0; }
+html>body .ff-ft #boardsdropmenu li { position: relative; }
+html>body .ff-ft #boardsdropmenu ul { display:none; position:absolute; top:5px; left:190px; border-top:1px solid #B2B3CE; }
+html>body .ff-ft .navCell #boardsdropmenu li:hover { background-color: #C2DBEB; }
 .ff-ft .altTabs {
 	cursor: pointer;
 	background: #546167 url(images/alt_tab_inactive.gif) repeat-x left bottom;
@@ -812,7 +808,7 @@ html>body #boardsdropmenu,
 .ff-ft .altTabSelected { 
 	font-size: 12px; 
 	color: #666; 
-	background: #fff url(images/alt_tab_selected.gif) right top no-repeat;  
+	background: #fff url(images/alt_tab_selected.gif) right top no-repeat;	
 	padding: 8px 4px 3px 4px; 
 	margin: 0; 
 	text-align: center; 
@@ -864,7 +860,7 @@ html>body #boardsdropmenu,
 	text-decoration: none; 
 	white-space: nowrap; 
 }
-.ff-ft .htmlButtonA  a:visited { 
+.ff-ft .htmlButtonA	 a:visited { 
 	text-decoration: none; 
 }
 .ff-ft .htmlButtonA a:active { 
@@ -881,7 +877,7 @@ html>body #boardsdropmenu,
 	text-decoration: none; 
 	white-space: nowrap; 
 }
-.ff-ft .htmlButtonB  a:visited { 
+.ff-ft .htmlButtonB	 a:visited { 
 	text-decoration: none; 
 }
 .ff-ft .htmlButtonB a:active { 
