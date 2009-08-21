@@ -2986,7 +2986,7 @@ class Fieldframe_Multi_Fieldtype extends Fieldframe_Fieldtype {
 	{
 		global $TMPL;
 
-		$this->prep_field_data($field_data);
+		Fieldframe_Multi_Fieldtype::prep_field_data($field_data);
 		$r = '';
 
 		if ($field_settings['options'])
