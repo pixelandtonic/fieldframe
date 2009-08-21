@@ -188,20 +188,4 @@ class Ff_select extends Fieldframe_Multi_Fieldtype {
 		return $field_settings['options'][$field_data];
 	}
 
-	/**
-	 * All Options
-	 *
-	 * @param  array   $params          Name/value pairs from the opening tag
-	 * @param  string  $tagdata         Chunk of tagdata between field tag pairs
-	 * @param  string  $field_data      Currently saved field value
-	 * @param  array   $field_settings  The field's settings
-	 * @return string  relationship references
-	 */
-	function all_options($params, $tagdata, $field_data, $field_settings)
-	{
-		$this->prep_field_data($field_data);
-
-		return parent::all_options($params, $tagdata, array($field_data), $field_settings);
-	}
-
 }
