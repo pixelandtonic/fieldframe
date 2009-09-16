@@ -2278,8 +2278,8 @@ class Fieldframe_Main {
 			$r = is_array($this->field_data) ? ($this->field_data ? '1' : '0') : $this->field_data;
 		}
 
-		// remove delimiters from $r
-		$r = str_replace(array(LD,RD), array('',''), $r);
+		// tidy up $r
+		$r = addslashes(str_replace(array(LD,RD), array('',''), $r));
 
 		return $matches[1].'"'.$r.'"'.$matches[7];
 	}
