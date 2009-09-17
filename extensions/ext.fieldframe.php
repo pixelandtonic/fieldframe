@@ -2878,6 +2878,19 @@ class Fieldframe_Multi_Fieldtype extends Fieldframe_Fieldtype {
 		}
 	}
 
+	function _find_option($needle, $haystack)
+	{
+		foreach ($haystack as $key => $value)
+		{
+			$r = $value;
+			if ($needle === $key OR (is_array($value) AND (($r = $this->_find_option($needle, $value)) !== FALSE)))
+			{
+				return $r;
+			}
+		}
+		return FALSE;
+	}
+
 	/**
 	 * Display Tag
 	 *
@@ -2919,13 +2932,13 @@ class Fieldframe_Multi_Fieldtype extends Fieldframe_Fieldtype {
 
 			foreach($field_data as $option_name)
 			{
-				if (isset($field_settings['options'][$option_name]))
+				if (($option = $this->_find_option($option_name, $field_settings['options'])) !== FALSE)
 				{
 					// copy $tagdata
 					$option_tagdata = $tagdata;
 
 					// simple var swaps
-					$option_tagdata = $TMPL->swap_var_single('option', $field_settings['options'][$option_name], $option_tagdata);
+					$option_tagdata = $TMPL->swap_var_single('option', $option, $option_tagdata);
 					$option_tagdata = $TMPL->swap_var_single('option_name', $option_name, $option_tagdata);
 
 					// parse {switch} and {count} tags
@@ -2985,7 +2998,7 @@ class Fieldframe_Multi_Fieldtype extends Fieldframe_Fieldtype {
 	 * @param  array   $field_settings  The field's settings
 	 * @return string  Modified $tagdata
 	 */
-	function all_options($params, $tagdata, $field_data, $field_settings)
+	function all_options($params, $tagdata, $field_data, $field_settings, $iterator_count = 0)
 	{
 		global $TMPL;
 
@@ -3009,21 +3022,29 @@ class Fieldframe_Multi_Fieldtype extends Fieldframe_Fieldtype {
 
 			// prepare for {switch} and {count} tags
 			$this->prep_iterators($tagdata);
+			$this->_iterator_count += $iterator_count;
 
 			foreach($field_settings['options'] as $option_name => $option)
 			{
-				// copy $tagdata
-				$option_tagdata = $tagdata;
+				if (is_array($option))
+				{
+					$r .= $this->all_options(array_merge($params, array('backspace' => '0')), $tagdata, $field_data, array('options' => $option), $this->_iterator_count);
+				}
+				else
+				{
+					// copy $tagdata
+					$option_tagdata = $tagdata;
 
-				// simple var swaps
-				$option_tagdata = $TMPL->swap_var_single('option', $option, $option_tagdata);
-				$option_tagdata = $TMPL->swap_var_single('option_name', $option_name, $option_tagdata);
-				$option_tagdata = $TMPL->swap_var_single('selected', (in_array($option_name, $field_data) ? 1 : 0), $option_tagdata);
+					// simple var swaps
+					$option_tagdata = $TMPL->swap_var_single('option', $option, $option_tagdata);
+					$option_tagdata = $TMPL->swap_var_single('option_name', $option_name, $option_tagdata);
+					$option_tagdata = $TMPL->swap_var_single('selected', (in_array($option_name, $field_data) ? 1 : 0), $option_tagdata);
 
-				// parse {switch} and {count} tags
-				$this->parse_iterators($option_tagdata);
+					// parse {switch} and {count} tags
+					$this->parse_iterators($option_tagdata);
 
-				$r .= $option_tagdata;
+					$r .= $option_tagdata;
+				}
 			}
 
 			if ($params['backspace'])
@@ -3048,7 +3069,7 @@ class Fieldframe_Multi_Fieldtype extends Fieldframe_Fieldtype {
 	{
 		$this->prep_field_data($field_data);
 
-		return (isset($params['option']) AND in_array($params['option'], $field_data)) ? 1 : 0;
+		return (isset($params['option']) AND $this->_find_option($params['option'], $field_settings['options']) !== FALSE) ? 1 : 0;
 	}
 
 }
