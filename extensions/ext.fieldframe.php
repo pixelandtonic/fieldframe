@@ -3069,7 +3069,7 @@ class Fieldframe_Multi_Fieldtype extends Fieldframe_Fieldtype {
 	{
 		$this->prep_field_data($field_data);
 
-		return (isset($params['option']) AND $this->_find_option($params['option'], $field_settings['options']) !== FALSE) ? 1 : 0;
+		return (isset($params['option']) AND in_array($params['option'], $field_data)) ? 1 : 0;
 	}
 
 }
