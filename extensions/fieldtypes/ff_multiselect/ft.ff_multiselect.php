@@ -19,7 +19,7 @@ class Ff_multiselect extends Fieldframe_Multi_Fieldtype {
 	 */
 	var $info = array(
 		'name'     => 'FF Multi-select',
-		'version'  => '1.3.0',
+		'version'  => '1.3.4',
 		'docs_url' => 'http://brandon-kelly.com/fieldframe/docs/ff-multi-select',
 		'no_lang'  => TRUE
 	);
