@@ -2281,7 +2281,7 @@ class Fieldframe_Main {
 		// tidy up $r
 		$r = addslashes(str_replace(array(LD,RD), array('',''), $r));
 
-		return $matches[1].'"'.$r.'"'.$matches[7];
+		return( $matches[1].'"'.$r.'"'.$matches[7]);
 	}
 
 	/**

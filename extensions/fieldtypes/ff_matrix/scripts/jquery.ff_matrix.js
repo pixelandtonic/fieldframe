@@ -41,6 +41,9 @@ $.fn.ffMatrix = function(fieldName, cellDefaults, maxRows) {
 				axis: 'y',
 				handle: '.sort',
 				opacity: 0.8,
+				start: function(event, ui) {
+					callback(obj, $(ui.item), 'onBeforeSortRow');
+				},
 				change: function(event, ui) {
 					resetRows(obj);
 					if (ui.item.rowIndex % 2) ui.helper.find('.td').removeClass('tableCellOne').addClass('tableCellTwo');
@@ -67,12 +70,23 @@ $.fn.ffMatrix = function(fieldName, cellDefaults, maxRows) {
 };
 
 
-$.fn.ffMatrix.lang = {};
-$.fn.ffMatrix.useTableDnD = false;
+$.extend($.fn.ffMatrix, {
+	lang: {},
+	useTableDnD: false,
 
-$.fn.ffMatrix.onDisplayCell = {};
-$.fn.ffMatrix.onSortRow = {};
-$.fn.ffMatrix.onDeleteRow = {};
+	onDisplayCell: {},
+	onBeforeSortRow: {},
+	onSortRow: {},
+	onDeleteRow: {}
+});
+
+//$.fn.ffMatrix.lang = {};
+//$.fn.ffMatrix.useTableDnD = false;
+//
+//$.fn.ffMatrix.onDisplayCell = {};
+//$.fn.ffMatrix.onSortRow = {};
+//$.fn.ffMatrix.onSortRow = {};
+//$.fn.ffMatrix.onDeleteRow = {};
 
 
 function addButtons(obj, $tr) {
