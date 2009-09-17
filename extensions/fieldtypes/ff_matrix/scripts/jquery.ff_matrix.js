@@ -80,14 +80,6 @@ $.extend($.fn.ffMatrix, {
 	onDeleteRow: {}
 });
 
-//$.fn.ffMatrix.lang = {};
-//$.fn.ffMatrix.useTableDnD = false;
-//
-//$.fn.ffMatrix.onDisplayCell = {};
-//$.fn.ffMatrix.onSortRow = {};
-//$.fn.ffMatrix.onSortRow = {};
-//$.fn.ffMatrix.onDeleteRow = {};
-
 
 function addButtons(obj, $tr) {
 	// Sort button
