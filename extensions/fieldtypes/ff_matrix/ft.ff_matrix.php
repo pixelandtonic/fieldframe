@@ -909,6 +909,9 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 	 */
 	function total_rows($params, $tagdata, $field_data, $field_settings)
 	{
+		// apparently count('') will return 1
+		if ( ! $field_data) return 0;
+
 		$this->params = $params;
 		$this->tagdata = $tagdata;
 		$this->field_settings = $field_settings;
