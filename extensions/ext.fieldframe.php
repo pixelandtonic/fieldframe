@@ -824,7 +824,7 @@ class Fieldframe_Main {
 	 */
 	function _group_inputs($name_prefix, $settings)
 	{
-		return preg_replace('/(name=[\'"])([^\'"\[\]]+)([^\'"]*)([\'"])/i', '$1'.$name_prefix.'[$2]$3$4', $settings);
+		return preg_replace('/(name=([\'\"]))([^\'"\[\]]+)([^\'"]*)(\2)/i', '$1'.$name_prefix.'[$3]$4$5', $settings);
 	}
 
 	/**
@@ -1701,8 +1701,8 @@ class Fieldframe_Main {
 						$formatting_search = 'block';
 						$formatting_replace = 'none';
 					}
-					$r = preg_replace('/(\sid\s*=\s*[\'\"]formatting_block[\'\"].*display\s*:\s*)'.$formatting_search.'(\s*;)/isU', '$1'.$formatting_replace.'$2', $r);
-					$r = preg_replace('/(\sid\s*=\s*[\'\"]formatting_unavailable[\'\"].*display\s*:\s*)'.$formatting_replace.'(\s*;)/isU', '$1'.$formatting_search.'$2', $r);
+					$r = preg_replace('/(\sid\s*=\s*([\'\"])formatting_block\2.*display\s*:\s*)'.$formatting_search.'(\s*;)/isU', '$1'.$formatting_replace.'$3', $r);
+					$r = preg_replace('/(\sid\s*=\s*([\'\"])formatting_unavailable\2.*display\s*:\s*)'.$formatting_replace.'(\s*;)/isU', '$1'.$formatting_search.'$3', $r);
 
 					// show/hide direction
 					if ($ftype->_field_settings['direction_available'])
@@ -1715,8 +1715,8 @@ class Fieldframe_Main {
 						$direction_search = 'block';
 						$direction_replace = 'none';
 					}
-					$r = preg_replace('/(\sid\s*=\s*[\'\"]direction_available[\'\"].*display\s*:\s*)'.$direction_search.'(\s*;)/isU', '$1'.$direction_replace.'$2', $r);
-					$r = preg_replace('/(\sid\s*=\s*[\'\"]direction_unavailable[\'\"].*display\s*:\s*)'.$direction_replace.'(\s*;)/isU', '$1'.$direction_search.'$2', $r);
+					$r = preg_replace('/(\sid\s*=\s*([\'\"])direction_available\2.*display\s*:\s*)'.$direction_search.'(\s*;)/isU', '$1'.$direction_replace.'$3', $r);
+					$r = preg_replace('/(\sid\s*=\s*([\'\"])direction_unavailable\2.*display\s*:\s*)'.$direction_replace.'(\s*;)/isU', '$1'.$direction_search.'$3', $r);
 				}
 			}
 			$rows = $this->_group_ftype_inputs($ftype_id, $rows);
@@ -2207,11 +2207,11 @@ class Fieldframe_Main {
 				$params = isset($field['ftype']->default_tag_params)
 				  ?  $field['ftype']->default_tag_params
 				  :  array();
-				if (isset($matches[4][0]) AND $matches[4][0] AND preg_match_all('/\s+([\w:]+)\s*=\s*[\'\"]([^\'\"]*)[\'\"]/sU', $matches[4][0], $param_matches))
+				if (isset($matches[4][0]) AND $matches[4][0] AND preg_match_all('/\s+([\w:]+)\s*=\s*([\'\"])([^\2]*)\2/sU', $matches[4][0], $param_matches))
 				{
 					for ($j = 0; $j < count($param_matches[0]); $j++)
 					{
-						$params[$param_matches[1][$j]] = $param_matches[2][$j];
+						$params[$param_matches[1][$j]] = $param_matches[3][$j];
 					}
 				}
 
@@ -2732,7 +2732,7 @@ class Fieldframe_Fieldtype {
 	{
 		// find {switch} tags
 		$this->_switches = array();
-		$tagdata = preg_replace_callback('/'.LD.'switch\s*=\s*[\'\"]([^\'\"]+)[\'\"]'.RD.'/sU', array(&$this, '_get_switch_options'), $tagdata);
+		$tagdata = preg_replace_callback('/'.LD.'switch\s*=\s*([\'\"])([^\1]+)\1'.RD.'/sU', array(&$this, '_get_switch_options'), $tagdata);
 
 		$this->_count_tag = 'count';
 		$this->_iterator_count = 0;
@@ -2743,7 +2743,7 @@ class Fieldframe_Fieldtype {
 		global $FNS;
 
 		$marker = LD.'SWITCH['.$FNS->random('alpha', 8).']SWITCH'.RD;
-		$this->_switches[] = array('marker' => $marker, 'options' => explode('|', $match[1]));
+		$this->_switches[] = array('marker' => $marker, 'options' => explode('|', $match[2]));
 		return $marker;
 	}
 
