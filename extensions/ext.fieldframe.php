@@ -2695,7 +2695,7 @@ class Fieldframe_Fieldtype {
 		$options = preg_split('/[\r\n]+/', $options);
 		foreach($options as &$option)
 		{
-			$option_parts = explode(':', $option);
+			$option_parts = preg_split('/\s:\s/', $option, 2);
 			$option = array();
 			$option['indent'] = preg_match('/^\s+/', $option_parts[0], $matches) ? strlen(str_replace("\t", '    ', $matches[0])) : 0;
 			$option['name']   = trim($option_parts[0]);
