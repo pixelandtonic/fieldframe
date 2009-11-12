@@ -29,7 +29,7 @@ $L = array(
 'URL to your &ldquo;fieldtypes&rdquo; folder',
 
 'fieldtypes_url_subtext' =>
-'<i>ex:</i> &nbsp;http://www.example.com/system/extensions/fieldtypes/',
+'<i>ex:</i> &nbsp;/system/extensions/fieldtypes/',
 
 'fieldtypes_path_label' =>
 'Path to your &ldquo;fieldtypes&rdquo; folder',
