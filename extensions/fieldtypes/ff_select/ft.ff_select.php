@@ -185,7 +185,25 @@ class Ff_select extends Fieldframe_Multi_Fieldtype {
 	{
 		$this->prep_field_data($field_data);
 
-		return $field_settings['options'][$field_data];
+		return $this->find_label($field_data, $field_settings['options']);
+
+		return isset($field_settings['options'][$field_data]) ? $field_settings['options'][$field_data] : '';
+	}
+
+	private function find_label($field_data, $options)
+	{
+		foreach($options as $name => $label)
+		{
+			if (is_array($label) && ($sublabel = $this->find_label($field_data, $label)) !== FALSE)
+			{
+				return $sublabel;
+			}
+			else if ($field_data === $name)
+			{
+				return $label;
+			}
+		}
+		return FALSE;
 	}
 
 }
