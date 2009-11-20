@@ -2107,7 +2107,7 @@ class Fieldframe_Main {
 			{
 				foreach(array_unique($snippets) as $snippet)
 				{
-					$tagdata .= NL.$snippet.NL;
+					$tagdata .= "\n".$snippet."\n";
 				}
 			}
 		//}
