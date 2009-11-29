@@ -1040,7 +1040,7 @@ class Ff_matrix_date extends Fieldframe_Fieldtype {
 	function save_cell($cell_data, $cell_settings)
 	{
 		global $LOC;
-		return $cell_data ? $LOC->convert_human_date_to_gmt($cell_data) : '';
+		return $cell_data ? strval($LOC->convert_human_date_to_gmt($cell_data)) : '';
 	}
 
 	function display_tag($params, $tagdata, $field_data, $field_settings)
