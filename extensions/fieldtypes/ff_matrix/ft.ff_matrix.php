@@ -756,7 +756,7 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 
 		$r = '';
 
-		if ($this->field_settings['cols'] AND $field_data)
+		if ($this->field_settings['cols'] AND $field_data AND is_array($field_data))
 		{
 			// get the col names
 			$col_ids_by_name = array();
