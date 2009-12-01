@@ -32,6 +32,8 @@ class Ff_checkbox extends Fieldframe_Fieldtype {
 		'label' => ''
 	);
 
+	const CHECKED_VALUE = 'y';
+
 	/**
 	 * Display Field Settings
 	 * 
@@ -78,10 +80,10 @@ class Ff_checkbox extends Fieldframe_Fieldtype {
 	{
 		global $DSP;
 
-		$checked = $field_data == 'y' ? 1 : 0;
+		$checked = $field_data == Ff_checkbox::CHECKED_VALUE ? 1 : 0;
 		$r = $DSP->input_hidden($field_name, 'n')
 		   . '<label style="display:block; margin:3px 0 7px;">'
-		   . $DSP->input_checkbox($field_name, 'y', $checked)
+		   . $DSP->input_checkbox($field_name, Ff_checkbox::CHECKED_VALUE, $checked)
 		   . NBS.$field_settings['label']
 		   . '</label> ';
 
@@ -97,7 +99,7 @@ class Ff_checkbox extends Fieldframe_Fieldtype {
 	 */
 	function save_field($field_data, $field_settings)
 	{
-		return $field_data == 'y' ? 'y' : '';
+		return $field_data == Ff_checkbox::CHECKED_VALUE ? Ff_checkbox::CHECKED_VALUE : '';
 	}
 
 	/**
