@@ -33,9 +33,9 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 		'cellpadding' => '10',
 		'orderby'     => '',
 		'sort'        => 'asc',
-		'offset'      => '0',
-		'limit'       => '0',
-		'backspace'   => '0'
+		'offset'      => '',
+		'limit'       => '',
+		'backspace'   => ''
 	);
 
 	var $postpone_saves = TRUE;
@@ -807,6 +807,8 @@ class Ff_matrix extends Fieldframe_Fieldtype {
 
 			if ($this->params['offset'] OR $this->params['limit'])
 			{
+				if ($this->params['offset'] === '') $this->params['offset'] = '0';
+				if ($this->params['limit'] === '') $this->params['limit'] = '0';
 				$limit = $this->params['limit'] ? $this->params['limit'] : count($field_data);
 				$field_data = array_splice($field_data, $this->params['offset'], $limit);
 			}
