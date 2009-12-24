@@ -1676,12 +1676,13 @@ class Fieldframe_Main {
 
 				foreach($ftype->_field_settings['rows'] as $index => $row)
 				{
+					$class = $index % 2 ? 'tableCellOne' : 'tableCellTwo';
 					$rows .= '<tr id="'.$ftype_id.'_row'.($index+1).'"' . ($selected ? '' : ' style="display:none;"') . '>'
-					       . '<td class="tableCellOne"'.(isset($row[1]) ? '' : ' colspan="2"').'>'
+					       . '<td class="'.$class.'"'.(isset($row[1]) ? '' : ' colspan="2"').'>'
 					       . $row[0]
 					       . $DSP->td_c()
 					       . (isset($row[1])
-					            ?  $DSP->td('tableCellOne')
+					            ?  $DSP->td($class)
 					             . $row[1]
 					             . $DSP->td_c()
 					             . $DSP->tr_c()
