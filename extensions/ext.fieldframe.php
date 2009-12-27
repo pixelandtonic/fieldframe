@@ -2130,7 +2130,7 @@ class Fieldframe_Main {
 	 * @return string              Modified $tagdata
 	 * @see    http://expressionengine.com/developers/extension_hooks/weblog_entries_tagdata/
 	 */
-	function weblog_entries_tagdata($tagdata, $row=array(), &$weblog=NULL)
+	function weblog_entries_tagdata($tagdata, $row=array(), $weblog=NULL)
 	{
 		global $REGX;
 
