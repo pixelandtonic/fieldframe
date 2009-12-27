@@ -1679,11 +1679,11 @@ class Fieldframe_Main {
 					$class = $index % 2 ? 'tableCellOne' : 'tableCellTwo';
 					$rows .= '<tr id="'.$ftype_id.'_row'.($index+1).'"' . ($selected ? '' : ' style="display:none;"') . '>'
 					       . '<td class="'.$class.'"'.(isset($row[1]) ? '' : ' colspan="2"').'>'
-					       . $row[0]
+					       . $this->_group_ftype_inputs($ftype_id, $row[0])
 					       . $DSP->td_c()
 					       . (isset($row[1])
 					            ?  $DSP->td($class)
-					             . $row[1]
+					             . $this->_group_ftype_inputs($ftype_id, $row[1])
 					             . $DSP->td_c()
 					             . $DSP->tr_c()
 					            : '');
@@ -1720,7 +1720,6 @@ class Fieldframe_Main {
 					$r = preg_replace('/(\sid\s*=\s*([\'\"])direction_unavailable\2.*display\s*:\s*)'.$direction_replace.'(\s*;)/isU', '$1'.$direction_search.'$3', $r);
 				}
 			}
-			$rows = $this->_group_ftype_inputs($ftype_id, $rows);
 
 			$r = preg_replace('/(<tr>\s*<td[^>]*>\s*<div[^>]*>\s*'.$LANG->line('deft_field_formatting').'\s*<\/div>)/is', $rows.'$1', $r);
 		}
