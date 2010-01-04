@@ -76,7 +76,7 @@
  *                         Improved the serialize method to use a default (and settable) regular expression.
  *                         Added tableDnDupate() and tableDnDSerialize() to be called when you are outside the table
  */
-jQuery.tableDnD = {
+;jQuery.tableDnD = {
     /** Keep hold of the current table being dragged */
     currentTable : null,
     /** Keep hold of the current drag object if any */

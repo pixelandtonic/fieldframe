@@ -321,7 +321,7 @@ class Fieldframe_Main {
 		if ( ! defined('FT_URL') AND ($ft_path = isset($PREFS->core_ini['ft_url']) ? $PREFS->core_ini['ft_url'] : $this->settings['fieldtypes_url']))
 		{
 			define('FT_URL', $ft_path);
-			$this->snippets['body'][] = '<script type="text/javascript">FT_URL = "'.FT_URL.'";</script>';
+			$this->snippets['body'][] = '<script type="text/javascript">;FT_URL = "'.FT_URL.'";</script>';
 		}
 	}
 
@@ -1149,7 +1149,7 @@ class Fieldframe_Main {
 			ob_start();
 ?>
 <script type="text/javascript" charset="utf-8">
-	var urlParts = document.location.href.split('#'),
+	;var urlParts = document.location.href.split('#'),
 		anchor = urlParts[1];
 	function ffEnable(ft) {
 		ft.show.className = "toggle show";
@@ -2663,7 +2663,7 @@ class Fieldframe_Fieldtype {
 
 	function insert_js($js)
 	{
-		$this->insert('body', '<script type="text/javascript">'.NL.$js.NL.'</script>');
+		$this->insert('body', '<script type="text/javascript">;'.NL.$js.NL.'</script>');
 	}
 
 	function include_css($filename)

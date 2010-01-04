@@ -1,4 +1,4 @@
-(function($){
+;(function($){
 
 
 $.fn.ffMatrix = new Object();

@@ -1,4 +1,4 @@
-(function($){
+;(function($){
 
 
 $.fn.ffMatrix = function(fieldName, cellDefaults, maxRows) {
