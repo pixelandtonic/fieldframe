@@ -2151,7 +2151,7 @@ class Fieldframe_Main {
 				);
 			}
 
-			$this->_parse_tagdata($this->tagdata, $fields_by_name);
+			$this->_parse_tagdata($this->tagdata, $fields_by_name, TRUE);
 		}
 
 		// unset temporary helper vars
@@ -2174,12 +2174,13 @@ class Fieldframe_Main {
 	 * @param  object  $ftype  The field's fieldtype object
 	 * @access private
 	 */
-	function _parse_tagdata(&$tagdata, $fields)
+	function _parse_tagdata(&$tagdata, $fields, $skip_unmatched_tags = FALSE)
 	{
 		global $DSP;
 
 		// find the next ftype tag
-		while (preg_match('/'.LD.'('.implode('|', array_keys($fields)).')(:(\w+))?(\s+.*)?'.RD.'/sU', $tagdata, $matches, PREG_OFFSET_CAPTURE))
+		$offset = 0;
+		while (preg_match('/'.LD.'('.implode('|', array_keys($fields)).')(:(\w+))?(\s+.*)?'.RD.'/sU', $tagdata, $matches, PREG_OFFSET_CAPTURE, $offset))
 		{
 			$field_name = $matches[1][0];
 			$field = $fields[$field_name];
@@ -2203,48 +2204,61 @@ class Fieldframe_Main {
 			}
 			else
 			{
-				// get the params
-				$params = isset($field['ftype']->default_tag_params)
-				  ?  $field['ftype']->default_tag_params
-				  :  array();
-				if (isset($matches[4][0]) AND $matches[4][0] AND preg_match_all('/\s+([\w:]+)\s*=\s*([\'\"])([^\2]*)\2/sU', $matches[4][0], $param_matches))
-				{
-					for ($j = 0; $j < count($param_matches[0]); $j++)
-					{
-						$params[$param_matches[1][$j]] = $param_matches[3][$j];
-					}
-				}
-
-				// is this a tag pair?
-				$field_tagdata = ($endtag_pos !== FALSE)
-				  ?  substr($tagdata, $tagdata_pos, $endtag_pos - $tagdata_pos)
-				  :  '';
-
 				if ( ! $tag_func) $tag_func = 'display_tag';
+				$method_exists = method_exists($field['ftype'], $tag_func);
 
-				if (method_exists($field['ftype'], $tag_func))
+				if ($method_exists || ! $skip_unmatched_tags)
 				{
-					foreach($field['helpers'] as $name => $value)
+					// get the params
+					$params = isset($field['ftype']->default_tag_params)
+					  ?  $field['ftype']->default_tag_params
+					  :  array();
+					if (isset($matches[4][0]) AND $matches[4][0] AND preg_match_all('/\s+([\w:]+)\s*=\s*([\'\"])([^\2]*)\2/sU', $matches[4][0], $param_matches))
 					{
-						$this->$name = $value;
+						for ($j = 0; $j < count($param_matches[0]); $j++)
+						{
+							$params[$param_matches[1][$j]] = $param_matches[3][$j];
+						}
 					}
 
-					$new_tagdata = call_user_func_array(array(&$field['ftype'], $tag_func), array($params, $field_tagdata, $field['data'], $field['settings']));
+					// is this a tag pair?
+					$field_tagdata = ($endtag_pos !== FALSE)
+					  ?  substr($tagdata, $tagdata_pos, $endtag_pos - $tagdata_pos)
+					  :  '';
 
-					foreach($field['helpers'] as $name => $value)
+					if ( ! $tag_func) $tag_func = 'display_tag';
+
+					if ($method_exists)
 					{
-						unset($this->$name);
+						foreach($field['helpers'] as $name => $value)
+						{
+							$this->$name = $value;
+						}
+
+						$new_tagdata = call_user_func_array(array(&$field['ftype'], $tag_func), array($params, $field_tagdata, $field['data'], $field['settings']));
+
+						foreach($field['helpers'] as $name => $value)
+						{
+							unset($this->$name);
+						}
 					}
-				}
-				else
-				{
-					$new_tagdata = $field['data'];
+					else
+					{
+						$new_tagdata = $field['data'];
+					}
 				}
 			}
 
-			$tagdata = substr($tagdata, 0, $tag_pos)
-			         . $new_tagdata
-			         . substr($tagdata, ($endtag_pos !== FALSE ? $endtag_pos+$endtag_len : $tagdata_pos));
+			$offset = $tag_pos + (isset($new_tagdata) ? strlen($new_tagdata) : $tag_len);
+
+			if (isset($new_tagdata))
+			{
+				$tagdata = substr($tagdata, 0, $tag_pos)
+				         . $new_tagdata
+				         . substr($tagdata, ($endtag_pos !== FALSE ? $endtag_pos+$endtag_len : $tagdata_pos));
+
+				unset($new_tagdata);
+			}
 		}
 
 		// conditionals
