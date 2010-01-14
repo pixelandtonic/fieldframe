@@ -1495,77 +1495,81 @@ class Fieldframe_Main {
 		}
 
 		// Add the JS
-		$r = $this->get_last_call($js);
-		$r = preg_replace('/(function\s+showhide_element\(\s*id\s*\)\s*{)/is', "
-		var prev_ftype_id = '{$prev_ftype_id}';
+		ob_start();
+?>
+var prev_ftype_id = '<?php echo $prev_ftype_id ?>';
 
-		$1
-			if (prev_ftype_id)
+	$1
+		if (prev_ftype_id)
+		{
+			var c=1, r=1;
+			while(cell = document.getElementById(prev_ftype_id+'_cell'+c))
 			{
-				var c=1, r=1;
-				while(cell = document.getElementById(prev_ftype_id+'_cell'+c))
+				cell.style.display = 'none';
+				c++;
+			}
+			while(row = document.getElementById(prev_ftype_id+'_row'+r))
+			{
+				row.style.display = 'none';
+				r++;
+			}
+		}
+
+		if (id.match(/^ftype_id_\d+$/))
+		{
+			var c=1, r=1;
+
+			// show cells
+			while(cell = document.getElementById(id+'_cell'+c))
+			{
+				//var showDiv = document.getElementById(id+'_cell'+c);
+				var divs = cell.parentNode.childNodes;
+				for(var i=0; i < divs.length; i++)
 				{
-					cell.style.display = 'none';
-					c++;
+					var div = divs[i];
+					if ( ! (div.nodeType == 1 && div.id)) continue;
+					div.style.display = (div == cell) ? 'block' : 'none';
 				}
-				while(row = document.getElementById(prev_ftype_id+'_row'+r))
-				{
-					row.style.display = 'none';
-					r++;
-				}
+				c++;
 			}
 
-			if (id.match(/^ftype_id_\d+$/))
+			// show rows
+			while(row = document.getElementById(id+'_row'+r))
 			{
-				var c=1, r=1;
+				row.style.display = 'table-row';
+				r++;
+			}
 
-				// show cells
-				while(cell = document.getElementById(id+'_cell'+c))
-				{
-					//var showDiv = document.getElementById(id+'_cell'+c);
-					var divs = cell.parentNode.childNodes;
-					for(var i=0; i<divs.length; i++)
-					{
-						var div = divs[i];
-						if ( ! (div.nodeType == 1 && div.id)) continue;
-						div.style.display = (div == cell) ? 'block' : 'none';
-					}
-					c++;
-				}
+			// show/hide formatting
+			if ([<?php echo implode(',', $formatting_available) ?>].indexOf(id.substring(9)) != -1)
+			{
+				document.getElementById('formatting_block').style.display = 'block';
+				document.getElementById('formatting_unavailable').style.display = 'none';
+			}
+			else
+			{
+				document.getElementById('formatting_block').style.display = 'none';
+				document.getElementById('formatting_unavailable').style.display = 'block';
+			}
 
-				// show rows
-				while(row = document.getElementById(id+'_row'+r))
-				{
-					row.style.display = 'table-row';
-					r++;
-				}
+			// show/hide direction
+			if ([<?php echo implode(',', $direction_available) ?>].indexOf(id.substring(9)) != -1)
+			{
+				document.getElementById('direction_available').style.display = 'block';
+				document.getElementById('direction_unavailable').style.display = 'none';
+			}
+			else
+			{
+				document.getElementById('direction_available').style.display = 'none';
+				document.getElementById('direction_unavailable').style.display = 'block';
+			}
 
-				// show/hide formatting
-				if ([".implode(',', $formatting_available)."].indexOf(id.substring(9)) != -1)
-				{
-					document.getElementById('formatting_block').style.display = 'block';
-					document.getElementById('formatting_unavailable').style.display = 'none';
-				}
-				else
-				{
-					document.getElementById('formatting_block').style.display = 'none';
-					document.getElementById('formatting_unavailable').style.display = 'block';
-				}
-
-				// show/hide direction
-				if ([".implode(',', $direction_available)."].indexOf(id.substring(9)) != -1)
-				{
-					document.getElementById('direction_available').style.display = 'block';
-					document.getElementById('direction_unavailable').style.display = 'none';
-				}
-				else
-				{
-					document.getElementById('direction_available').style.display = 'none';
-					document.getElementById('direction_unavailable').style.display = 'block';
-				}
-
-				prev_ftype_id = id;
-			}\n", $r);
+			prev_ftype_id = id;
+		}
+<?php
+		$r = $this->get_last_call($js);
+		$r = preg_replace('/(function\s+showhide_element\(\s*id\s*\)\s*{)/is', ob_get_contents(), $r);
+		ob_end_clean();
 
 		$args = func_get_args();
 		return $this->forward_ff_hook('publish_admin_edit_field_js', $args, $r);
