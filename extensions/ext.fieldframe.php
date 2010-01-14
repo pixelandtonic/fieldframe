@@ -1541,7 +1541,7 @@ class Fieldframe_Main {
 				}
 
 				// show/hide formatting
-				if ([".implode(',', $formatting_available)."].indexOf(id) != -1)
+				if ([".implode(',', $formatting_available)."].indexOf(id.substring(9)) != -1)
 				{
 					document.getElementById('formatting_block').style.display = 'block';
 					document.getElementById('formatting_unavailable').style.display = 'none';
@@ -1553,7 +1553,7 @@ class Fieldframe_Main {
 				}
 
 				// show/hide direction
-				if ([".implode(',', $direction_available)."].indexOf(id) != -1)
+				if ([".implode(',', $direction_available)."].indexOf(id.substring(9)) != -1)
 				{
 					document.getElementById('direction_available').style.display = 'block';
 					document.getElementById('direction_unavailable').style.display = 'none';
