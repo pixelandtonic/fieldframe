@@ -1541,7 +1541,7 @@ var prev_ftype_id = '<?php echo $prev_ftype_id ?>';
 			}
 
 			// show/hide formatting
-			if ([<?php echo implode(',', $formatting_available) ?>].indexOf(id.substring(9)) != -1)
+			if ([<?php echo implode(',', $formatting_available) ?>].indexOf(parseInt(id.substring(9))) != -1)
 			{
 				document.getElementById('formatting_block').style.display = 'block';
 				document.getElementById('formatting_unavailable').style.display = 'none';
@@ -1553,7 +1553,7 @@ var prev_ftype_id = '<?php echo $prev_ftype_id ?>';
 			}
 
 			// show/hide direction
-			if ([<?php echo implode(',', $direction_available) ?>].indexOf(id.substring(9)) != -1)
+			if ([<?php echo implode(',', $direction_available) ?>].indexOf(parseInt(id.substring(9))) != -1)
 			{
 				document.getElementById('direction_available').style.display = 'block';
 				document.getElementById('direction_unavailable').style.display = 'none';
