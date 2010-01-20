@@ -1032,7 +1032,12 @@ class Ff_matrix_date extends Fieldframe_Fieldtype {
 
 		$LANG->fetch_language_file('search');
 
-		$cell_data = ($cell_data AND is_numeric($cell_data)) ? $LOC->set_human_time($cell_data) : '';
+		$cell_data = $cell_data
+			? (is_numeric($cell_data)
+				? $LOC->set_human_time($cell_data)
+				: $LOC->set_human_time( strtotime($cell_data), FALSE))
+			: '';
+
 		$r = $DSP->input_text($cell_name, $cell_data, '', '23', '', '140px') . NBS
 		   . '<a style="cursor:pointer;" onclick="jQuery(this).prev().val(\''.$LOC->set_human_time($LOC->now).'\');" >'.$LANG->line('today').'</a>';
 
