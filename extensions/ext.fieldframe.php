@@ -2074,7 +2074,7 @@ var prev_ftype_id = '<?php echo $prev_ftype_id ?>';
 			}
 
 			// manually save it to the db
-			if ($entry_id)
+			if ($entry_id && (! isset($this->which) || $this->which == 'save'))
 			{
 				$DB->query($DB->update_string('exp_weblog_data', array($this->field_name => $_POST[$this->field_name]), 'entry_id = '.$entry_id));
 			}
