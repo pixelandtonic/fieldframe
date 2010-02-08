@@ -1619,7 +1619,17 @@ var prev_ftype_id = '<?php echo $prev_ftype_id ?>';
 	 */
 	function publish_admin_edit_field_type_cellone($data, $cell)
 	{
+		global $DSP;
+
 		$r = $this->_publish_admin_edit_field_type_cell($data, $cell, '1');
+
+		// formatting
+		foreach($this->_get_ftypes() as $class_name => $ftype)
+		{
+			$ftype_id = 'ftype_id_'.$ftype->_fieldtype_id;
+			$r .= $DSP->input_hidden('ftype['.$ftype_id.'][formatting_available]', ($ftype->_field_settings['formatting_available'] ? 'y' : 'n'));
+		}
+
 		$args = func_get_args();
 		return $this->forward_ff_hook('publish_admin_edit_field_type_cellone', $args, $r);
 	}
@@ -1755,6 +1765,17 @@ var prev_ftype_id = '<?php echo $prev_ftype_id ?>';
 				$settings = (isset($_POST['ftype']) AND isset($_POST['ftype'][$_POST['field_type']]))
 				  ?  $_POST['ftype'][$_POST['field_type']]
 				  :  array();
+
+				// formatting
+				if (isset($settings['formatting_available']))
+				{
+					if ($settings['formatting_available'] == 'n')
+					{
+						$_POST['field_fmt'] = 'none';
+						$_POST['field_show_fmt'] = 'n';
+					}
+					unset($settings['formatting_available']);
+				}
 
 				// initialize the fieldtype
 				$query = $DB->query('SELECT * FROM exp_ff_fieldtypes WHERE fieldtype_id = "'.$ftype_id.'"');
