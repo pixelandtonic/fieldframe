@@ -2004,10 +2004,12 @@ var prev_ftype_id = '<?php echo $prev_ftype_id ?>';
 	{
 		global $IN;
 
+		$this->which = $which;
+
 		// is this a quicksave/preview?
-		if (in_array($which, array('save', 'preview')))
+		if (in_array($this->which, array('save', 'preview')))
 		{
-			if ($which == 'preview')
+			if ($this->which == 'preview')
 			{
 				// submit_new_entry_start() doesn't get called on preview
 				// so fill in for it here
@@ -2017,6 +2019,8 @@ var prev_ftype_id = '<?php echo $prev_ftype_id ?>';
 			if ( ! $entry_id) $entry_id = $IN->GBL('entry_id');
 			$this->_postponed_save($entry_id);
 		}
+
+		unset($this->which);
 
 		$args = func_get_args();
 		return $this->forward_ff_hook('publish_form_start', $args);
