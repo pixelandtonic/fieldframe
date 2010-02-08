@@ -1468,10 +1468,12 @@ class Fieldframe_Main {
 		$direction_available = array();
 		$prev_ftype_id = '';
 
+		$this->data = $data;
+
 		foreach($this->_get_ftypes() as $class_name => $ftype)
 		{
 			$ftype_id = 'ftype_id_'.$ftype->_fieldtype_id;
-			$selected = ($ftype_id == $data['field_type']) ? TRUE : FALSE;
+			$selected = ($ftype_id == $this->data['field_type']) ? TRUE : FALSE;
 			if (method_exists($ftype, 'display_field_settings'))
 			{
 				// Load the language file
@@ -1479,7 +1481,7 @@ class Fieldframe_Main {
 
 				$field_settings = array_merge(
 					(isset($ftype->default_field_settings) ? $ftype->default_field_settings : array()),
-					($selected ? $this->_unserialize($data['ff_settings']) : array())
+					($selected ? $this->_unserialize($this->data['ff_settings']) : array())
 				);
 				$ftype->_field_settings = array_merge($field_settings_tmpl, $ftype->display_field_settings($field_settings));
 			}
@@ -1493,6 +1495,8 @@ class Fieldframe_Main {
 
 			if ($selected) $prev_ftype_id = $ftype_id;
 		}
+
+		unset($this->data);
 
 		// Add the JS
 		ob_start();
@@ -1755,7 +1759,7 @@ var prev_ftype_id = '<?php echo $prev_ftype_id ?>';
 				// initialize the fieldtype
 				$query = $DB->query('SELECT * FROM exp_ff_fieldtypes WHERE fieldtype_id = "'.$ftype_id.'"');
 				if ($query->row)
-				{	
+				{
 					// let the fieldtype modify the settings
 					if (($ftype = $this->_init_ftype($query->row)) !== FALSE)
 					{
