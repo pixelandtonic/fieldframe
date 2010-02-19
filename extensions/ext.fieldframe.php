@@ -2728,7 +2728,7 @@ class Fieldframe_Fieldtype {
 		$r = '';
 		foreach($options as $name => $label)
 		{
-			if ($r) $r .= "\n";
+			if ($r !== '') $r .= "\n";
 			$r .= $indent.$name;
 			if (is_array($label)) $r .= "\n".$this->options_setting($label, $indent.'    ');
 			else if ($name != $label) $r .= ' : '.$label;
@@ -2764,7 +2764,7 @@ class Fieldframe_Fieldtype {
 				$children = ( ! $total_levels OR $level < $total_levels)
 				              ?  $this->_structure_options($options, $total_levels, $level+1, $option['indent']+1)
 				              :  FALSE;
-				$r[$option['name']] = $children ? $children : $option['value'];
+				$r[(string)$option['name']] = $children ? $children : (string)$option['value'];
 			}
 			else if ($options[0]['indent'] <= $indent)
 			{
@@ -2930,7 +2930,7 @@ class Fieldframe_Multi_Fieldtype extends Fieldframe_Fieldtype {
 		foreach ($haystack as $key => $value)
 		{
 			$r = $value;
-			if ($needle === $key OR (is_array($value) AND (($r = $this->_find_option($needle, $value)) !== FALSE)))
+			if ($needle == $key OR (is_array($value) AND (($r = $this->_find_option($needle, $value)) !== FALSE)))
 			{
 				return $r;
 			}
