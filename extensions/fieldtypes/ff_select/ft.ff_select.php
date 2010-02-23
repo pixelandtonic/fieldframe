@@ -7,7 +7,7 @@ if ( ! defined('EXT')) exit('Invalid file request');
  * FF Select Class
  *
  * @package   FieldFrame
- * @author    Brandon Kelly <me@brandon-kelly.com>
+ * @author    Brandon Kelly <brandon@pixelandtonic.com>
  * @copyright Copyright (c) 2009 Brandon Kelly
  * @license   http://creativecommons.org/licenses/by-sa/3.0/ Attribution-Share Alike 3.0 Unported
  */
@@ -21,7 +21,7 @@ class Ff_select extends Fieldframe_Multi_Fieldtype {
 		'name'     => 'FF Select',
 		'version'  => '1.4',
 		'desc'     => 'A better drop-down list',
-		'docs_url' => 'http://brandon-kelly.com/fieldframe/docs/ff-select',
+		'docs_url' => 'http://pixelandtonic.com/fieldframe/docs/ff-select',
 		'no_lang'  => TRUE
 	);
 

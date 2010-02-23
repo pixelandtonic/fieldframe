@@ -7,7 +7,7 @@ if ( ! defined('EXT')) exit('Invalid file request');
  * FF Radio Group Class
  *
  * @package   FieldFrame
- * @author    Brandon Kelly <me@brandon-kelly.com>
+ * @author    Brandon Kelly <brandon@pixelandtonic.com>
  * @copyright Copyright (c) 2009 Brandon Kelly
  * @license   http://creativecommons.org/licenses/by-sa/3.0/ Attribution-Share Alike 3.0 Unported
  */
@@ -20,7 +20,7 @@ class Ff_radio_group extends Fieldframe_Multi_Fieldtype {
 	var $info = array(
 		'name'     => 'FF Radio Group',
 		'version'  => '1.4',
-		'docs_url' => 'http://brandon-kelly.com/fieldframe/docs/ff-radio-group',
+		'docs_url' => 'http://pixelandtonic.com/fieldframe/docs/ff-radio-group',
 		'no_lang'  => TRUE
 	);
 

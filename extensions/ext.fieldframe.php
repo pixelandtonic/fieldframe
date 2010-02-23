@@ -18,7 +18,7 @@ if ( ! defined('FF_CLASS'))
  * This extension provides a framework for ExpressionEngine fieldtype development.
  *
  * @package   FieldFrame
- * @author    Brandon Kelly <me@brandon-kelly.com>
+ * @author    Brandon Kelly <brandon@pixelandtonic.com>
  * @copyright Copyright (c) 2009 Brandon Kelly
  * @license   http://creativecommons.org/licenses/by-sa/3.0/ Attribution-Share Alike 3.0 Unported
  */
@@ -28,7 +28,7 @@ class Fieldframe {
 	var $version        = FF_VERSION;
 	var $description    = 'Fieldtype Framework';
 	var $settings_exist = 'y';
-	var $docs_url       = 'http://brandon-kelly.com/fieldframe/docs';
+	var $docs_url       = 'http://pixelandtonic.com/fieldframe/docs';
 
 	var $hooks = array(
 		'sessions_start' => array('priority' => 1),
@@ -2345,7 +2345,7 @@ var prev_ftype_id = '<?php echo $prev_ftype_id ?>';
 		if ($this->settings['check_for_updates'] == 'y')
 		{
 			// add FieldFrame source
-			$source = 'http://brandon-kelly.com/downloads/versions.xml';
+			$source = 'http://pixelandtonic.com/ee/versions.xml';
 			if ( ! in_array($source, $sources))
 			{
 				$sources[] = $source;
@@ -2402,7 +2402,7 @@ var prev_ftype_id = '<?php echo $prev_ftype_id ?>';
  * Provides FieldFrame settings-specific display methods
  *
  * @package  FieldFrame
- * @author   Brandon Kelly <me@brandon-kelly.com>
+ * @author   Brandon Kelly <brandon@pixelandtonic.com>
  */
 class Fieldframe_SettingsDisplay {
 
@@ -2685,7 +2685,7 @@ class Fieldframe_SettingsDisplay {
  * Provides FieldFrame fieldtypes with a couple handy methods
  *
  * @package  FieldFrame
- * @author   Brandon Kelly <me@brandon-kelly.com>
+ * @author   Brandon Kelly <brandon@pixelandtonic.com>
  */
 class Fieldframe_Fieldtype {
 
@@ -2820,7 +2820,7 @@ class Fieldframe_Fieldtype {
  * Provides Multi-select fieldtypes with their base functionality
  *
  * @package  FieldFrame
- * @author   Brandon Kelly <me@brandon-kelly.com>
+ * @author   Brandon Kelly <brandon@pixelandtonic.com>
  */
 class Fieldframe_Multi_Fieldtype extends Fieldframe_Fieldtype {
 
