@@ -2652,7 +2652,7 @@ class Fieldframe_SettingsDisplay {
 	function radio_group($name, $value, $options, $attr=array())
 	{
 		global $DSP;
-		$attr = array_merge($attr, array('extras'=>''));
+		$attr = array_merge(array('extras'=>''), $attr);
 		$r = '';
 		foreach($options as $option_value => $option_name)
 		{
