@@ -2282,7 +2282,7 @@ var prev_ftype_id = '<?php echo $prev_ftype_id ?>';
 				}
 			}
 
-			$offset = $tag_pos + (isset($new_tagdata) ? strlen($new_tagdata) : $tag_len);
+			$offset = $tag_pos + $tag_len;
 
 			if (isset($new_tagdata))
 			{
