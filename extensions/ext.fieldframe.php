@@ -2213,7 +2213,7 @@ var prev_ftype_id = '<?php echo $prev_ftype_id ?>';
 
 		// find the next ftype tag
 		$offset = 0;
-		while (preg_match('/'.LD.'('.implode('|', array_keys($fields)).')(:(\w+))?(\s+.*)?'.RD.'/sU', $tagdata, $matches, PREG_OFFSET_CAPTURE, $offset))
+		while (preg_match('/'.LD.'('.implode('|', array_keys($fields)).')(:([\w-]+))?(\s+.*)?'.RD.'/sU', $tagdata, $matches, PREG_OFFSET_CAPTURE, $offset))
 		{
 			$field_name = $matches[1][0];
 			$field = $fields[$field_name];
