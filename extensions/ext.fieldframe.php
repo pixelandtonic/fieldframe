@@ -2282,15 +2282,19 @@ var prev_ftype_id = '<?php echo $prev_ftype_id ?>';
 				}
 			}
 
-			$offset = $tag_pos + $tag_len;
-
 			if (isset($new_tagdata))
 			{
+				$offset = $tag_pos;
+
 				$tagdata = substr($tagdata, 0, $tag_pos)
 				         . $new_tagdata
 				         . substr($tagdata, ($endtag_pos !== FALSE ? $endtag_pos+$endtag_len : $tagdata_pos));
 
 				unset($new_tagdata);
+			}
+			else
+			{
+				$offset = $tag_pos + $tag_len;
 			}
 		}
 
