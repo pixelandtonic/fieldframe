@@ -36,10 +36,16 @@ class Ff_multiselect extends Fieldframe_Multi_Fieldtype {
 	 */
 	function display_field($field_name, $field_data, $field_settings)
 	{
+		global $DSP;
+
 		$this->prep_field_data($field_data);
 
 		$SD = new Fieldframe_SettingsDisplay();
-		return $SD->multiselect($field_name.'[]', $field_data, $field_settings['options'], array('width' => ';'));
+
+		$r = $DSP->input_hidden($field_name, 'n')
+		   . $SD->multiselect($field_name.'[]', $field_data, $field_settings['options'], array('width' => ';'));
+
+		return $r;
 	}
 
 	/**
@@ -53,6 +59,22 @@ class Ff_multiselect extends Fieldframe_Multi_Fieldtype {
 	function display_cell($cell_name, $cell_data, $cell_settings)
 	{
 		return $this->display_field($cell_name, $cell_data, $cell_settings);
+	}
+
+	/**
+	 * Save Field
+	 */
+	function save_field($field_data, $field_settings)
+	{
+		return $field_data == 'n' ? '' : $field_data;
+	}
+
+	/**
+	 * Save Cell
+	 */
+	function save_cell($cell_data, $cell_settings)
+	{
+		return $this->save_field($cell_data, $cell_settings);
 	}
 
 }
