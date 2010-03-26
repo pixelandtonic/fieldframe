@@ -2330,7 +2330,7 @@ var prev_ftype_id = '<?php echo $prev_ftype_id ?>';
 		}
 
 		// tidy up $r
-		$r = addslashes(str_replace(array(LD,RD), array('',''), $r));
+		$r = addslashes(str_replace(array(LD,RD,'"'), array('','',''), $r));
 
 		return $matches[1].'"'.$r.'"'.$matches[7];
 	}
