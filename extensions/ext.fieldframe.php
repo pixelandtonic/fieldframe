@@ -1451,6 +1451,7 @@ class Fieldframe_Main {
 	function publish_admin_edit_field_js($data, $js)
 	{
 		global $LANG, $REGX;
+		print_r($data); die();
 
 		// Fetch the FF lang file
 		$LANG->fetch_language_file('fieldframe');
@@ -1817,7 +1818,7 @@ var prev_ftype_id = '<?php echo $prev_ftype_id ?>';
 	 * @return string  The modified $out
 	 * @see    http://expressionengine.com/developers/extension_hooks/show_full_control_panel_end/
 	 */
-	function show_full_control_panel_start($out)
+	function show_full_control_panel_start($out = '')
 	{
 		global $IN, $DB, $REGX, $DSP;
 
@@ -1843,7 +1844,7 @@ var prev_ftype_id = '<?php echo $prev_ftype_id ?>';
 	 * @return string  The modified $out
 	 * @see    http://expressionengine.com/developers/extension_hooks/show_full_control_panel_end/
 	 */
-	function show_full_control_panel_end($out)
+	function show_full_control_panel_end($out == '')
 	{
 		global $IN, $DB, $REGX, $DSP, $LANG;
 
