@@ -39,7 +39,7 @@ class Ff_checkbox_group extends Fieldframe_Multi_Fieldtype {
 		global $DSP;
 
 		$this->prep_field_data($field_data);
-		$r = '';
+		$r = $DSP->input_hidden($field_name, 'n');
 
 		foreach($field_settings['options'] as $option_name => $option_label)
 		{
@@ -49,24 +49,9 @@ class Ff_checkbox_group extends Fieldframe_Multi_Fieldtype {
 			    . NBS.$option_label
 			    . '</label> ';
 		}
-		$r .= $DSP->input_hidden($field_name.'[]', 'temp')
-		    . '<div style="clear:left"></div>';
+		$r .= '<div style="clear:left"></div>';
 
 		return $r;
-	}
-
-	/**
-	 * Save Field
-	 *
-	 * @param  mixed   $field_data      The field's data
-	 * @param  array   $field_settings  The field's settings
-	 * @return string  Modified $field_data
-	 */
-	function save_field($field_data, $field_settings)
-	{
-		// remove the temp element
-		@array_pop($field_data);
-		return $field_data;
 	}
 
 	/**
@@ -80,6 +65,18 @@ class Ff_checkbox_group extends Fieldframe_Multi_Fieldtype {
 	function display_cell($cell_name, $cell_data, $cell_settings)
 	{
 		return $this->display_field($cell_name, $cell_data, $cell_settings);
+	}
+
+	/**
+	 * Save Field
+	 *
+	 * @param  mixed   $field_data      The field's data
+	 * @param  array   $field_settings  The field's settings
+	 * @return string  Modified $field_data
+	 */
+	function save_field($field_data, $field_settings)
+	{
+		return $field_data == 'n' ? '' : implode("\n", $field_data);
 	}
 
 	/**

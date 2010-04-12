@@ -2214,7 +2214,7 @@ var prev_ftype_id = '<?php echo $prev_ftype_id ?>';
 
 		// find the next ftype tag
 		$offset = 0;
-		while (preg_match('/'.LD.'('.implode('|', array_keys($fields)).')(:([\w-]+))?(\s+.*)?'.RD.'/sU', $tagdata, $matches, PREG_OFFSET_CAPTURE, $offset))
+		while (preg_match('/'.LD.'('.implode('|', array_keys($fields)).')(:(\w+))?(\s+.*)?'.RD.'/sU', $tagdata, $matches, PREG_OFFSET_CAPTURE, $offset))
 		{
 			$field_name = $matches[1][0];
 			$field = $fields[$field_name];
@@ -2247,7 +2247,7 @@ var prev_ftype_id = '<?php echo $prev_ftype_id ?>';
 					$params = isset($field['ftype']->default_tag_params)
 					  ?  $field['ftype']->default_tag_params
 					  :  array();
-					if (isset($matches[4][0]) AND $matches[4][0] AND preg_match_all('/\s+([\w:]+)\s*=\s*([\'\"])([^\2]*)\2/sU', $matches[4][0], $param_matches))
+					if (isset($matches[4][0]) AND $matches[4][0] AND preg_match_all('/\s+([\w-:]+)\s*=\s*([\'\"])([^\2]*)\2/sU', $matches[4][0], $param_matches))
 					{
 						for ($j = 0; $j < count($param_matches[0]); $j++)
 						{
