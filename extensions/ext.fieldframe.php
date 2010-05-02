@@ -2174,15 +2174,18 @@ var prev_ftype_id = '<?php echo $prev_ftype_id ?>';
 		if ($fields = $this->_get_fields())
 		{
 			$fields_by_name = array();
-			foreach($fields as $field_id => $field)
+			foreach($fields as $this->field_id => $this->field)
 			{
-				$fields_by_name[$field['name']] = array(
-					'data'     => (isset($row['field_id_'.$field_id]) ? $this->_unserialize($row['field_id_'.$field_id], FALSE) : ''),
-					'settings' => $field['settings'],
-					'ftype'    => $field['ftype'],
-					'helpers'  => array('field_id' => $field_id, 'field_name' => $field['name'])
+				$fields_by_name[$this->field['name']] = array(
+					'data'     => (isset($row['field_id_'.$this->field_id]) ? $this->_unserialize($row['field_id_'.$this->field_id], FALSE) : ''),
+					'settings' => $this->field['settings'],
+					'ftype'    => $this->field['ftype'],
+					'helpers'  => array('field_id' => $this->field_id, 'field_name' => $this->field['name'])
 				);
 			}
+
+			if (isset($this->field_id)) unset($this->field_id);
+			if (isset($this->field)) unset($this->field);
 
 			$this->_parse_tagdata($this->tagdata, $fields_by_name, TRUE);
 		}
