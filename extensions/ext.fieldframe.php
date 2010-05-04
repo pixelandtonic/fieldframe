@@ -1950,9 +1950,9 @@ var prev_ftype_id = '<?php echo $prev_ftype_id ?>';
 	 */
 	function _save_fields()
 	{
-		foreach($this->_get_fields() as $field_id => $field)
+		foreach($this->_get_fields() as $this->field_id => $field)
 		{
-			$this->field_name = 'field_id_'.$field_id;
+			$this->field_name = 'field_id_'.$this->field_id;
 
 			if (isset($_POST[$this->field_name]))
 			{
@@ -1962,7 +1962,7 @@ var prev_ftype_id = '<?php echo $prev_ftype_id ?>';
 					{
 						// save it for later
 						$field['data'] = $_POST[$this->field_name];
-						$this->postponed_saves[$field_id] = $field;
+						$this->postponed_saves[$this->field_id] = $field;
 
 						// prevent the system from overwriting the current data
 						unset($_POST[$this->field_name]);
@@ -1994,6 +1994,7 @@ var prev_ftype_id = '<?php echo $prev_ftype_id ?>';
 			}
 		}
 
+		if (isset($this->field_id)) unset($this->field_id);
 		if (isset($this->field_name)) unset($this->field_name);
 	}
 
@@ -2060,9 +2061,9 @@ var prev_ftype_id = '<?php echo $prev_ftype_id ?>';
 	{
 		global $DB;
 
-		foreach($this->postponed_saves as $field_id => $field)
+		foreach($this->postponed_saves as $this->field_id => $field)
 		{
-			$this->field_name = 'field_id_'.$field_id;
+			$this->field_name = 'field_id_'.$this->field_id;
 
 			$_POST[$this->field_name] = $field['ftype']->save_field($field['data'], $field['settings'], $entry_id);
 
@@ -2080,6 +2081,7 @@ var prev_ftype_id = '<?php echo $prev_ftype_id ?>';
 			}
 		}
 
+		if (isset($this->field_id)) unset($this->field_id);
 		if (isset($this->field_name)) unset($this->field_name);
 	}
 
