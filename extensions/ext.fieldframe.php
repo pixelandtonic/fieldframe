@@ -2235,7 +2235,18 @@ var prev_ftype_id = '<?php echo $prev_ftype_id ?>';
 			if ($this->saef AND ! $tag_func)
 			{
 				// call display_field rather than display_tag
+
+				foreach($field['helpers'] as $name => $value)
+				{
+					$this->$name = $value;
+				}
+
 				$new_tagdata = $DSP->qdiv('ff-ft', $field['ftype']->display_field('field_id_'.$field['helpers']['field_id'], $field['data'], $field['settings']));
+
+				foreach($field['helpers'] as $name => $value)
+				{
+					unset($this->$name);
+				}
 
 				// update the tag count
 				$this->saef_tag_count++;
