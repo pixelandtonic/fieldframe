@@ -2639,7 +2639,7 @@ class Fieldframe_SettingsDisplay {
 	function select($name, $value, $options, $attr=array())
 	{
 		global $DSP;
-		$attr = array_merge(array('multi'=>0, 'size'=>0, 'width'=>''), $attr);
+		$attr = array_merge(array('multi'=>NULL, 'size'=>0, 'width'=>''), $attr);
 		return $DSP->input_select_header($name, $attr['multi'], $attr['size'], $attr['width'])
 		     . $this->_select_options($value, $options)
 		     . $DSP->input_select_footer();
