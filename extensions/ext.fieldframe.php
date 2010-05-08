@@ -2214,7 +2214,24 @@ var prev_ftype_id = '<?php echo $prev_ftype_id ?>';
 	 */
 	function _parse_tagdata(&$tagdata, $fields, $skip_unmatched_tags = FALSE)
 	{
-		global $DSP;
+		global $FNS, $DSP;
+
+		// -------------------------------------------
+		//  Conditionals
+		// -------------------------------------------
+
+		$conditionals = array();
+
+		foreach ($fields as $name => $field)
+		{
+			$conditionals[$name] = is_array($field['data']) ? ($field['data'] ? '1' : '') : $field['data'];
+		}
+
+		$tagdata = $FNS->prep_conditionals($tagdata, $conditionals);
+
+		// -------------------------------------------
+		//  Tag parsing
+		// -------------------------------------------
 
 		// find the next ftype tag
 		$offset = 0;
@@ -2315,16 +2332,16 @@ var prev_ftype_id = '<?php echo $prev_ftype_id ?>';
 		}
 
 		// conditionals
-		foreach($fields as $field_name => $field)
-		{
-			$this->ftype = $field['ftype'];
-			$this->field_data = isset($field['data']) ? $field['data'] : '';
-			$this->field_settings = $field['settings'];
-			$tagdata = preg_replace_callback('/('.LD.'if(:elseif)?\s+(.*\s+)?)('.$field_name.')(:(\w+))?((\s+.*)?'.RD.')/iU', array(&$this, '_parse_conditional'), $tagdata);
-			unset($this->ftype);
-			unset($this->field_data);
-			unset($this->field_settings);
-		}
+		//foreach($fields as $field_name => $field)
+		//{
+		//	$this->ftype = $field['ftype'];
+		//	$this->field_data = isset($field['data']) ? $field['data'] : '';
+		//	$this->field_settings = $field['settings'];
+		//	$tagdata = preg_replace_callback('/('.LD.'if(:elseif)?\s+(.*\s+)?)('.$field_name.')(:(\w+))?((\s+.*)?'.RD.')/iU', array(&$this, '_parse_conditional'), $tagdata);
+		//	unset($this->ftype);
+		//	unset($this->field_data);
+		//	unset($this->field_settings);
+		//}
 	}
 
 	/**
