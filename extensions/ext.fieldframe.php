@@ -2330,42 +2330,6 @@ var prev_ftype_id = '<?php echo $prev_ftype_id ?>';
 				$offset = $tag_pos + $tag_len;
 			}
 		}
-
-		// conditionals
-		//foreach($fields as $field_name => $field)
-		//{
-		//	$this->ftype = $field['ftype'];
-		//	$this->field_data = isset($field['data']) ? $field['data'] : '';
-		//	$this->field_settings = $field['settings'];
-		//	$tagdata = preg_replace_callback('/('.LD.'if(:elseif)?\s+(.*\s+)?)('.$field_name.')(:(\w+))?((\s+.*)?'.RD.')/iU', array(&$this, '_parse_conditional'), $tagdata);
-		//	unset($this->ftype);
-		//	unset($this->field_data);
-		//	unset($this->field_settings);
-		//}
-	}
-
-	/**
-	 * Parse Conditionals
-	 *
-	 * @access private
-	 */
-	function _parse_conditional($matches)
-	{
-		// custom function?
-		if ($matches[6])
-		{
-			$params = isset($this->ftype->default_tag_params) ? $this->ftype->default_tag_params : array();
-			$r = call_user_func_array(array(&$this->ftype, $matches[6]), array($params, '', $this->field_data, $this->field_settings));
-		}
-		else
-		{
-			$r = is_array($this->field_data) ? ($this->field_data ? '1' : '0') : $this->field_data;
-		}
-
-		// tidy up $r
-		$r = addslashes(str_replace(array(LD,RD,'"'), array('','',''), $r));
-
-		return $matches[1].'"'.$r.'"'.$matches[7];
 	}
 
 	/**
