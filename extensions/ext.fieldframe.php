@@ -564,7 +564,7 @@ class Fieldframe_Main {
 							'ftype' => $ftypes_by_id[$ftype_id],
 							'settings' => array_merge(
 							                           (isset($ftypes_by_id[$ftype_id]->default_field_settings) ? $ftypes_by_id[$ftype_id]->default_field_settings : array()),
-							                           ($row['ff_settings'] ? $this->_unserialize($row['ff_settings']) : array())
+							                           ($row['ff_settings'] ? (array)$this->_unserialize($row['ff_settings']) : array())
 							                          )
 						);
 					}
