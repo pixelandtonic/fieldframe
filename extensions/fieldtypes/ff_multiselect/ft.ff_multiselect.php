@@ -66,7 +66,7 @@ class Ff_multiselect extends Fieldframe_Multi_Fieldtype {
 	 */
 	function save_field($field_data, $field_settings)
 	{
-		return $field_data == 'n' ? '' : implode("\n", $field_data);
+		return is_array($field_data) ? implode("\n", $field_data) : '';
 	}
 
 	/**
