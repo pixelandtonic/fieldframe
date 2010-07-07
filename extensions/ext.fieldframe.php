@@ -2135,17 +2135,15 @@ var prev_ftype_id = '<?php echo $prev_ftype_id ?>';
 		// parse fieldtype tags
 		$tagdata = $this->weblog_entries_tagdata($tagdata);
 
-		//if ($this->saef_tag_count)
-		//{
-			// append all snippets to the end of $tagdata
-			foreach($this->snippets as $placement => $snippets)
-			{
-				foreach(array_unique($snippets) as $snippet)
-				{
-					$tagdata .= "\n".$snippet."\n";
-				}
-			}
-		//}
+		$all_snippets = array();
+
+		foreach($this->snippets as $placement => $snippets)
+		{
+			$all_snippets = array_merge($all_snippets, $snippets);
+		}
+
+		//$tagdata = str_replace('</form>', '</form>'.implode(NL, $all_snippets), $tagdata);
+		$tagdata .= NL.implode(NL, $all_snippets).NL;
 
 		$this->saef = FALSE;
 		unset($this->saef_tag_count);
