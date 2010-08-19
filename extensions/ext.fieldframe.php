@@ -397,7 +397,7 @@ class Fieldframe_Main {
 	{
 		global $REGX, $PREFS;
 
-		if ($vals && (preg_match('/^(i|s|a|o|d):(.*);/si', $vals) !== FALSE) && ($tmp_vals = @unserialize($vals)) !== FALSE)
+		if ($vals && is_string($vals) && (preg_match('/^(i|s|a|o|d):(.*);/si', $vals) !== FALSE) && ($tmp_vals = @unserialize($vals)) !== FALSE)
 		{
 			$vals = $REGX->array_stripslashes($tmp_vals);
 
