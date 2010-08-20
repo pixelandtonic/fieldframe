@@ -589,20 +589,20 @@ class Fieldframe_Main {
 		$file = is_array($ftype) ? $ftype['class'] : $ftype;
 		$class_name = ucfirst($file);
 
-		if ( ! class_exists($class_name))
+		if ( ! class_exists($class_name) && ! class_exists($class_name.'_ft'))
 		{
 			// import the file
 			@include(FT_PATH.$file.'/ft.'.$file.EXT);
 
 			// skip if the class doesn't exist
-			if ( ! class_exists($class_name))
+			if ( ! class_exists($class_name) && ! class_exists($class_name.'_ft'))
 			{
 				return FALSE;
 			}
 		}
 
-		// initialize object
-		$OBJ = new $class_name();
+		$_class_name = $class_name . (class_exists($class_name) ? '' : '_ft');
+		$OBJ = new $_class_name();
 
 		// is this a FieldFrame fieldtype?
 		if ( ! isset($OBJ->_fieldframe)) return FALSE;
