@@ -19,7 +19,7 @@ class Ff_select extends Fieldframe_Multi_Fieldtype {
 	 */
 	var $info = array(
 		'name'     => 'FF Select',
-		'version'  => '1.4.2',
+		'version'  => '1.4.3',
 		'desc'     => 'A better drop-down list',
 		'docs_url' => 'http://pixelandtonic.com/fieldframe/docs/ff-select',
 		'no_lang'  => TRUE
