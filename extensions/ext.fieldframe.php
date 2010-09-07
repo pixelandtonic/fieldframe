@@ -2139,7 +2139,9 @@ var prev_ftype_id = '<?php echo $prev_ftype_id ?>';
 
 		foreach($this->snippets as $placement => $snippets)
 		{
-			$all_snippets = array_merge($all_snippets, $snippets);
+			$all_snippets = array_merge($all_snippets, array_unique($snippets));
+
+			$this->snippets[$placement] = array();
 		}
 
 		//$tagdata = str_replace('</form>', '</form>'.implode(NL, $all_snippets), $tagdata);
