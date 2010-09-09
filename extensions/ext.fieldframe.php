@@ -1048,6 +1048,12 @@ class Fieldframe_Main {
 	{
 		global $DB, $DSP, $LANG, $IN, $PREFS, $SD;
 
+		// are they allowed to access this?
+		if (! $DSP->allowed_group('can_admin_utilities'))
+		{
+			return $DSP->no_access_message();
+		}
+
 		if ( ! $SD)
 		{
 			// initialize Fieldframe_SettingsDisplay
@@ -1863,9 +1869,13 @@ var prev_ftype_id = '<?php echo $prev_ftype_id ?>';
 		// is this the main admin page?
 		else if ($IN->GBL('C', 'GET') == 'admin' AND ! ($IN->GBL('M', 'GET') AND $IN->GBL('P', 'GET')))
 		{
-			$LANG->fetch_language_file('fieldframe');
-			$out = preg_replace('/(<li><a href=.+C=admin&amp;M=utilities&amp;P=extensions_manager.+<\/a><\/li>)/',
-				"$1\n<li>".$DSP->anchor(BASE.AMP.'C=admin'.AMP.'M=utilities'.AMP.'P=fieldtypes_manager', $LANG->line('fieldtypes_manager')).'</li>', $out, 1);
+			// are they allowed to access the fieldtypes manager?
+			if ($DSP->allowed_group('can_admin_utilities'))
+			{
+				$LANG->fetch_language_file('fieldframe');
+				$out = preg_replace('/(<li><a href=.+C=admin&amp;M=utilities&amp;P=extensions_manager.+<\/a><\/li>)/',
+					"$1\n<li>".$DSP->anchor(BASE.AMP.'C=admin'.AMP.'M=utilities'.AMP.'P=fieldtypes_manager', $LANG->line('fieldtypes_manager')).'</li>', $out, 1);
+			}
 		}
 
 		foreach($this->snippets as $placement => $snippets)
