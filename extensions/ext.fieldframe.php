@@ -3130,4 +3130,14 @@ class Fieldframe_Multi_Fieldtype extends Fieldframe_Fieldtype {
 		return (isset($params['option']) AND in_array($params['option'], $field_data)) ? 1 : 0;
 	}
 
+	/**
+	 * Total Selected Options
+	 */
+	function total_selected_options($params, $tagdata, $field_data, $field_settings)
+	{
+		$this->prep_field_data($field_data);
+
+		return $field_data ? (string)count($field_data) : '0';
+	}
+
 }
