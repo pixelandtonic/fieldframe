@@ -397,7 +397,7 @@ class Fieldframe_Main {
 	{
 		global $REGX, $PREFS;
 
-		if ($vals && is_string($vals) && (preg_match('/^(i|s|a|o|d):(.*);/si', $vals) !== FALSE) && ($tmp_vals = @unserialize($vals)) !== FALSE)
+		if ($vals && is_string($vals) && preg_match('/^(i|s|a|o|d):(.*);/si', $vals) && ($tmp_vals = @unserialize($vals)) !== FALSE)
 		{
 			$vals = $REGX->array_stripslashes($tmp_vals);
 
@@ -1763,7 +1763,7 @@ var prev_ftype_id = '<?php echo $prev_ftype_id ?>';
 		global $DB;
 
 		// is this a FF fieldtype?
-		if (preg_match('/^ftype_id_(\d+)$/', $_POST['field_type'], $matches) !== FALSE)
+		if (preg_match('/^ftype_id_(\d+)$/', $_POST['field_type'], $matches))
 		{
 			if (isset($matches[1]))
 			{
