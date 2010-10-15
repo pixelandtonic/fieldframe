@@ -723,8 +723,13 @@ class Fieldframe_Main {
 		if ($ftype)
 		{
 			$OBJ->_fieldtype_id = $ftype['fieldtype_id'];
+
 			if ($ftype['enabled'] == 'y') $OBJ->_is_enabled = TRUE;
-			if ($ftype['settings']) $OBJ->site_settings = array_merge($OBJ->site_settings, $this->_unserialize($ftype['settings']));
+
+			if ($ftype['settings'] && is_array(($ftype_settings = $this->_unserialize($ftype['settings']))))
+			{
+				$OBJ->site_settings = array_merge($OBJ->site_settings, $ftype_settings);
+			}
 
 			// new version?
 			if ($OBJ->info['version'] != $ftype['version'])
