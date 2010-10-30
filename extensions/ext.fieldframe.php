@@ -720,11 +720,23 @@ class Fieldframe_Main {
 			$query = $DB->query('SELECT * FROM exp_ff_fieldtypes WHERE class = "'.$file.'"');
 			$ftype = $query->row;
 		}
+
 		if ($ftype)
 		{
 			$OBJ->_fieldtype_id = $ftype['fieldtype_id'];
-			if ($ftype['enabled'] == 'y') $OBJ->_is_enabled = TRUE;
-			if ($ftype['settings']) $OBJ->site_settings = array_merge($OBJ->site_settings, $this->_unserialize($ftype['settings']));
+
+			if ($ftype['enabled'] == 'y')
+			{
+				$OBJ->_is_enabled = TRUE;
+			}
+
+			if ($ftype['settings'])
+			{
+				if (is_array($ftype_settings = $this->_unserialize($ftype['settings'])))
+				{
+					$OBJ->site_settings = array_merge($OBJ->site_settings, $ftype_settings);
+				}
+			}
 
 			// new version?
 			if ($OBJ->info['version'] != $ftype['version'])
