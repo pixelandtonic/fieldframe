@@ -8,7 +8,7 @@ if ( ! defined('FF_CLASS'))
 {
 	define('FF_CLASS',   'Fieldframe');
 	define('FF_NAME',    'FieldFrame');
-	define('FF_VERSION', '1.4.3');
+	define('FF_VERSION', '1.4.4a0');
 }
 
 
@@ -720,15 +720,22 @@ class Fieldframe_Main {
 			$query = $DB->query('SELECT * FROM exp_ff_fieldtypes WHERE class = "'.$file.'"');
 			$ftype = $query->row;
 		}
+
 		if ($ftype)
 		{
 			$OBJ->_fieldtype_id = $ftype['fieldtype_id'];
 
-			if ($ftype['enabled'] == 'y') $OBJ->_is_enabled = TRUE;
-
-			if ($ftype['settings'] && is_array(($ftype_settings = $this->_unserialize($ftype['settings']))))
+			if ($ftype['enabled'] == 'y')
 			{
-				$OBJ->site_settings = array_merge($OBJ->site_settings, $ftype_settings);
+				$OBJ->_is_enabled = TRUE;
+			}
+
+			if ($ftype['settings'])
+			{
+				if (is_array($ftype_settings = $this->_unserialize($ftype['settings'])))
+				{
+					$OBJ->site_settings = array_merge($OBJ->site_settings, $ftype_settings);
+				}
 			}
 
 			// new version?
