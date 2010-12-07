@@ -2323,7 +2323,7 @@ var prev_ftype_id = '<?php echo $prev_ftype_id ?>';
 							$this->$name = $value;
 						}
 
-						$new_tagdata = call_user_func_array(array(&$field['ftype'], $tag_func), array($params, $field_tagdata, $field['data'], $field['settings']));
+						$new_tagdata = (string) $field['ftype']->$tag_func($params, $field_tagdata, $field['data'], $field['settings']);
 
 						foreach($field['helpers'] as $name => $value)
 						{
