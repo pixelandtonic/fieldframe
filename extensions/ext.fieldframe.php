@@ -3151,9 +3151,9 @@ class Fieldframe_Multi_Fieldtype extends Fieldframe_Fieldtype {
 	}
 
 	/**
-	 * Total Selected Options
+	 * Total Selections
 	 */
-	function total_selected_options($params, $tagdata, $field_data, $field_settings)
+	function total_selections($params, $tagdata, $field_data, $field_settings)
 	{
 		$this->prep_field_data($field_data);
 
