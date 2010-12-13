@@ -19,7 +19,7 @@ class Ff_multiselect extends Fieldframe_Multi_Fieldtype {
 	 */
 	var $info = array(
 		'name'     => 'FF Multi-select',
-		'version'  => '1.4.4a0',
+		'version'  => '1.4.4',
 		'docs_url' => 'http://pixelandtonic.com/fieldframe/docs/ff-multi-select',
 		'no_lang'  => TRUE
 	);
