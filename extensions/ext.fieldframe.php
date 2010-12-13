@@ -2896,14 +2896,22 @@ class Fieldframe_Multi_Fieldtype extends Fieldframe_Fieldtype {
 	 */
 	function display_cell_settings($cell_settings)
 	{
-		global $DSP, $LANG;
+		global $FFM, $DSP, $LANG;
 
-		$r = '<label class="itemWrapper">'
-		   . $DSP->qdiv('defaultBold', $LANG->line($this->settings_label))
-		   . $DSP->input_textarea('options', $this->options_setting($cell_settings['options']), '3', 'textarea', '140px')
-		   . '</label>';
+		if (version_compare($FFM->info['version'], '2.0', '<'))
+		{
+			return '<label class="itemWrapper">'
+			       . $DSP->qdiv('defaultBold', $LANG->line($this->settings_label))
+			       . $DSP->input_textarea('options', $this->options_setting($cell_settings['options']), '4', 'textarea', '140px')
+			       . '</label>';
+		}
 
-		return $r;
+		return array(
+			array(
+				$LANG->line($this->settings_label),
+				'<textarea class="matrix-textarea" name="options" rows="4">'.$this->options_setting($cell_settings['options']).'</textarea>'
+			)
+		);
 	}
 
 	/**

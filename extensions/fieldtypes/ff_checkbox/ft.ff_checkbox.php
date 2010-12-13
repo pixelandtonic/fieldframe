@@ -58,14 +58,22 @@ class Ff_checkbox extends Fieldframe_Fieldtype {
 	 */
 	function display_cell_settings($cell_settings)
 	{
-		global $DSP, $LANG;
+		global $FFM, $DSP, $LANG;
 
-		$r = '<label class="itemWrapper">'
-		   . $DSP->qdiv('defaultBold', $LANG->line('checkbox_label_label'))
-		   . $DSP->input_text('label', $cell_settings['label'], '', '', 'input', '140px')
-		   . '</label>';
+		if (version_compare($FFM->info['version'], '2.0', '<'))
+		{
+			return '<label class="itemWrapper">'
+			       . $DSP->qdiv('defaultBold', $LANG->line('checkbox_label_label'))
+			       . $DSP->input_text('label', $cell_settings['label'], '', '', 'input', '140px')
+			       . '</label>';
+		}
 
-		return $r;
+		return array(
+			array(
+				$LANG->line('checkbox_label_label'),
+				$DSP->input_text('label', $cell_settings['label'], '', '', 'matrix-textarea', '140px')
+			)
+		);
 	}
 
 	/**
