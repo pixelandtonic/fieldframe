@@ -2752,13 +2752,31 @@ class Fieldframe_Fieldtype {
 	function options_setting($options=array(), $indent = '')
 	{
 		$r = '';
+
 		foreach($options as $name => $label)
 		{
 			if ($r !== '') $r .= "\n";
-			$r .= $indent.$name;
-			if (is_array($label)) $r .= "\n".$this->options_setting($label, $indent.'    ');
-			else if ($name != $label) $r .= ' : '.$label;
+
+			// force strings
+			$name = (string) $name;
+			$label = (string) $label;
+
+			// is this just a blank option?
+			if ($name === '' && $label === '') $name = $label = ' ';
+
+			$r .= $indent . htmlentities($name);
+
+			// is this an optgroup?
+			if (is_array($label))
+			{
+				$r .= "\n".$this->options_setting($label, $indent.'    ');
+			}
+			else if ($name !== $label)
+			{
+				$r .= ' : '.$label;
+			}
 		}
+
 		return $r;
 	}
 
