@@ -2242,19 +2242,6 @@ var prev_ftype_id = '<?php echo $prev_ftype_id ?>';
 		global $FNS, $DSP;
 
 		// -------------------------------------------
-		//  Conditionals
-		// -------------------------------------------
-
-		$conditionals = array();
-
-		foreach ($fields as $name => $field)
-		{
-			$conditionals[$name] = is_array($field['data']) ? ($field['data'] ? '1' : '') : $field['data'];
-		}
-
-		$tagdata = $FNS->prep_conditionals($tagdata, $conditionals);
-
-		// -------------------------------------------
 		//  Tag parsing
 		// -------------------------------------------
 
@@ -2355,6 +2342,19 @@ var prev_ftype_id = '<?php echo $prev_ftype_id ?>';
 				$offset = $tag_pos + $tag_len;
 			}
 		}
+
+		// -------------------------------------------
+		//  Conditionals
+		// -------------------------------------------
+
+		$conditionals = array();
+
+		foreach ($fields as $name => $field)
+		{
+			$conditionals[$name] = is_array($field['data']) ? ($field['data'] ? '1' : '') : $field['data'];
+		}
+
+		$tagdata = $FNS->prep_conditionals($tagdata, $conditionals);
 	}
 
 	/**
