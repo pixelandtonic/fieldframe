@@ -197,7 +197,7 @@ class Ff_select extends Fieldframe_Multi_Fieldtype {
 			{
 				return $sublabel;
 			}
-			else if ($field_data === $name)
+			else if ($field_data === (string)$name)
 			{
 				return $label;
 			}
