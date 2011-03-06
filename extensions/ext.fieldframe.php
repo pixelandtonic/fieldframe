@@ -2173,7 +2173,7 @@ var prev_ftype_id = '<?php echo $prev_ftype_id ?>';
 		unset($this->saef_tag_count);
 
 		$args = func_get_args();
-		return $this->forward_ff_hook('weblog_standalone_form_start', $args, $tagdata);
+		return $this->forward_ff_hook('weblog_standalone_form_end', $args, $tagdata);
 	}
 
 	/**
