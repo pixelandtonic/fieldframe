@@ -339,7 +339,7 @@ class Fieldframe_Main {
 				$val = $this->_array_ascii_to_entities($val);
 			}
 		}
-		else
+		else if (! is_numeric($vals))
 		{
 			global $REGX;
 			$vals = $REGX->ascii_to_entities($vals);
