@@ -2211,9 +2211,6 @@ var prev_ftype_id = '<?php echo $prev_ftype_id ?>';
 			if (isset($this->field_id)) unset($this->field_id);
 			if (isset($this->field)) unset($this->field);
 
-			// parse {weblog_short_name} tags
-			$this->tagdata = str_replace(LD.'weblog_short_name'.RD, $row['blog_name'], $this->tagdata);
-
 			$this->_parse_tagdata($this->tagdata, $fields_by_name, TRUE);
 		}
 
