@@ -97,7 +97,10 @@ class Ff_radio_group extends Fieldframe_Multi_Fieldtype {
 	{
 		$this->prep_field_data($field_data);
 
-		return $field_settings['options'][$field_data];
+		if ($field_data && isset($field_settings['options'][$field_data]))
+		{
+			return $field_settings['options'][$field_data];
+		}
 	}
 
 }
