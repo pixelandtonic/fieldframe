@@ -1,0 +1,31 @@
+<h1>Postponed Saving</h1>
+
+<p>FieldFrame 1.0.5 added support for “postponed saving” — where a fieldtype’s <a href="http://pixelandtonic.com/fieldframe/docs/functions-reference#save_field"><code>save_field()</code></a> function does not get called until a point at which the entry’s ID is known.</p>
+<p>You can enable postponed saving with the postpone_saves class variable:</p>
+
+<pre><code>class Playa extends Fieldframe_Fieldtype {
+
+    // ...
+
+    var $postpone_saves = TRUE;
+
+    // ...
+
+}</code></pre>
+
+<p>The entry’s ID will then be sent to the fieldtype’s <a href="http://pixelandtonic.com/fieldframe/docs/functions-reference#save_field"><code>save_field()</code></a> function as a third parameter:</p>
+
+<pre><code>class Playa extends Fieldframe_Fieldtype {
+
+    // ...
+
+    function save_field($field_data, $field_settings, $entry_id)
+    {
+        // ...
+    }
+
+    // ...
+
+}</code></pre>
+
+<p>Additionally, postponed saving has been enabled on <a href="http://pixelandtonic.com/ffmatrix">FF Matrix</a>, so all celltypes will also receive the <code>$entry_id</code> parameter in their <a href="http://pixelandtonic.com/fieldframe/docs/functions-reference#save_cell"><code>save_cell()</code></a> functions.</p>

@@ -1,0 +1,50 @@
+<h1>A Simple Fieldtype</h1>
+
+<p>At a minimum, a fieldtype extension must include an <code>$info</code> array with basic information about the fieldtype, and a function called <a href="http://pixelandtonic.com/fieldframe/docs/functions-reference#display_field"><code>display_field()</code></a>.</p>
+
+<p>If you want your fieldtype to double as an <a href="http://pixelandtonic.com/ffmatrix">FF Matrix</a> cell, you will also need a function called <a href="http://pixelandtonic.com/ffmatrix/docs/functions-reference#display_cell"><code>display_cell()</code></a>.</p>
+
+<p>Here’s a sample “Checkbox” fieldtype, based on the one that comes <a href="http://pixelandtonic.com/fieldframe/docs/ff-checkbox">bundled</a> with FieldFrame:</p>
+
+<pre><code>class Checkbox extends Fieldframe_Fieldtype {
+
+   var $info = array(
+       'name'             =&gt; 'Checkbox',
+       'version'          =&gt; '1.0.0',
+       'desc'             =&gt; 'Provides as single checkbox field type',
+       'docs_url'         =&gt; 'http://pixelandtonic.com/fieldframe/docs/ff-checkbox',
+       'versions_xml_url' =&gt; 'http://pixelandtonic.com/versions.xml'
+   );
+
+   function display_field($field_name, $field_data)
+   {
+       global $DSP;
+       $checked = ($field_data == 'y') ? 1 : 0;
+       return $DSP-&gt;input_checkbox($field_name, 'y', $checked);
+   }
+
+   function display_cell($cell_name, $cell_data)
+   {
+       return $this-&gt;display_field($cell_name, $cell_data);
+   }
+
+}</code></pre>
+
+<p>The <code>$info</code> array holds all of the key descriptive information about the fieldtype:</p>
+
+<dl>
+	<dt><code>name</code></dt>
+	<dd>The name of the fieldtype, which appears in the Fieldtype Manager and the Edit Field form</dd>
+
+	<dt><code>version</code></dt>
+	<dd>The version of the fieldtype</dd>
+
+	<dt><code>desc</code></dt>
+	<dd>A brief description of the fieldtype, which appears in the Fieldtype Manager</dd>
+
+	<dt><code>docs_url</code></dt>
+	<dd>The URL that the fieldtype’s Documentation link within the Fieldtype Manager will point to</dd>
+
+	<dt><code>versions_xml_url</code></dt>
+	<dd>The URL to your XML file that <a href="http://leevigraham.com/cms-customisation/expressionengine/lg-addon-updater/">LG Addon Updater</a> will check for updates</dd>
+</dl>

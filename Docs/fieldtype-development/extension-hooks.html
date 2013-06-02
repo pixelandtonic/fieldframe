@@ -1,0 +1,52 @@
+<h1>Extension Hooks</h1>
+<p>If your fieldtype extension needs to do something outside of the provided functions, you can still tap into ExpressionEngine’s powerful <a href="http://www.expressionengine.com/developers/extension_hooks/">extension hooks</a>. In fact, FieldFrame goes a long way toward making them even easier to use in a fieldtype than in a normal extension.</p>
+
+<h3>Defining Your Hooks</h3>
+<p>First, list out which hooks you want to use via an array called <code>$hooks</code>:</p>
+
+<pre><code>class Checkbox extends Fieldframe_Fieldtype {
+
+    var $info = array( /* ... */ );
+
+    var $hooks = array(
+        'edit_entries_modify_tableheader',
+        'edit_entries_modify_tablerow'
+    );
+
+    // ...
+
+}</code></pre>
+
+<p>By default, FieldFrame will give your hook a priority of 10, and will assume the function you want to tie it to has the same name as the hook itself. If either of those are not the case, simply treat the hook name as a key to an array with the proper settings:</p>
+
+<pre><code>    // ...
+
+    var $hooks = array(
+        'edit_entries_modify_tableheader' =&gt; array('priority' =&gt; 1, 'method' =&gt; 'feels_good'),
+        'edit_entries_modify_tablerow'
+    );
+
+    // ...</code></pre>
+
+<h3>Writing Your Functions</h3>
+<p>Now that you’ve defined which hooks you want to use, you need to add the functions that use them. You approach this much in the same way that you would a normal hook function, with one significant difference: if the hook returns data, you grab the previously-returned data a bit differently:</p>
+
+<pre><code>    // ...
+
+    function edit_entries_modify_tablerow($o)
+    {
+        $o = $this-&gt;get_last_call($o);
+
+        // ...
+
+        return $o;
+    }
+
+    // ...</code></pre>
+
+<p>“<code>get_last_call()</code>” is a function that comes along with the Fieldframe_Fieldtype class that your fieldtype extends. You pass it one argument: the variable that your hook function was sent that your function is modifying. If your hook doesn’t send such a variable (like <a href="http://www.expressionengine.com/developers/extension_hooks/publish_form_headers/">publish_form_headers</a>), you can pass a default value, or leave it blank.</p>
+
+<p>The reason that this function exists is because <code>$EXT-&gt;last_call()</code> doesn’t necessarily account for the last called fieldtype hook function. Also, it’s just way more convenient than the traditional way.</p>
+
+<h3>Telling FieldFrame About Changes to <code>$hooks</code></h3>
+<p>FieldFrame will check to see if your <code>$hooks</code> array has changed whenever your fieldtype’s version number has changed. So, if you’re having trouble getting FieldFrame to activate your new hooks, try updating your version number.</p>

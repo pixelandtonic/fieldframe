@@ -1,0 +1,10 @@
+<h1>Overriding Your Fieldtypes Folder Path and URL Settings</h1>
+
+<p>FieldFrame allows you to override your Fieldtypes Folder Path and URL settings right in your system’s <kbd>config.php</kbd> file. This can be handy if you’re using the same database on multiple web servers, and these settings differ on each (e.g. local development and production).</p>
+
+<p>To take advantage of this, simply open <kbd>system/config.php</kbd> and add the following two lines:</p>
+
+<pre><code>$conf['ft_path'] = '/path/to/system/extensions/fieldtypes/';
+$conf['ft_url'] = '/system/extensions/fieldtypes/';</code></pre>
+
+<p>It is worth noting that, while FieldFrame will automatically add a trailing slash to these settings when you save them from FieldFrame’s extension settings, it’s up to you to ensure a trailing slash is present if you go this route.</p>

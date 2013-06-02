@@ -1,0 +1,25 @@
+<h1>FF Checkbox</h1>
+
+<p>FF Checkbox gives you a single checkbox input. It’s value is either “y” or blank.</p>
+
+<section>
+	<h2>Configuration</h2>
+	<p>FF Checkbox has one optional field setting, “Checkbox Label”, which defines the label positioned beside the checkbox.</p>
+</section>
+
+<section>
+	<h2>Templates</h2>
+
+	<h3>Primary Tag</h3>
+	<p>Typically, FF Checkbox fields will appear in templates within conditionals, using its primary single tag:</p>
+
+	<pre><code>{if checkbox_field}
+   &lt;p&gt;My FF Checkbox field is checked!&lt;/p&gt;
+{if:else}
+   &lt;p&gt;My FF Checkbox field is not checked.&lt;/p&gt;
+{/if}</code></pre>
+
+	<h3><code>:label</code> Tag</h3>
+	<p>Gab the Checkbox Label setting from within your template:</p>
+	<pre><code>{checkbox_field:label}: {if checkbox_field}yes{if:else}no{/if}</code></pre>
+</section>

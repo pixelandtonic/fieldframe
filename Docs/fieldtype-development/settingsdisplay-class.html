@@ -1,0 +1,249 @@
+<h1>SettingsDisplay Class</h1>
+<p>FieldFrame comes with a class, Fieldframe_SettingsDisplay, that provides several convenience functions which you can use when displaying <a href="http://pixelandtonic.com/fieldframe/docs/functions-reference#display_site_settings">site settings</a> and <a href="http://pixelandtonic.com/fieldframe/docs/functions-reference#display_field_settings">field settings</a>.</p>
+
+<p>Here’s an example of using the SettingsDisplay class, based on <a href="http://pixelandtonic.com/fieldframe/docs/ff-checkbox-group">FF Checkbox Group</a>:</p>
+<pre><code>function display_site_settings()
+{
+	// Initialize a new instance of SettingsDisplay
+	$SD = new Fieldframe_SettingsDisplay();
+
+	// Open the settings block
+	$r = $SD-&gt;block('Checkbox Group Settings');
+
+	// Define the initial textarea value
+	$value = isset($this-&gt;site_settings['option_tmpl'])
+	  ?  $this-&gt;site_settings['option_tmpl']
+	  :  '';
+
+	// Define the textarea attributes
+	$attr = array('rows' =&gt; '2');
+
+	// Add the Default Option Template setting
+	$r .= $SD-&gt;row(array(
+	                 $SD-&gt;label('Default Option Template'),
+	                 $SD-&gt;textarea('option_tmpl', $value, $attr)
+	               ));
+
+	// Close the settings block
+	$r .= $SD-&gt;block_c();
+
+	// Return the settings block
+	return $r;
+}</code></pre>
+
+<h2>Functions Reference</h2>
+<p>All of the SettingsDisplay functions are listed here. They each return a snippet of HTML.</p>
+
+
+<section id="block">
+	<h3><code>block()</code></h3>
+	<p>Creates the opening HTML for a new settings table. Used in conjunction with <a href="#block_c"><code>block_c()</code></a>.</p>
+
+	<h5>Arguments</h5>
+	<dl>
+		<dt><code>$title_line</code></dt>
+		<dd><em>(string, optional)</em> — The title of the settings block. Can be either a language line’s key or a normal text string</dd>
+
+		<dt><code>$num_cols</code></dt>
+		<dd><em>(integer, optional)</em> — The number of columns your settings block will have (2 by default)</dd>
+	</dl>
+</section>
+
+<section id="block_c">
+	<h3><code>block_c()</code></h3>
+	<p>Creates the closing HTML for a settings table. Used in conjunction with <a href="#block"><code>block()</code></a>.</p>
+</section>
+
+<section id="row">
+	<h3><code>row()</code></h3>
+	<p>Creates a new settings table row.</p>
+
+	<h5>Arguments</h5>
+	<dl>
+		<dt><code>$col_data</code></dt>
+		<dd><em>(array)</em> — An array of the individual columns’ inner-HTML snippets</dd>
+
+		<dt><code>$row_class</code></dt>
+		<dd><em>(string, optional)</em> — Class name to be added to each <code>&lt;td&gt;</code> element</dd>
+
+		<dt><code>$attr</code></dt>
+		<dd><em>(array, optional)</em> — name/value pairs of attributes to be added to the <code>&lt;tr&gt;</code> element</dd>
+	</dl>
+</section>
+
+<section id="heading_row">
+	<h3><code>heading_row()</code></h3>
+	<p>Creates a settings table heading row.</p>
+
+	<h5>Arguments</h5>
+	<dl>
+		<dt><code>$col_data</code></dt>
+		<dd><em>(array)</em> – An array of the individual column headers’ inner-HTML snippets</dd>
+	</dl>
+</section>
+
+<section id="info_row">
+	<h3><code>info_row()</code></h3>
+	<p>Creates a settings table info row.</p>
+
+	<h5>Arguments</h5>
+	<dl>
+		<dt><code>$info_line</code></dt>
+		<dd><em>(string)</em> — The info line. Can be either a language line’s key or a normal text string</dd>
+	</dl>
+</section>
+
+<section id="label">
+	<h3><code>label()</code></h3>
+	<p>Creates a settings label</p>
+
+	<h5>Arguments</h5>
+	<dl>
+		<dt><code>$label_line</code></dt>
+		<dd><em>(string)</em> — The label line. Can be either a language line’s key or a normal text string</dd>
+
+		<dt><code>$subtext_line</code></dt>
+		<dd><em>(string, optional)</em> — The subtext line. Can be either a language line’s key or a normal text string</dd>
+	</dl>
+</section>
+
+<section id="text">
+	<h3><code>text()</code></h3>
+	<p>Creates a textfield.</p>
+
+	<h5>Arguments</h5>
+	<dl>
+		<dt><code>$name</code></dt>
+		<dd><em>(string)</em> — The name of the textfield</dd>
+
+		<dt><code>$value</code></dt>
+		<dd><em>(string)</em> — The initial value of the textfield</dd>
+
+		<dt><code>$attr</code></dt>
+		<dd><em>(array, optional)</em> — The attributes of the textfield. Can include any of these optional key/value pairs:
+			<dl>
+				<dt><code>size</code></dt>
+
+				<dt><code>maxlength</code></dt>
+
+				<dt><code>style</code></dt>
+				<dd>class name</dd>
+
+				<dt><code>width</code></dt>
+
+				<dt><code>extras</code></dt>
+				<dd>addional HTML attributes</dd>
+
+				<dt><code>convert</code></dt>
+				<dd><em>(bool)</em> — determines whether <code>$value</code> has its entities converted to ASCII text (<code>FALSE</code> by default)</dd>
+			</dl>
+		</dd>
+	</dl>
+</section>
+
+<section id="textarea">
+	<h3><code>textarea()</code></h3>
+	<p>Creates a textarea.</p>
+
+	<h5>Arguments</h5>
+	<dl>
+		<dt><code>$name</code></dt>
+		<dd><em>(string)</em> — The name of the textarea</dd>
+
+		<dt><code>$value</code></dt>
+		<dd><em>(string)</em> — The initial value of the textarea</dd>
+
+		<dt><code>$attr</code></dt>
+		<dd><em>(array, optional)</em> — The attributes of the textarea. Can include any of these optional key/value pairs:
+			<dl>
+				<dt><code>rows</code></dt>
+
+				<dt><code>style</code></dt>
+				<dd>class name</dd>
+
+				<dt><code>width</code></dt>
+
+				<dt><code>extras</code></dt>
+				<dd>addional HTML attributes</dd>
+
+				<dt><code>convert</code></dt>
+				<dd><em>(bool)</em> — determines whether <code>$value</code> has its entities converted to ASCII text (<code>FALSE</code> by default)</dd>
+			</dl>
+		</dd>
+	</dl>
+</section>
+
+<section id="select">
+	<h3><code>select()</code></h3>
+	<p>Creates a select input.</p>
+
+	<h5>Arguments</h5>
+	<dl>
+		<dt><code>$name</code></dt>
+		<dd><em>(string)</em> — The name of the select input</dd>
+
+		<dt><code>$value</code></dt>
+		<dd><em>(string)</em> — The value of the initially-selected option</dd>
+
+		<dt><code>$options</code></dt>
+		<dd><em>(array)</em> — Value/name pairs for each of the options</dd>
+
+		<dt><code>$attr</code></dt>
+		<dd><em>(array, optional)</em> — The attributes of the select input. Can include any of these optional key/value pairs:
+			<dl>
+				<dt><code>width</code></dt>
+			</dl>
+		</dd>
+	</dl>
+</section>
+
+<section id="multiselect">
+	<h3><code>multiselect()</code></h3>
+	<p>Creates a multi-select input.</p>
+
+	<h5>Arguments</h5>
+	<dl>
+		<dt><code>$name</code></dt>
+		<dd><em>(string)</em> — The name of the multi-select input</dd>
+
+		<dt><code>$values</code></dt>
+		<dd><em>(array)</em> — The values of the initially-selected options</dd>
+
+		<dt><code>$options</code></dt>
+		<dd><em>(array)</em> — Value/name pairs for each of the options</dd>
+
+		<dd><code>$attr</code> <em>(array, optional)</em> — The attributes of the multi-select input. Can include any of these optional key/value pairs:
+			<dl>
+				<dt><code>size</code></dt>
+				<dd>number of visible rows</dd>
+
+				<dt><code>width</code></dt>
+			</dl>
+		</dd>
+	</dl>
+</section>
+
+<section id="radio_group">
+	<h3><code>radio_group()</code></h3>
+	<p>Creates a radio group</p>
+
+	<h5>Arguments</h5>
+	<dl>
+		<dt><code>$name</code></dt>
+		<dd><em>(string)</em> — The name of the radio group</dd>
+
+		<dt><code>$value</code></dt>
+		<dd><em>(string)</em> — The value of the initially-selected option</dd>
+
+		<dt><code>$options</code></dt>
+		<dd><em>(array)</em> — Value/name pairs for each of the options</dd>
+
+		<dt><code>$attr</code></dt>
+		<dd><em>(array, optional)</em> — The attributes of the radio group. Can include any of these optional key/value pairs:
+			<dl>
+				<dt><code>extras</code></dt>
+				<dd>addional HTML attributes</dd>
+			</dl>
+		</dd>
+	</dl>
+</section>

@@ -1,0 +1,38 @@
+<h1>Stand-Alone Entry Forms</h1>
+
+<p>FieldFrame 1.1 added support for <a href="http://www.expressionengine.com/docs/modules/weblog/entry_form.html">Stand-Alone Entry Forms</a>, or “SAEF” for short.</p>
+<p>Given the complexity of many FieldFrame fieldtypes, FieldFrame handles things a bit differently than native fieldtypes. Instead of having to manually write each field’s HTML, you simply call the field by name with a single tag:</p>
+
+<pre><code>{exp:weblog:entry_form weblog="default_site"
+    return="site/index" preview="site/entry"}
+
+  {my_ff_matrix_field}
+
+  {my_playa_field}
+
+{/exp:weblog:entry_form}</code></pre>
+
+<h3>Importing the CSS</h3>
+<p>As of FieldFrame 1.3, importing the SAEF CSS is up to you:</p>
+
+<pre><code>&lt;link rel="stylesheet" type="text/css" href="http://pixelandtonic.com/themes/cp_themes/default/ff-saef.css"&gt;</code></pre>
+
+<h3>Importing jQuery</h3>
+<p>If you’re using a fieldtype that requires jQuery (like <a href="http://pixelandtonic.com/ffmatrix">FF Matrix</a> or <a href="http://pixelandtonic.com/playa">Playa 2</a>), you’ll have to add the jQuery and jQuery UI script includes yourself:</p>
+
+<pre><code>&lt;script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js" charset="utf-8"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.1/jquery-ui.min.js" charset="utf-8"&gt;&lt;/script&gt;</code></pre>
+
+<h3>Editing Entries in a SAEF</h3>
+<p>If you’re using a SAEF to edit entries, make sure that you place your <code>{exp:weblog:entries}</code> tag pair <em>inside</em> your <code>{exp:weblog:entry_form}</code> tag pair:</p>
+
+<pre><code>{exp:weblog:entry_form weblog="default_site"
+    return="site/index" preview="site/entry"}
+  {exp:weblog:entries weblog="default_site" url_title="{segment_3}" limit="1"}
+
+    {my_ff_matrix_field}
+
+    {my_playa_field}
+
+  {/exp:weblog:entries}
+{/exp:weblog:entry_form}</code></pre>

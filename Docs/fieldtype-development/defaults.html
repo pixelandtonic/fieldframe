@@ -1,0 +1,30 @@
+<h1>Default Settings and Params</h1>
+
+<p>FieldFrame 0.9.2 and later allows you to specify default site settings, field settings, cell settings, and tag parameters. Here’s how:</p>
+
+<pre><code>class Checkbox_group extends Fieldframe_Fieldtype {
+
+    // ...
+
+    var $default_site_settings = array(
+        'option_template' =&gt; '&lt;li&gt;{option}&lt;/li&gt;'
+    );
+
+    var $default_field_settings = array(
+        'options' =&gt; array('option1', 'option2', 'option3')
+    );
+
+    var $default_cell_settings = array(
+        'options' =&gt; array('option1', 'option2', 'option3')
+    );
+
+    var $default_tag_params = array(
+        'sort' =&gt; '',
+        'backspace' =&gt; '0'
+    );
+
+    // ...
+
+}</code></pre>
+
+<p>Each of these are optional, but recommended. It will save you the hassle of checking to make sure that a setting or a parameter is already set, which is an easy thing to forget to do, especially if you’re developing in an environment that doesn’t log PHP warning messages.</p>

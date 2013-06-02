@@ -1,0 +1,101 @@
+<h1>Built-in Convenience Functions</h1>
+
+<p>By extending the <code>Fieldframe_Fieldtype</code> class, your fieldtype’s class inherits several convenience functions. You can call them from within any of your class functions.</p>
+
+<pre><code>function display_field($field_name, $field_data, $field_settings)
+
+    $this-&gt;include_js('scripts/ff_checkbox.js');
+    $this-&gt;include_css('styles/ff_checkbox.css');
+
+    // ...
+
+}</code></pre>
+
+<h3>Functions at a Glance</h3>
+<ul class="square">
+	<li><a href="#get_last_call"><code>get_last_call()</code></a></li>
+	<li><a href="#include_js"><code>include_js()</code></a></li>
+	<li><a href="#include_css"><code>include_css()</code></a></li>
+	<li><a href="#insert_js"><code>insert_js()</code></a></li>
+	<li><a href="#insert_css"><code>insert_css()</code></a></li>
+	<li><a href="#prep_iterators"><code>prep_iterators()</code></a></li>
+	<li><a href="#parse_iterators"><code>parse_iterators()</code></a></li>
+</ul>
+
+
+<section id="get_last_call">
+	<h3><code>get_last_call()</code></h3>
+	<p>Use this to get the last-returned value for an extension hook. (See <a href="http://pixelandtonic.com/fieldframe/docs/extension-hooks">Extension&nbsp;Hooks</a>)</p>
+
+	<h5>Arguments</h5>
+	<dl>
+		<dt><code>$default</code></dt>
+		<dd><em>(mixed)</em> — The default value, if no last call value is found</dd>
+	</dl>
+</section>
+
+<section id="include_js">
+	<h3><code>include_js()</code></h3>
+	<p>Include a javascript file</p>
+
+	<h5>Arguments</h5>
+	<dl>
+		<dt><code>$path</code></dt>
+		<dd><em>(string)</em> — The path to your javascript file (relative to your fieldtype’s main folder)</dd>
+	</dl>
+</section>
+
+<section id="include_css">
+	<h3><code>include_css()</code></h3>
+	<p>Include a CSS file</p>
+
+	<h5>Arguments</h5>
+	<dl>
+		<dt><code>$path</code></dt>
+		<dd><em>(string)</em> — The path to your CSS file (relative to your fieldtype’s main folder)</dd>
+	</dl>
+</section>
+
+<section id="insert_js">
+	<h3><code>insert_js()</code></h3>
+	<p>Insert javascript code directly into the page</p>
+
+	<h5>Arguments</h5>
+	<dl>
+		<dt><code>$js</code></dt>
+		<dd><em>(string)</em> — The javascript code to be inserted into the page</dd>
+	</dl>
+</section>
+
+<section id="insert_css">
+	<h3><code>insert_css()</code></h3>
+	<p>Insert CSS styles directly into the page</p>
+
+	<h5>Arguments</h5>
+	<dl>
+		<dt><code>$css</code></dt>
+		<dd><em>(string)</em> — The CSS styles to be inserted into the page</dd>
+	</dl>
+</section>
+
+<section id="prep_iterators">
+	<h3><code>prep_iterators()</code></h3>
+	<p>Prepares template markup for <code>{count}</code> and <code>{switch}</code> variable parsing. Called before the loop.</p>
+
+	<h5>Arguments</h5>
+	<dl>
+		<dt><code>&amp;$tagdata</code></dt>
+		<dd><em>(string)</em> — The tagdata potentially containing <code>{count}</code> and <code>{switch}</code> tags</dd>
+	</dl>
+</section>
+
+<section id="parse_iterators">
+	<h3><code>parse_iterators()</code></h3>
+	<p>Parse <code>{count}</code> and <code>{switch}</code> tags in template markup. Called within the loop.</p>
+
+	<h5>Arguments</h5>
+	<dl>
+		<dt><code>&amp;$tagdata</code></dt>
+		<dd><em>(string)</em> — The tagdata potentially containing <code>{count}</code> and <code>{switch}</code> tags</dd>
+	</dl>
+</section>

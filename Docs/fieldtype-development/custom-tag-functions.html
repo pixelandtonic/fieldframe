@@ -1,0 +1,14 @@
+<h1>Custom Tag Functions</h1>
+<p>FieldFrame 1.0.8 added Custom Tag Functions. By default, template tags will call the fieldtypes’ <a href="http://pixelandtonic.com/fieldframe/docs/functions-reference#display_tag"><code>display_tag()</code></a> function. But you may want to offer alternative ways of presenting the field’s data. So now, you can write multiple versions of the <a href="http://pixelandtonic.com/fieldframe/docs/functions-reference#display_tag"><code>display_tag()</code></a> function (with different names), which can be accessed from the template by appending a colon (<code>:</code>) and the new function’s name to the template tag:</p>
+
+<pre><code>&lt;!-- ... --&gt;
+
+{if my_ff_matrix_field:total_rows &lt; 10}
+  There are less than 10 rows.
+{if:else}
+  There are {my_ff_matrix_field:total_rows} rows
+{/if}
+
+&lt;!-- ... --&gt;</code></pre>
+
+<p>Your custom tag functions will receive the same arguments as <a href="http://pixelandtonic.com/fieldframe/docs/functions-reference#display_tag"><code>display_tag()</code></a>.</p>

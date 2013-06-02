@@ -1,0 +1,180 @@
+<h1>Functions Reference</h1>
+
+<p>There are a few things that most fieldtype extensions need to do: display field settings, display the field, and customize the template tag output. These are the key areas that FieldFrame aims to simplify.</p>
+<p>Below is a list of the functions you can add to your fieldtype extension to accomplish these things.</p>
+
+<h3>Functions at a Glance</h3>
+<ul class="square">
+	<li><a href="#update"><code>update()</code></a></li>
+	<li><a href="#display_site_settings"><code>display_site_settings()</code></a></li>
+	<li><a href="#save_site_settings"><code>save_site_settings()</code></a></li>
+	<li><a href="#display_field_settings"><code>display_field_settings()</code></a></li>
+	<li><a href="#save_field_settings"><code>save_field_settings()</code></a></li>
+	<li><a href="#display_field"><code>display_field()</code></a></li>
+	<li><a href="#save_field"><code>save_field()</code></a></li>
+	<li><a href="#display_tag"><code>display_tag()</code></a></li>
+</ul>
+
+
+<section id="update">
+	<h3><code>update()</code></h3>
+	<p>Called when the fieldtype extension is first installed, or updated.</p>
+
+	<h5>Arguments</h5>
+	<dl>
+		<dt><code>$from</code></dt>
+		<dd><em>(string or bool)</em> — previously-installed fieldtype version number, or <code>FALSE</code> if it’s a new install</dd>
+	</dl>
+</section>
+
+<section id="display_site_settings">
+	<h3><code>display_site_settings()</code></h3>
+	<p>Add site-wide settings to the Fieldtype Manager within FieldFrame’s settings</p>
+
+	<h5>Returns</h5>
+	<p>HTML to be inserted into your fieldtype’s Settings block within the Fieldtype Manager</p>
+</section>
+
+<section id="save_site_settings">
+	<h3><code>save_site_settings()</code></h3>
+	<p>Modify the site settings’ post data before it gets saved to the database.</p>
+
+	<h5>Arguments</h5>
+	<dl>
+		<dt><code>$site_settings</code></dt>
+		<dd><em>(array)</em> — post data that came from any inputs you created in <code>display_site_settings</code></dd>
+	</dl>
+
+	<h5>Returns</h5>
+	<p>Array with the modified post data</p>
+</section>
+
+<section id="display_field_settings">
+	<h3><code>display_field_settings()</code></h3>
+	<p>Add custom settings to the Edit Field form</p>
+
+	<h5>Arguments</h5>
+	<dl>
+		<dt><code>$field_settings</code></dt>
+		<dd><em>(array)</em> — previously-saved field settings</dd>
+	</dl>
+
+	<h5>Returns</h5>
+	<p>Associative array with the following optional keys:</p>
+	<dl>
+		<dt><code>cell1</code></dt>
+		<dd><em>(string)</em> — HTML to be inserted in the same cell as the Field Type select</dd>
+
+		<dt><code>cell2</code></dt>
+		<dd><em>(string)</em> — HTML to be inserted in the cell to the right of the Field Type select</dd>
+
+		<dt><code>rows</code></dt>
+		<dd><em>(array)</em> — additional rows to be inserted below the row with the Field Type select. Each element is a nested array with two elements which contain the HTML to be inserted in the left and right cells of a new row</dd>
+
+		<dt><code>formatting_available</code></dt>
+		<dd><em>(bool)</em> — determines whether the “Default Text Formatting for This Field” setting block should be available (<code>FALSE</code> by default)</dd>
+
+		<dt><code>direction_available</code></dt>
+		<dd><em>(bool)</em> — determines whether the “Text Direction” setting block should be available (<code>FALSE</code> by default)</dd>
+	</dl>
+</section>
+
+<section id="save_field_settings">
+	<h3><code>save_field_settings()</code></h3>
+	<p>Modify the field settings’ post data before it gets saved to the database.</p>
+
+	<h5>Arguments</h5>
+	<dl>
+		<dt><code>$field_settings</code></dt>
+		<dd><em>(array)</em> — post data that came from any inputs you created in <code>display_field_settings</code></dd>
+	</dl>
+
+	<h5>Returns</h5>
+	<p>Array with the modified post data</p>
+</section>
+
+<section id="display_field">
+	<h3><code>display_field()</code></h3>
+	<p>Create the custom field HTML for the Publish form.</p>
+
+	<h5>Arguments</h5>
+	<dl>
+		<dt><code>$field_name</code></dt>
+		<dd><em>(string)</em> — name you give your field input (e.g. “field_id_1”)</dd>
+
+		<dt><code>$field_data</code></dt>
+		<dd><em>(string)</em> — previously-saved field data</dd>
+
+		<dt><code>$field_settings</code></dt>
+		<dd><em>(array)</em> — the field settings</dd>
+	</dl>
+
+	<h5>Returns</h5>
+	<p>String of HTML to be inserted into the Publish form</p>
+</section>
+
+<section id="save_field">
+	<h3><code>save_field()</code></h3>
+	<p>Modify the field’s post data before it gets saved to the database.</p>
+
+	<h5>Arguments</h5>
+	<dl>
+		<dt><code>$field_data</code></dt>
+		<dd><em>(mixed)</em> — the field’s post data</dd>
+
+		<dt><code>$field_settings</code></dt>
+		<dd><em>(array)</em> — the field settings</dd>
+
+		<dt><code>$entry_id</code></dt>
+		<dd><em>(mixed)</em> — the entry ID <em>(only passed if <a href="http://pixelandtonic.com/fieldframe/docs/postponed-saving">Postponed saving</a> is enabled)</em> — the entry’s ID, or <code>FALSE</code> if the user clicked Preview on a new entry</dd>
+	</dl>
+
+	<h5>Returns</h5>
+	<p>The modified post data</p>
+</section>
+
+<section id="display_tag">
+	<h3><code>display_tag()</code></h3>
+	<p>Modify the template tag output.</p>
+	<p><strong>Note:</strong> This will get called in the same manner regardless of whether it’s being called for a field or an <a href="http://pixelandtonic.com/ffmatrix">FF Matrix</a> cell.</p>
+
+	<h5>Arguments</h5>
+	<dl>
+		<dt><code>$params</code></dt>
+		<dd><em>(array)</em> — key/value pairs of the template tag parameters</dd>
+
+		<dt><code>$tagdata</code></dt>
+		<dd><em>(string)</em> — contents of the template between the opening and closing tags, if it’s a tag pair</dd>
+
+		<dt><code>$field_data</code></dt>
+		<dd><em>(string)</em> — the field data</dd>
+
+		<dt><code>$field_settings</code></dt>
+		<dd><em>(array)</em> — the field settings</dd>
+	</dl>
+
+	<p>Beyond the arguments sent to display_field, there are a few helper variables temporarily attached to the global <code>$FF</code> object at the time it is called:</p>
+	<dl>
+		<dt><code>$FF-&gt;tagdata</code></dt>
+		<dd><em>(array)</em> — the {exp:weblog:entries} tag data sent by the <a href="http://expressionengine.com/developers/extension_hooks/weblog_entries_tagdata/"><code>weblog_entries_tagdata</code> hook</a></dd>
+
+		<dt><code>$FF-&gt;row</code></dt>
+		<dd><em>(array)</em> — the current entry data sent by the <a href="http://expressionengine.com/developers/extension_hooks/weblog_entries_tagdata/"><code>weblog_entries_tagdata</code> hook</a></dd>
+
+		<dt><code>$FF-&gt;weblog</code></dt>
+		<dd><em>(object)</em> — the current Weblog object sent by the <a href="http://expressionengine.com/developers/extension_hooks/weblog_entries_tagdata/"><code>weblog_entries_tagdata</code> hook</a></dd>
+
+		<dt><code>$FF-&gt;field_id</code></dt>
+		<dd><em>(object)</em> — the field’s ID</dd>
+
+		<dt><code>$FF-&gt;field_name</code></dt>
+		<dd><em>(object)</em> — the field’s name</dd>
+	</dl>
+
+	<p>You can access any of these variables like so:</p>
+	<pre><code>global $FF;
+$field_id = $FF-&gt;field_id;</code></pre>
+
+	<h5>Returns</h5>
+	<p>String of template markup</p>
+</section>
